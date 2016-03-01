@@ -48,15 +48,13 @@
                         var rawCumulativeData = json.result.cumulative.data;
                         var rawAverageSessionData = json.result.averageSession.data;
 
-                        var keys1 = Object.keys(rawSubjectTotalsData);
-                        var values1 = keys1.map(function(curr, i, arr) {
-                            return rawSubjectTotalsData[curr]
-                        });
+                        console.log(rawSubjectTotalsData);
 
-                        var keys2 = Object.keys(rawAverageSessionData);
-                        var values2 = keys2.map(function(curr, i, arr) {
-                            return rawAverageSessionData[curr]
-                        });
+                        var keys1 = rawSubjectTotalsData.keys;
+                        var values1 = rawSubjectTotalsData.values;
+
+                        var keys2 = rawAverageSessionData.keys;
+                        var values2 = rawAverageSessionData.values;
 
                         var subjectTotalsPlotData = {
                             labels: keys1,
@@ -113,8 +111,8 @@
                         var plot3 = new Chart(averageSessionPlotCtx).Bar(averageSessionPlotData, {});
 
                         // Debugging
-                        console.log(keys);
-                        console.log(values);
+                        console.log(keys1);
+                        console.log(values1);
                         console.log(plot1);
                         console.log(plot2);
                         console.log(plot3);

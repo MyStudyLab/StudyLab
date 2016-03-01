@@ -30,12 +30,17 @@ object Stats {
 
   def subjectTotals(sessions: Seq[Session]): BSONDocument = {
 
-    BSONDocument(sessions.foldLeft(Map[String, Long]())((totals, session) => {
+    val kv = sessions.foldLeft(Map[String, Long]())((totals, session) => {
 
       val previous = totals.getOrElse(session.subject, 0L)
 
       totals.updated(session.subject, previous + (session.endInstant - session.startInstant))
-    }).mapValues(subjectTotal => BSONDouble(subjectTotal.toDouble / 3600)))
+    }).toVector.sortBy(pair => -pair._2)
+
+    BSONDocument(
+      "keys" -> BSONArray(kv.map(pair => BSONString(pair._1))),
+      "values" -> BSONArray(kv.map(pair => BSONDouble(pair._2.toDouble / 3600)))
+    )
   }
 
 
@@ -62,7 +67,12 @@ object Stats {
       subTotals(session.subject) = (prev._1 + (session.endInstant - session.startInstant), prev._2 + 1)
     }
 
-    BSONDocument(for (key <- subTotals.keys) yield (key, BSONDouble(subTotals(key)._1.toDouble / (subTotals(key)._2 * 3600))))
+    val kv = subTotals.iterator.map(pair => (pair._1, pair._2._1.toDouble / (pair._2._2 * 3600))).toVector.sortBy(pair => -pair._2)
+
+    BSONDocument(
+      "keys" -> BSONArray(kv.map(pair => BSONString(pair._1))),
+      "values" -> BSONArray(kv.map(pair => BSONDouble(pair._2)))
+    )
   }
 
   def subjectCumulative(sessions: Seq[Session]): BSONDocument = {

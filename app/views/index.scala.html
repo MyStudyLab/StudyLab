@@ -2,29 +2,24 @@
 
     @main("Welcome to Play") {
 
-        <form action="/start/1" method="post">
-            <input type="text" name="subject", id="subject">
-            <input type="submit" value="Start">
-        </form>
-
-        <form action="/stop/1" method="post">
-            <input type="submit" value="Stop">
-        </form>
-
-            <!--The chart element-->
+        <!--The chart element-->
         <div class="container-fluid">
             <div class="row">
-                <div class="col-sm-12 col-md-6" style="border: solid ;">
-                    <canvas id="subjectTotalsPlot" height="400"></canvas>
-                </div>
-                <div class="col-sm-12 col-md-6" style="border: solid ;">
+                <div class="col-md-offset-2 col-md-8">
                     <canvas id="cumulativePlot" height="400"></canvas>
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-12 col-md-6">
+                <div class="col-md-offset-2 col-md-8">
+                    <canvas id="subjectTotalsPlot" height="400"></canvas>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-offset-2 col-md-8">
                     <canvas id="averageSessionPlot" height="400"></canvas>
                 </div>
+            </div>
+            <div class="row">
                 <div class="col-sm-12 col-md-6">
                     <canvas id="perSubjectCumulative" height="400"></canvas>
                 </div>
