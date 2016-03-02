@@ -2,6 +2,10 @@ package models
 
 import reactivemongo.bson._
 
+import java.time.LocalDateTime
+
+import java.util.Date
+
 import scala.collection.mutable
 
 // How to organize? One object, or a class for each stat?
@@ -48,16 +52,15 @@ object Stats {
 
   def cumulative(sessions: Seq[Session]): BSONDocument = {
 
-    val cum = sessions.foldLeft((Seq[(Long, java.util.Date)](), 0L)) { (acc, next: Session) =>
+    val marks = Seq(new Date(115, 3, 1), new Date(115, 6, 1), new Date(115, 9, 1))
 
-      val sum: Long = next.endInstant - next.startInstant + acc._2
-
-      (acc._1 :+(sum, next.endTime), sum)
-    }._1
+    val cum = groupSessions(sessions, marks).map(
+      sessionGroup => sessionGroup.map(sess => sess.endInstant - sess.startInstant).sum.toDouble / 3600
+    )
 
     BSONDocument(
-      "dates" -> cum.map(pair => pair._2),
-      "values" -> cum.map(pair => BSONDouble(pair._1.toDouble / 3600))
+      "dates" -> marks.:+(new Date()),
+      "values" -> cum.map(tot => BSONDouble(tot))
     )
   }
 
@@ -96,12 +99,23 @@ object Stats {
   def groupSessions(sessions: Seq[Session], marks: Seq[java.util.Date]): Seq[Seq[Session]] = {
 
     val groups = marks.foldLeft(sessions, Seq[Seq[Session]]())((acc, next) => {
-      val sp = acc._1.span(sess => sess.endTime.before(next))
-      (sp._2, acc._2 :+ sp._1)
+
+      val sp = acc._1.span(_.endTime.before(next))
+
+      val rem = sp._2.headOption.fold((None: Option[Session], None: Option[Session]))(sess => {
+        if (sess.startTime.before(next)) {
+          (Some(Session(sess.startTime, next, sess.subject)), Some(Session(next, sess.endTime, sess.subject)))
+        } else {
+          (None, Some(sess))
+        }
+      })
+
+      (rem._2 ++: sp._2, acc._2 :+ (sp._1 ++ rem._1))
     })
 
     groups._2 :+ groups._1
   }
+
 
   def probability(sessions: Seq[Session], numBins: Int): Seq[Double] = {
 
