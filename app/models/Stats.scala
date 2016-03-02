@@ -92,8 +92,25 @@ object Stats {
   }
 
 
-  // Split up a sessions list using a list of datetimes.
+  // Split up a sessions list using a list of dates.
   def groupSessions(sessions: Seq[Session], marks: Seq[java.util.Date]): Seq[Seq[Session]] = {
+
+    val groups = marks.foldLeft(sessions, Seq[Seq[Session]]())((acc, next) => {
+      val sp = acc._1.span(sess => sess.endTime.before(next))
+      (sp._2, acc._2 :+ sp._1)
+    })
+
+    groups._2 :+ groups._1
+  }
+
+  def probability(sessions: Seq[Session], numBins: Int): Seq[Double] = {
+
+    val bins = Array.fill[Int](numBins)(0)
+
+    for (session <- sessions) {
+      // Must have all sessions split on days (or use the max function)
+    }
+
     ???
   }
 

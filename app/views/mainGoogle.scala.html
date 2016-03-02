@@ -51,12 +51,15 @@
                         });
 
                         var options = {
-                            height: 500,
                             chart: {
-                                title: "Total hours studied per subject",
-                                subtitle: "a subtitle"
+                                title: "Total hours studied per subject"
                             },
-                            bars: 'vertical'
+                            legend: {
+                                position: 'none'
+                            },
+                            bars: 'vertical',
+                            colors: ['green'],
+                            dataOpacity: 0.25
                         };
 
                         data.addColumn('string', 'Subject');
@@ -82,9 +85,11 @@
                         });
 
                         var options = {
-                            height: 500,
                             chart: {
                                 title: "Average study session length per subject"
+                            },
+                            legend: {
+                                position: 'none'
                             },
                             bars: 'vertical'
                         };
