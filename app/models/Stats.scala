@@ -7,11 +7,13 @@ import scala.collection.mutable
 // How to organize? One object, or a class for each stat?
 object Stats {
 
+  // The list of available stats
   val stats: Map[String, Seq[Session] => BSONValue] = Map(
     "total" -> total,
     "subjectTotals" -> subjectTotals,
     "cumulative" -> cumulative,
-    "averageSession" -> averageSession
+    "averageSession" -> averageSession,
+    "subjectCumulative" -> subjectCumulative
   )
 
 
@@ -44,16 +46,19 @@ object Stats {
   }
 
 
-  def cumulative(sessions: Seq[Session]): BSONArray = {
+  def cumulative(sessions: Seq[Session]): BSONDocument = {
 
-    val cumulativeSeconds = sessions.foldLeft((Seq[Long](), 0L)) { (curr, next: Session) =>
+    val cum = sessions.foldLeft((Seq[(Long, java.util.Date)](), 0L)) { (acc, next: Session) =>
 
-      val sum: Long = next.endInstant - next.startInstant + curr._2
+      val sum: Long = next.endInstant - next.startInstant + acc._2
 
-      (curr._1 :+ sum, sum)
+      (acc._1 :+(sum, next.endTime), sum)
     }._1
 
-    BSONArray(cumulativeSeconds.map(seconds => BSONDouble(seconds.toDouble / 3600)).toTraversable)
+    BSONDocument(
+      "dates" -> cum.map(pair => pair._2),
+      "values" -> cum.map(pair => BSONDouble(pair._1.toDouble / 3600))
+    )
   }
 
   def averageSession(sessions: Seq[Session]): BSONDocument = {
@@ -77,7 +82,13 @@ object Stats {
 
   def subjectCumulative(sessions: Seq[Session]): BSONDocument = {
 
-    ???
+    val cums = sessions.foldLeft(Map[String, Vector[Long]]())((acc, s) =>
+      acc.updated(s.subject, acc.getOrElse(s.subject, Vector[Long]()) :+ (s.endInstant - s.startInstant))
+    ).mapValues(vec => vec.foldLeft((Vector[Double](), 0L))(
+      (acc, next) => (acc._1 :+ ((acc._2 + next).toDouble / 3600), acc._2 + next))
+    )
+
+    BSONDocument(cums.mapValues(pair => BSONArray(pair._1.map(d => BSONDouble(d)))))
   }
 
 

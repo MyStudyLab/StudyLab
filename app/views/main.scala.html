@@ -47,8 +47,9 @@
                         var rawSubjectTotalsData = json.result.subjectTotals.data;
                         var rawCumulativeData = json.result.cumulative.data;
                         var rawAverageSessionData = json.result.averageSession.data;
+                        var rawSubjectCumulative = json.result.subjectCumulative.data;
 
-                        console.log(rawSubjectTotalsData);
+                        console.log(json.result);
 
                         var keys1 = rawSubjectTotalsData.keys;
                         var values1 = rawSubjectTotalsData.values;
@@ -72,8 +73,8 @@
 
                         var cumulativePlotData = {
                             // No labels for now
-                            labels: rawCumulativeData.map(function(curr, i, arr) {
-                                return "";
+                            labels: rawCumulativeData.dates.map(function(curr, i, arr) {
+                                return curr["$date"];
                             }),
                             datasets: [
                                 {
@@ -82,7 +83,7 @@
                                     strokeColor: "rgba(151,187,205,0.8)",
                                     highlightFill: "rgba(151,187,205,0.75)",
                                     highlightStroke: "rgba(151,187,205,1)",
-                                    data: rawCumulativeData
+                                    data: rawCumulativeData.values
                                 }
                             ]
                         };
@@ -100,6 +101,10 @@
                                 }
                             ]
                         };
+
+                        var cumulativeSubjectPlotData = {
+
+                        }
 
                         // Draw the chart
                         var subjectTotalsPlotCtx = document.getElementById("subjectTotalsPlot").getContext("2d");
