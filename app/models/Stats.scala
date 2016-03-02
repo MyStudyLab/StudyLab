@@ -92,6 +92,12 @@ object Stats {
   }
 
 
+  // Split up a sessions list using a list of datetimes.
+  def groupSessions(sessions: Seq[Session], marks: Seq[java.util.Date]): Seq[Seq[Session]] = {
+    ???
+  }
+
+
   // Function that will update all (or one?) statistics
   def update(user_id: Int): Unit = {
 

@@ -1,0 +1,123 @@
+@(title: String)(content: Html)
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>@title</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+        <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    </head>
+    <body>
+            <!-- The content of the page. -->
+        @content
+
+            <!--
+        <script>
+                function fitToContainer(canvas) {
+                    // Make it visually fill the positioned parent
+                    canvas.style.width ='100%';
+                    canvas.style.height='100%';
+                    // ...then set the internal size to match
+                    canvas.width  = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                }
+
+                var canv1 = document.getElementById("subjectTotalsPlot");
+                var canv2 = document.getElementById("cumulativePlot");
+                var canv3 = document.getElementById("averageSessionPlot");
+                fitToContainer(canv1);
+                fitToContainer(canv2);
+                fitToContainer(canv3);
+
+        </script>
+        -->
+
+        <script>
+
+                // Load the material line chart
+                google.charts.load('44', {packages: ['line', 'bar']});
+
+                function getSubjectTotalsPlotDrawer(subjects, totals) {
+
+                    function tmp() {
+                        var data = new google.visualization.DataTable();
+
+                        var rows = subjects.map(function(curr, i, arr) {
+                            return [subjects[i], totals[i]];
+                        });
+
+                        var options = {
+                            height: 500,
+                            chart: {
+                                title: "Total hours studied per subject",
+                                subtitle: "a subtitle"
+                            },
+                            bars: 'vertical'
+                        };
+
+                        data.addColumn('string', 'Subject');
+                        data.addColumn('number', 'Total Hours');
+
+                        data.addRows(rows);
+
+                        var chart = new google.charts.Bar(document.getElementById('subjectTotalsPlot'));
+
+                        chart.draw(data, options);
+                    }
+
+                    return tmp;
+                }
+
+                function getAverageSessionPlotDrawer(subjects, averages) {
+
+                    function tmp() {
+                        var data = new google.visualization.DataTable();
+
+                        var rows = subjects.map(function(curr, i, arr) {
+                            return [subjects[i], averages[i]];
+                        });
+
+                        var options = {
+                            height: 500,
+                            chart: {
+                                title: "Average study session length per subject"
+                            },
+                            bars: 'vertical'
+                        };
+
+                        data.addColumn('string', 'Subject');
+                        data.addColumn('number', 'Average Session Length');
+
+                        data.addRows(rows);
+
+                        var chart = new google.charts.Bar(document.getElementById('averageSessionPlot'));
+
+                        chart.draw(data, options);
+                    }
+
+                    return tmp;
+                }
+
+                d3.json("/stats/1", function(error, json) {
+
+                    if (error) {
+                        return console.warn(error);
+                    } else {
+                        var rawSubjectTotalsData = json.result.subjectTotals.data;
+                        var rawCumulativeData = json.result.cumulative.data;
+                        var rawAverageSessionData = json.result.averageSession.data;
+                        var rawSubjectCumulative = json.result.subjectCumulative.data;
+
+                        console.log(json.result);
+
+                        google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(rawSubjectTotalsData.keys, rawSubjectTotalsData.values));
+                        google.charts.setOnLoadCallback(getAverageSessionPlotDrawer(rawAverageSessionData.keys, rawAverageSessionData.values));
+                    }
+                })
+        </script>
+    </body>
+</html>
