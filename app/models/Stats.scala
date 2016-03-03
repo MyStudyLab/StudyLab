@@ -23,14 +23,14 @@ object Stats {
 
   def total(sessions: Seq[Session]): BSONDouble = {
     BSONDouble(sessions.foldLeft(0L)((total: Long, session: Session) => {
-      total + (session.endInstant - session.startInstant)
-    }).toDouble / 3600)
+      total + (session.endTime.getTime - session.startTime.getTime)
+    }).toDouble / (3600 * 1000))
   }
 
 
   // For the applicable stats, have such a function
   def updatedTotal(oldTotal: BSONDouble, newSession: Session): BSONDouble = {
-    BSONDouble(oldTotal.value + (newSession.endInstant - newSession.startInstant).toDouble / 3600)
+    BSONDouble(oldTotal.value + (newSession.endTime.getTime - newSession.startTime.getTime).toDouble / (3600 * 1000))
   }
 
 
@@ -40,23 +40,23 @@ object Stats {
 
       val previous = totals.getOrElse(session.subject, 0L)
 
-      totals.updated(session.subject, previous + (session.endInstant - session.startInstant))
+      totals.updated(session.subject, previous + (session.endTime.getTime - session.startTime.getTime))
     }).toVector.sortBy(pair => -pair._2)
 
     BSONDocument(
       "keys" -> BSONArray(kv.map(pair => BSONString(pair._1))),
-      "values" -> BSONArray(kv.map(pair => BSONDouble(pair._2.toDouble / 3600)))
+      "values" -> BSONArray(kv.map(pair => BSONDouble(pair._2.toDouble / (3600 * 1000))))
     )
   }
 
 
   def cumulative(sessions: Seq[Session]): BSONDocument = {
 
-    val marks = for (year <- 115 to 115; month <- 0 until 12) yield new Date(year, month, 1)
-
+    // Use seconds since epoch for marks?
+    val marks = (for (year <- 115 until 116; month <- 0 until 12) yield new Date(year, month, 1)) ++ Seq(new Date(116, 0, 1), new Date(116, 1, 1))
 
     val cumulatives = groupSessions(sessions, marks).map(
-      sessionGroup => sessionGroup.map(sess => sess.endInstant - sess.startInstant).sum.toDouble / 3600
+      sessionGroup => sessionGroup.map(sess => sess.endTime.getTime - sess.startTime.getTime).sum.toDouble / (3600 * 1000)
     ).foldLeft((0.0, Seq[Double]()))((acc, next) => (acc._1 + next, acc._2 :+ (acc._1 + next)))._2
 
     BSONDocument(
@@ -73,10 +73,10 @@ object Stats {
 
       val prev = subTotals.getOrElse(session.subject, (0L, 0L))
 
-      subTotals(session.subject) = (prev._1 + (session.endInstant - session.startInstant), prev._2 + 1)
+      subTotals(session.subject) = (prev._1 + (session.endTime.getTime - session.startTime.getTime), prev._2 + 1)
     }
 
-    val kv = subTotals.iterator.map(pair => (pair._1, pair._2._1.toDouble / (pair._2._2 * 3600))).toVector.sortBy(pair => -pair._2)
+    val kv = subTotals.iterator.map(pair => (pair._1, pair._2._1.toDouble / (pair._2._2 * 3600 * 1000))).toVector.sortBy(pair => -pair._2)
 
     BSONDocument(
       "keys" -> BSONArray(kv.map(pair => BSONString(pair._1))),
@@ -86,18 +86,30 @@ object Stats {
 
   def subjectCumulative(sessions: Seq[Session]): BSONDocument = {
 
-    val cums = sessions.foldLeft(Map[String, Vector[Long]]())((acc, s) =>
-      acc.updated(s.subject, acc.getOrElse(s.subject, Vector[Long]()) :+ (s.endInstant - s.startInstant))
-    ).mapValues(vec => vec.foldLeft((Vector[Double](), 0L))(
-      (acc, next) => (acc._1 :+ ((acc._2 + next).toDouble / 3600), acc._2 + next))
+    val marks = (for (year <- 115 until 116; month <- 0 until 12) yield new Date(year, month, 1)) ++ Seq(new Date(116, 0, 1), new Date(116, 1, 1))
+
+    val step1: Map[String, Seq[Session]] = sessions.foldLeft(Map[String, Seq[Session]]())((acc, s) =>
+      acc.updated(s.subject, acc.getOrElse(s.subject, Seq[Session]()) :+ s)
     )
 
-    BSONDocument(cums.mapValues(pair => BSONArray(pair._1.map(d => BSONDouble(d)))))
+    val step2: Map[String, Seq[Seq[Session]]] = step1.mapValues(subSessions => groupSessions(subSessions, marks))
+
+    val step3: Map[String, Seq[Double]] = step2.mapValues(
+      vec => vec.map(sessionGroup => sessionGroup.map(sess => sess.endTime.getTime - sess.startTime.getTime).sum.toDouble / (3600 * 1000))
+    )
+
+    // We drop the first (zero) element
+    val step4: Map[String, Seq[Double]] = step3.mapValues(_.scanLeft(0.0)(_ + _).drop(1))
+
+    BSONDocument(
+      "dates" -> marks.:+(new Date()),
+      "values" -> BSONDocument(step4.mapValues(seq => BSONArray(seq.map(d => BSONDouble(d)))))
+    )
   }
 
 
   // Split up a sessions list using a list of dates.
-  def groupSessions(sessions: Seq[Session], marks: Seq[java.util.Date]): Seq[Seq[Session]] = {
+  def groupSessions(sessions: Seq[Session], marks: Seq[Date]): Seq[Seq[Session]] = {
 
     val groups = marks.foldLeft(sessions, Seq[Seq[Session]]())((acc, next) => {
 
@@ -111,7 +123,8 @@ object Stats {
         }
       })
 
-      (rem._2 ++: sp._2, acc._2 :+ (sp._1 ++ rem._1))
+      // double counting when there is a split
+      (rem._2 ++: sp._2.drop(1), acc._2 :+ (sp._1 ++ rem._1))
     })
 
     groups._2 :+ groups._1

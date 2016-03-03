@@ -15,27 +15,6 @@
             <!-- The content of the page. -->
         @content
 
-            <!--
-        <script>
-                function fitToContainer(canvas) {
-                    // Make it visually fill the positioned parent
-                    canvas.style.width ='100%';
-                    canvas.style.height='100%';
-                    // ...then set the internal size to match
-                    canvas.width  = canvas.offsetWidth;
-                    canvas.height = canvas.offsetHeight;
-                }
-
-                var canv1 = document.getElementById("subjectTotalsPlot");
-                var canv2 = document.getElementById("cumulativePlot");
-                var canv3 = document.getElementById("averageSessionPlot");
-                fitToContainer(canv1);
-                fitToContainer(canv2);
-                fitToContainer(canv3);
-
-        </script>
-        -->
-
         <script>
 
                 // Load the material line chart
@@ -74,6 +53,53 @@
                     return tmp;
                 }
 
+                function getSubjectCumulativePlotDrawer(dates, subjectCumulatives) {
+
+                    function tmp() {
+                        var data = new google.visualization.DataTable();
+
+                        // Array of subjects for which we have data
+                        var subjects = Object.keys(subjectCumulatives);
+
+                        var rows = dates.map(function(date, i, arr) {
+                            var row =  [date];
+
+                            return row.concat(subjects.map(function(subject, j, arr) {
+                                return subjectCumulatives[subject][i];
+                            }));
+                        });
+
+                        var options = {
+                            chart: {
+                                title: "Cumulative Hours Studied Per Subject"
+                            },
+                            legend: {
+                                position: 'none'
+                            },
+                            //colors: ['green', 'blue', 'red', 'yellow'],
+                            explorer: {},
+                            dataOpacity: 0.25
+                        };
+
+                        // Add a column for the date
+                        data.addColumn('date', 'Date');
+
+                        // Add a column for each subject
+                        subjects.forEach(function(subject, i, subjects) {
+                            data.addColumn('number', subject);
+                        });
+
+                        data.addRows(rows);
+
+                        var chart = new google.charts.Line(document.getElementById('subjectCumulativePlot'));
+
+                        chart.draw(data, options);
+                    }
+
+                    return tmp;
+                }
+
+                // Returns a function that will draw the SubjectTotals plot
                 function getSubjectTotalsPlotDrawer(subjects, totals) {
 
                     function tmp() {
@@ -108,6 +134,7 @@
                     return tmp;
                 }
 
+                // Returns a function that will draw the AverageSession plot
                 function getAverageSessionPlotDrawer(subjects, averages) {
 
                     function tmp() {
@@ -140,6 +167,7 @@
                     return tmp;
                 }
 
+                // Load the chart data and setup callbacks to plot when we have it.
                 d3.json("/stats/1", function(error, json) {
 
                     if (error) {
@@ -148,7 +176,7 @@
                         var rawSubjectTotalsData = json.result.subjectTotals.data;
                         var rawCumulativeData = json.result.cumulative.data;
                         var rawAverageSessionData = json.result.averageSession.data;
-                        var rawSubjectCumulative = json.result.subjectCumulative.data;
+                        var rawSubjectCumulativeData = json.result.subjectCumulative.data;
 
                         console.log(json.result);
 
@@ -156,7 +184,12 @@
                             return new Date(curr["$date"]);
                         });
 
+                        rawSubjectCumulativeData.dates = rawSubjectCumulativeData.dates.map(function(curr, i, arr) {
+                            return new Date(curr["$date"]);
+                        });
+
                         google.charts.setOnLoadCallback(getCumulativePlotDrawer(rawCumulativeData.dates, rawCumulativeData.values));
+                        google.charts.setOnLoadCallback(getSubjectCumulativePlotDrawer(rawSubjectCumulativeData.dates, rawSubjectCumulativeData.values));
                         google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(rawSubjectTotalsData.keys, rawSubjectTotalsData.values));
                         google.charts.setOnLoadCallback(getAverageSessionPlotDrawer(rawAverageSessionData.keys, rawAverageSessionData.values));
                     }

@@ -5,17 +5,7 @@ import java.util.Date
 import reactivemongo.bson.{BSONDocument, BSONDocumentWriter, Macros}
 
 
-case class Session(startTime: Date, endTime: Date, subject: String) {
-
-  def startInstant: Long = {
-    startTime.toInstant.getEpochSecond
-  }
-
-  def endInstant: Long = {
-    endTime.toInstant.getEpochSecond
-  }
-
-}
+case class Session(startTime: Date, endTime: Date, subject: String)
 
 object Session {
 
