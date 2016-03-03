@@ -52,15 +52,16 @@ object Stats {
 
   def cumulative(sessions: Seq[Session]): BSONDocument = {
 
-    val marks = Seq(new Date(115, 3, 1), new Date(115, 6, 1), new Date(115, 9, 1))
+    val marks = for (year <- 115 to 115; month <- 0 until 12) yield new Date(year, month, 1)
 
-    val cum = groupSessions(sessions, marks).map(
+
+    val cumulatives = groupSessions(sessions, marks).map(
       sessionGroup => sessionGroup.map(sess => sess.endInstant - sess.startInstant).sum.toDouble / 3600
-    )
+    ).foldLeft((0.0, Seq[Double]()))((acc, next) => (acc._1 + next, acc._2 :+ (acc._1 + next)))._2
 
     BSONDocument(
       "dates" -> marks.:+(new Date()),
-      "values" -> cum.map(tot => BSONDouble(tot))
+      "values" -> cumulatives.map(tot => BSONDouble(tot))
     )
   }
 

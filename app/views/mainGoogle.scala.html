@@ -41,6 +41,39 @@
                 // Load the material line chart
                 google.charts.load('44', {packages: ['line', 'bar']});
 
+                function getCumulativePlotDrawer(dates, cumulatives) {
+
+                    function tmp() {
+                        var data = new google.visualization.DataTable();
+
+                        var rows = dates.map(function(curr, i, arr) {
+                            return [dates[i], cumulatives[i]];
+                        });
+
+                        var options = {
+                            chart: {
+                                title: "Cumulative Hours Studied"
+                            },
+                            legend: {
+                                position: 'none'
+                            },
+                            colors: ['green'],
+                            dataOpacity: 0.25
+                        };
+
+                        data.addColumn('date', 'Date');
+                        data.addColumn('number', 'Cumulative Hours');
+
+                        data.addRows(rows);
+
+                        var chart = new google.charts.Line(document.getElementById('cumulativePlot'));
+
+                        chart.draw(data, options);
+                    }
+
+                    return tmp;
+                }
+
                 function getSubjectTotalsPlotDrawer(subjects, totals) {
 
                     function tmp() {
@@ -119,6 +152,11 @@
 
                         console.log(json.result);
 
+                        rawCumulativeData.dates = rawCumulativeData.dates.map(function(curr, i, arr) {
+                            return new Date(curr["$date"]);
+                        });
+
+                        google.charts.setOnLoadCallback(getCumulativePlotDrawer(rawCumulativeData.dates, rawCumulativeData.values));
                         google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(rawSubjectTotalsData.keys, rawSubjectTotalsData.values));
                         google.charts.setOnLoadCallback(getAverageSessionPlotDrawer(rawAverageSessionData.keys, rawAverageSessionData.values));
                     }
