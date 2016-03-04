@@ -246,6 +246,7 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
     val selector = Json.obj("user_id" -> user_id)
 
+    // Don't send the object id
     val projector = Json.obj("_id" -> 0)
 
     val futOptJson: Future[Option[JsObject]] = jsonStatsCollection.find(selector, projector).one[JsObject]

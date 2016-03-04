@@ -1,8 +1,10 @@
 package models
 
-import reactivemongo.bson._
+import java.time
+import java.time.{LocalTime, Period, ZoneId}
+import java.time.temporal.ChronoUnit
 
-import java.time.LocalDateTime
+import reactivemongo.bson._
 
 import java.util.Date
 
@@ -14,10 +16,12 @@ object Stats {
   // The list of available stats
   val stats: Map[String, Seq[Session] => BSONValue] = Map(
     "total" -> total,
-    "subjectTotals" -> subjectTotals,
-    "cumulative" -> cumulative,
+    "subjectTotalsGoogle" -> subjectTotalsGoogle,
+    "cumulativeGoogle" -> cumulativeGoogle,
     "averageSession" -> averageSession,
-    "subjectCumulative" -> subjectCumulative
+    "subjectCumulative" -> subjectCumulative,
+    "testGroupDays" -> testGroupDays,
+    "probability" -> probability(100)
   )
 
 
@@ -27,6 +31,14 @@ object Stats {
     }).toDouble / (3600 * 1000))
   }
 
+  def longestOnStreak(sessions: Seq[Session]): BSONInteger = {
+    ???
+  }
+
+  def longestOffStreak(sessions: Seq[Session]): BSONInteger = {
+    ???
+  }
+
 
   // For the applicable stats, have such a function
   def updatedTotal(oldTotal: BSONDouble, newSession: Session): BSONDouble = {
@@ -34,23 +46,32 @@ object Stats {
   }
 
 
-  def subjectTotals(sessions: Seq[Session]): BSONDocument = {
+  def subjectTotals(sessions: Seq[Session]): Vector[(String, Double)] = {
 
     val kv = sessions.foldLeft(Map[String, Long]())((totals, session) => {
 
       val previous = totals.getOrElse(session.subject, 0L)
 
       totals.updated(session.subject, previous + (session.endTime.getTime - session.startTime.getTime))
-    }).toVector.sortBy(pair => -pair._2)
+    }).toVector.sortBy(pair => -pair._2).map(pair => (pair._1, pair._2.toDouble / (3600 * 1000)))
+
+    kv
+  }
+
+  def subjectTotalsGoogle(sessions: Seq[Session]): BSONDocument = {
+
+    val totals = subjectTotals(sessions)
 
     BSONDocument(
-      "keys" -> BSONArray(kv.map(pair => BSONString(pair._1))),
-      "values" -> BSONArray(kv.map(pair => BSONDouble(pair._2.toDouble / (3600 * 1000))))
+      "columns" -> BSONArray(
+        BSONArray(BSONString("string"), BSONString("Subject")),
+        BSONArray(BSONString("number"), BSONString("Total Hours"))
+      ),
+      "rows" -> BSONArray(totals.map(p => BSONArray(BSONString(p._1), BSONDouble(p._2))))
     )
   }
 
-
-  def cumulative(sessions: Seq[Session]): BSONDocument = {
+  def cumulative(sessions: Seq[Session]): Seq[(Date, Double)] = {
 
     // Use seconds since epoch for marks?
     val marks = (for (year <- 115 until 116; month <- 0 until 12) yield new Date(year, month, 1)) ++ Seq(new Date(116, 0, 1), new Date(116, 1, 1))
@@ -59,9 +80,19 @@ object Stats {
       sessionGroup => sessionGroup.map(sess => sess.endTime.getTime - sess.startTime.getTime).sum.toDouble / (3600 * 1000)
     ).foldLeft((0.0, Seq[Double]()))((acc, next) => (acc._1 + next, acc._2 :+ (acc._1 + next)))._2
 
+    marks.:+(new Date()).zip(cumulatives)
+  }
+
+  def cumulativeGoogle(sessions: Seq[Session]): BSONDocument = {
+
+    val cumulatives = cumulative(sessions)
+
     BSONDocument(
-      "dates" -> marks.:+(new Date()),
-      "values" -> cumulatives.map(tot => BSONDouble(tot))
+      "columns" -> BSONArray(
+        BSONArray(BSONString("date"), BSONString("Date")),
+        BSONArray(BSONString("number"), BSONString("Cumulative Hours"))
+      ),
+      "rows" -> BSONArray(cumulatives.map(p => BSONArray(BSONLong(p._1.getTime), BSONDouble(p._2))))
     )
   }
 
@@ -123,23 +154,113 @@ object Stats {
         }
       })
 
-      // double counting when there is a split
+      // The drop(1) is here so that we don't duplicate the head element
       (rem._2 ++: sp._2.drop(1), acc._2 :+ (sp._1 ++ rem._1))
     })
 
+    // Should we append that last group or not?
     groups._2 :+ groups._1
   }
 
+  /**
+    *
+    *
+    * Assumes that the sessions are in order
+    *
+    * @param sessions
+    * @return
+    */
+  def groupDays(sessions: Seq[Session]): (Seq[(Date, Date)], Seq[Seq[Session]]) = {
 
-  def probability(sessions: Seq[Session], numBins: Int): Seq[Double] = {
+    // TODO: Generalize this to accept a temporal unit
+    // TODO: Make it an iterator
 
-    val bins = Array.fill[Int](numBins)(0)
+    val zone = ZoneId.of("America/Chicago")
 
-    for (session <- sessions) {
-      // Must have all sessions split on days (or use the max function)
+    // Epoch second to instant
+    val startInstant = time.Instant.ofEpochSecond(sessions.head.startTime.toInstant.getEpochSecond)
+
+    // Should use the current instant, not the last session
+    val endInstant = time.Instant.now()
+
+    // Instant to zoned datetime in default zone
+    val startZDT = time.ZonedDateTime.ofInstant(startInstant, zone)
+
+    val endZDT = time.ZonedDateTime.ofInstant(endInstant, zone)
+
+    // Get end of first day
+    val startDayZDT = startZDT.truncatedTo(ChronoUnit.DAYS).plusDays(1)
+
+    // Get start of last day
+    val endDayZDT = endZDT.truncatedTo(ChronoUnit.DAYS)
+
+    val diff = startDayZDT.until(endDayZDT, ChronoUnit.DAYS)
+
+    val dayMarks = for (i <- 0L to diff) yield startDayZDT.plusDays(i).toEpochSecond
+
+    val bounds = for (i <- 0L to diff) yield (
+      new Date(startDayZDT.plusDays(i - 1).toInstant.toEpochMilli),
+      new Date(startDayZDT.plusDays(i).toInstant.toEpochMilli)
+      )
+
+    val dates = dayMarks.map(t => new Date(t * 1000))
+
+    (bounds :+(new Date(endDayZDT.toInstant.toEpochMilli), new Date(endInstant.toEpochMilli)), groupSessions(sessions, dates))
+  }
+
+  def testGroupDays(sessions: Seq[Session]): BSONDocument = {
+
+    val (bounds, sessionGroups) = groupDays(sessions)
+
+    val groupTotals = sessionGroups.map(sessionGroup => sessionGroup.map(session => session.endTime.getTime - session.startTime.getTime).sum)
+
+    BSONDocument(
+      "dates" -> bounds.map(bound => BSONArray(bound._1, bound._2)),
+      "values" -> BSONArray(groupTotals.map(total => BSONLong(total)))
+    )
+  }
+
+
+  def probability(numBins: Int)(sessions: Seq[Session]): BSONDocument = {
+
+    val bins = Array.fill[Double](numBins)(0)
+
+    val (groupBounds, dayGroups) = groupDays(sessions)
+
+    for ((bounds, group) <- groupBounds.zip(dayGroups)) {
+
+      for (session <- group) {
+
+        val diff = bounds._2.toInstant.getEpochSecond - bounds._1.toInstant.getEpochSecond
+
+        val startBin: Int = (((session.startTime.toInstant.getEpochSecond - bounds._1.toInstant.getEpochSecond).toDouble / diff) * numBins).toInt
+
+        val endBin: Int = (((session.endTime.toInstant.getEpochSecond - bounds._1.toInstant.getEpochSecond).toDouble / diff) * numBins).toInt
+
+        // Currently excluding the end bin
+        for (bin <- startBin until endBin) {
+          bins(bin) += 1
+        }
+      }
     }
 
-    ???
+    // Currently, the groups are in UTC, so days start at 6:00:00
+    val zero = LocalTime.of(6, 0, 0)
+
+    val stepSeconds: Long = (86400.0 / numBins).toLong
+
+    val rawBinTimes = for (i <- 0 until numBins) yield zero.plusSeconds(i * stepSeconds + stepSeconds / 2)
+
+    // Rearrange so that google charts displays them correctly
+    val (front, back) = rawBinTimes.zip(bins).span(p => p._1.getHour >= 6)
+    val adjustedBinTimes = back.map(_._1) ++ front.map(_._1)
+    val adjustedBins = back.map(_._2) ++ front.map(_._2)
+
+    // Normalize by days
+    BSONDocument(
+      "times" -> BSONArray(adjustedBinTimes.map(t => BSONArray(t.getHour, t.getMinute, t.getSecond))),
+      "values" -> BSONArray(adjustedBins.map(bin => BSONDouble(bin / groupBounds.length)))
+    )
   }
 
 
