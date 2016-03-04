@@ -18,10 +18,10 @@ object Stats {
     "total" -> total,
     "subjectTotalsGoogle" -> subjectTotalsGoogle,
     "cumulativeGoogle" -> cumulativeGoogle,
-    "averageSession" -> averageSession,
-    "subjectCumulative" -> subjectCumulative,
+    "averageSessionGoogle" -> averageSessionGoogle,
+    "subjectCumulativeGoogle" -> subjectCumulativeGoogle,
     "testGroupDays" -> testGroupDays,
-    "probability" -> probability(100)
+    "probabilityGoogle" -> probabilityGoogle(100)
   )
 
 
@@ -96,7 +96,7 @@ object Stats {
     )
   }
 
-  def averageSession(sessions: Seq[Session]): BSONDocument = {
+  def averageSession(sessions: Seq[Session]): Vector[(String, Double)] = {
 
     val subTotals = mutable.Map[String, (Long, Long)]()
 
@@ -107,15 +107,23 @@ object Stats {
       subTotals(session.subject) = (prev._1 + (session.endTime.getTime - session.startTime.getTime), prev._2 + 1)
     }
 
-    val kv = subTotals.iterator.map(pair => (pair._1, pair._2._1.toDouble / (pair._2._2 * 3600 * 1000))).toVector.sortBy(pair => -pair._2)
+    subTotals.iterator.map(pair => (pair._1, pair._2._1.toDouble / (pair._2._2 * 3600 * 1000))).toVector.sortBy(pair => -pair._2)
+  }
+
+  def averageSessionGoogle(sessions: Seq[Session]): BSONDocument = {
+
+    val subTotals = averageSession(sessions)
 
     BSONDocument(
-      "keys" -> BSONArray(kv.map(pair => BSONString(pair._1))),
-      "values" -> BSONArray(kv.map(pair => BSONDouble(pair._2)))
+      "columns" -> BSONArray(
+        BSONArray(BSONString("string"), BSONString("Subject")),
+        BSONArray(BSONString("number"), BSONString("Average Session Length"))
+      ),
+      "rows" -> BSONArray(subTotals.map(p => BSONArray(BSONString(p._1), BSONDouble(p._2))))
     )
   }
 
-  def subjectCumulative(sessions: Seq[Session]): BSONDocument = {
+  def subjectCumulative(sessions: Seq[Session]): (Seq[Date], Map[String, Seq[Double]]) = {
 
     val marks = (for (year <- 115 until 116; month <- 0 until 12) yield new Date(year, month, 1)) ++ Seq(new Date(116, 0, 1), new Date(116, 1, 1))
 
@@ -129,18 +137,31 @@ object Stats {
       vec => vec.map(sessionGroup => sessionGroup.map(sess => sess.endTime.getTime - sess.startTime.getTime).sum.toDouble / (3600 * 1000))
     )
 
-    // We drop the first (zero) element
+    // Cumulate the values. We drop the first (zero) element due to the way scanLeft works
     val step4: Map[String, Seq[Double]] = step3.mapValues(_.scanLeft(0.0)(_ + _).drop(1))
 
+    (marks :+ new Date(), step4)
+  }
+
+  def subjectCumulativeGoogle(sessions: Seq[Session]): BSONDocument = {
+
+    val subjectCumulatives = subjectCumulative(sessions)
+
+    val dates: Seq[Date] = subjectCumulatives._1
+
+    val subjects = subjectCumulatives._2.keys.toSeq
+
     BSONDocument(
-      "dates" -> marks.:+(new Date()),
-      "values" -> BSONDocument(step4.mapValues(seq => BSONArray(seq.map(d => BSONDouble(d)))))
+      "columns" -> BSONArray(
+        BSONArray(BSONString("date"), BSONString("Date")) +: subjects.map(sub => BSONArray(BSONString("number"), BSONString(sub)))
+      ),
+      "rows" -> dates.indices.map(i => BSONArray(BSONLong(dates(i).getTime) +: subjects.map(sub => BSONDouble(subjectCumulatives._2(sub)(i)))))
     )
   }
 
 
   // Split up a sessions list using a list of dates.
-  def groupSessions(sessions: Seq[Session], marks: Seq[Date]): Seq[Seq[Session]] = {
+  def groupSessions(sessions: Seq[Session], marks: Iterable[Date]): Seq[Seq[Session]] = {
 
     val groups = marks.foldLeft(sessions, Seq[Seq[Session]]())((acc, next) => {
 
@@ -221,7 +242,7 @@ object Stats {
   }
 
 
-  def probability(numBins: Int)(sessions: Seq[Session]): BSONDocument = {
+  def probability(numBins: Int)(sessions: Seq[Session]): Seq[(LocalTime, Double)] = {
 
     val bins = Array.fill[Double](numBins)(0)
 
@@ -249,17 +270,36 @@ object Stats {
 
     val stepSeconds: Long = (86400.0 / numBins).toLong
 
-    val rawBinTimes = for (i <- 0 until numBins) yield zero.plusSeconds(i * stepSeconds + stepSeconds / 2)
+    val binTimes = for (i <- 0 until numBins) yield zero.plusSeconds(i * stepSeconds + stepSeconds / 2)
+
+    // Normalize by number of days
+    val (front, back) = binTimes.zip(bins.map(_ / dayGroups.length)).span(p => p._1.getHour >= 6)
 
     // Rearrange so that google charts displays them correctly
-    val (front, back) = rawBinTimes.zip(bins).span(p => p._1.getHour >= 6)
-    val adjustedBinTimes = back.map(_._1) ++ front.map(_._1)
-    val adjustedBins = back.map(_._2) ++ front.map(_._2)
+    back ++ front
+  }
 
-    // Normalize by days
+  def probabilityGoogle(numBins: Int)(sessions: Seq[Session]): BSONDocument = {
+
+    val probs = probability(numBins)(sessions)
+
+
     BSONDocument(
-      "times" -> BSONArray(adjustedBinTimes.map(t => BSONArray(t.getHour, t.getMinute, t.getSecond))),
-      "values" -> BSONArray(adjustedBins.map(bin => BSONDouble(bin / groupBounds.length)))
+      "columns" -> BSONArray(
+        BSONArray(BSONString("timeofday"), BSONString("Time of Day")),
+        BSONArray(BSONString("number"), BSONString("Probability"))
+      ),
+      "rows" -> BSONArray(probs.map(p => BSONArray(BSONArray(p._1.getHour, p._1.getMinute, p._1.getSecond), BSONDouble(p._2)))),
+      "options" -> BSONDocument(
+        "chart" -> BSONDocument(
+          "title" -> "Probability That I'm Programming"
+        ),
+        "legend" -> BSONDocument(
+          "position" -> "none"
+        ),
+        "colors" -> BSONArray("green"),
+        "dataOpacity" -> 0.25
+      )
     )
   }
 

@@ -60,21 +60,10 @@
                     return tmp;
                 }
 
-                function getSubjectCumulativePlotDrawer(dates, subjectCumulatives) {
+                function getSubjectCumulativeGooglePlotDrawer(plotData, elementId) {
 
                     function tmp() {
-                        var data = new google.visualization.DataTable();
-
-                        // Array of subjects for which we have data
-                        var subjects = Object.keys(subjectCumulatives);
-
-                        var rows = dates.map(function(date, i, arr) {
-                            var row =  [date];
-
-                            return row.concat(subjects.map(function(subject, j, arr) {
-                                return subjectCumulatives[subject][i];
-                            }));
-                        });
+                        var table = new google.visualization.DataTable();
 
                         var options = {
                             chart: {
@@ -88,59 +77,23 @@
                             dataOpacity: 0.25
                         };
 
-                        // Add a column for the date
-                        data.addColumn('date', 'Date');
-
-                        // Add a column for each subject
-                        subjects.forEach(function(subject, i, subjects) {
-                            data.addColumn('number', subject);
+                        // Add columns to the data table
+                        plotData.columns.forEach(function(curr, i, arr) {
+                            table.addColumn(curr[0], curr[1]);
                         });
 
-                        data.addRows(rows);
+                        // Add the rows of data to the data table
+                        table.addRows(plotData.rows);
 
-                        var chart = new google.charts.Line(document.getElementById('subjectCumulativePlot'));
+                        var chart = new google.charts.Line(document.getElementById(elementId));
 
-                        chart.draw(data, options);
+                        chart.draw(table, options);
                     }
 
                     return tmp;
                 }
 
                 // Returns a function that will draw the SubjectTotals plot
-                function getSubjectTotalsPlotDrawer(subjects, totals) {
-
-                    function tmp() {
-                        var data = new google.visualization.DataTable();
-
-                        var rows = subjects.map(function(curr, i, arr) {
-                            return [subjects[i], totals[i]];
-                        });
-
-                        var options = {
-                            chart: {
-                                title: "Total hours studied per subject"
-                            },
-                            legend: {
-                                position: 'none'
-                            },
-                            bars: 'vertical',
-                            colors: ['green'],
-                            dataOpacity: 0.25
-                        };
-
-                        data.addColumn('string', 'Subject');
-                        data.addColumn('number', 'Total Hours');
-
-                        data.addRows(rows);
-
-                        var chart = new google.charts.Bar(document.getElementById('subjectTotalsPlot'));
-
-                        chart.draw(data, options);
-                    }
-
-                    return tmp;
-                }
-
                 function getSubjectTotalsGooglePlotDrawer(plotData, elementId) {
 
                     function tmp() {
@@ -177,14 +130,10 @@
                 }
 
                 // Returns a function that will draw the AverageSession plot
-                function getAverageSessionPlotDrawer(subjects, averages) {
+                function getAverageSessionGooglePlotDrawer(plotData, elementId) {
 
                     function tmp() {
-                        var data = new google.visualization.DataTable();
-
-                        var rows = subjects.map(function(curr, i, arr) {
-                            return [subjects[i], averages[i]];
-                        });
+                        var table = new google.visualization.DataTable();
 
                         var options = {
                             chart: {
@@ -196,50 +145,71 @@
                             bars: 'vertical'
                         };
 
-                        data.addColumn('string', 'Subject');
-                        data.addColumn('number', 'Average Session Length');
 
-                        data.addRows(rows);
+                        // Add columns to the data table
+                        plotData.columns.forEach(function(curr, i, arr) {
+                            table.addColumn(curr[0], curr[1]);
+                        });
 
-                        var chart = new google.charts.Bar(document.getElementById('averageSessionPlot'));
+                        // Add the rows of data to the data table
+                        table.addRows(plotData.rows);
 
-                        chart.draw(data, options);
+                        var chart = new google.charts.Bar(document.getElementById(elementId));
+
+                        chart.draw(table, options);
                     }
 
                     return tmp;
                 }
 
-                function getProbabilityPlotDrawer(times, probabilities) {
+                function getProbabilityGooglePlotDrawer(plotData, elementId) {
 
                     function tmp() {
-                        var data = new google.visualization.DataTable();
+                        var table = new google.visualization.DataTable();
 
-                        var rows = probabilities.map(function(curr, i, arr) {
-                            return [times[i], curr];
+                        // Add columns to the data table
+                        plotData.columns.forEach(function(curr, i, arr) {
+                            table.addColumn(curr[0], curr[1]);
                         });
 
-                        var options = {
-                            chart: {
-                                title: "Probability That I'm Programming"
-                            },
-                            legend: {
-                                position: 'none'
-                            },
-                            colors: ['green'],
-                            dataOpacity: 0.25
-                        };
+                        // Add the rows of data to the data table
+                        table.addRows(plotData.rows);
 
-                        data.addColumn('timeofday', 'Time');
-                        data.addColumn('number', 'Probability');
+                        var chart = new google.charts.Line(document.getElementById(elementId));
 
-                        data.addRows(rows);
-
-                        var chart = new google.charts.Line(document.getElementById('probabilityPlot'));
-
-                        chart.draw(data, options);
+                        chart.draw(table, plotData.options);
                     }
 
                     return tmp;
+                }
+
+                // If options are stored on the server, we can use this function to
+                // generate a drawing function for most of the plots
+                function getGooglePlotDrawer(plotData, plotType, elementId) {
+
+                    function tmp() {
+                        var table = new google.visualization.DataTable();
+
+                        // Add columns to the data table
+                        plotData.columns.forEach(function(curr, i, arr) {
+                            table.addColumn(curr[0], curr[1]);
+                        });
+
+                        // Add the rows of data to the data table
+                        table.addRows(plotData.rows);
+
+                        var chart = new google.charts[plotType](document.getElementById(elementId));
+
+                        chart.draw(table, plotData.options);
+                    }
+
+                    return tmp;
+                }
+
+                function convertDates(plotData) {
+                    plotData.rows.forEach(function(curr, i, arr) {
+                        curr[0] = new Date(curr[0]);
+                    });
                 }
 
                 // Load the chart data and setup callbacks to plot when we have it.
@@ -249,28 +219,21 @@
                         return console.warn(error);
                     } else {
                         var rawSubjectTotalsGoogleData = json.result.subjectTotalsGoogle.data;
-                        var rawCumulativeData = json.result.cumulative.data;
                         var rawCumulativeGoogleData = json.result.cumulativeGoogle.data;
-                        var rawAverageSessionData = json.result.averageSession.data;
-                        var rawSubjectCumulativeData = json.result.subjectCumulative.data;
-                        var rawProbabilityData = json.result.probability.data;
+                        var rawAverageSessionGoogleData = json.result.averageSessionGoogle.data;
+                        var rawSubjectCumulativeGoogleData = json.result.subjectCumulativeGoogle.data;
+                        var rawProbabilityGoogleData = json.result.probabilityGoogle.data;
 
                         console.log(json.result);
 
-                        rawCumulativeData.dates = rawCumulativeData.dates.map(function(curr, i, arr) {
-                            return new Date(curr["$date"]);
-                        });
-
-                        rawSubjectCumulativeData.dates = rawSubjectCumulativeData.dates.map(function(curr, i, arr) {
-                            return new Date(curr["$date"]);
-                        });
+                        convertDates(rawSubjectCumulativeGoogleData);
 
                         // Set up call-backs to draw the plots
                         google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(rawCumulativeGoogleData, "cumulativeGooglePlot"));
-                        google.charts.setOnLoadCallback(getSubjectCumulativePlotDrawer(rawSubjectCumulativeData.dates, rawSubjectCumulativeData.values));
+                        google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(rawSubjectCumulativeGoogleData, "subjectCumulativeGooglePlot"));
                         google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(rawSubjectTotalsGoogleData, "subjectTotalsGooglePlot"));
-                        google.charts.setOnLoadCallback(getAverageSessionPlotDrawer(rawAverageSessionData.keys, rawAverageSessionData.values));
-                        google.charts.setOnLoadCallback(getProbabilityPlotDrawer(rawProbabilityData.times, rawProbabilityData.values))
+                        google.charts.setOnLoadCallback(getAverageSessionGooglePlotDrawer(rawAverageSessionGoogleData, "averageSessionGooglePlot"));
+                        google.charts.setOnLoadCallback(getGooglePlotDrawer(rawProbabilityGoogleData, "Line", "probabilityGooglePlot"))
                     }
                 })
         </script>
