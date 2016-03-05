@@ -1,7 +1,7 @@
 package models
 
 import java.time
-import java.time.{LocalTime, Period, ZoneId}
+import java.time.{ZonedDateTime, LocalTime, Period, ZoneId}
 import java.time.temporal.ChronoUnit
 
 import reactivemongo.bson._
@@ -11,11 +11,13 @@ import java.util.Date
 import scala.collection.mutable
 
 // How to organize? One object, or a class for each stat?
+// TODO: Optimize and combine the update functions to reduce repeated computation
+// TODO: Idea: language for specifying partial results of a computation (every intermediate value should be accessible)
 object Stats {
 
   // The list of available stats
   val stats: Map[String, Seq[Session] => BSONValue] = Map(
-    "total" -> total,
+    "introMessage" -> introMessage,
     "subjectTotalsGoogle" -> subjectTotalsGoogle,
     "cumulativeGoogle" -> cumulativeGoogle,
     "averageSessionGoogle" -> averageSessionGoogle,
@@ -25,17 +27,70 @@ object Stats {
   )
 
 
-  def total(sessions: Seq[Session]): BSONDouble = {
-    BSONDouble(sessions.foldLeft(0L)((total: Long, session: Session) => {
+  def total(sessions: Seq[Session]): Double = {
+    sessions.foldLeft(0L)((total: Long, session: Session) => {
       total + (session.endTime.getTime - session.startTime.getTime)
-    }).toDouble / (3600 * 1000))
+    }).toDouble / (3600 * 1000)
   }
 
-  def longestOnStreak(sessions: Seq[Session]): BSONInteger = {
-    ???
+  def totalBSON(sessions: Seq[Session]): BSONDouble = {
+    BSONDouble(total(sessions))
+  }
+
+  def introMessage(sessions: Seq[Session]): BSONDocument = {
+
+    val zone = ZoneId.of("America/Chicago")
+
+    val totalHours = total(sessions)
+
+    val dailyAverage = totalHours.toDouble / daysSinceStart(zone)(sessions)
+
+    val startZDT = startDate(zone)(sessions)
+
+    val streaks = currentAndLongestStreaks(sessions)
+
+    BSONDocument(
+      "total" -> BSONDouble(totalHours),
+      "start" -> BSONArray(BSONInteger(startZDT.getMonthValue), BSONInteger(startZDT.getDayOfMonth), BSONInteger(startZDT.getYear)),
+      "dailyAverage" -> BSONDouble(dailyAverage),
+      "currentStreak" -> BSONInteger(streaks._1),
+      "longestStreak" -> BSONInteger(streaks._2)
+    )
+  }
+
+  // TODO: Return the corresponding dates as well
+  def currentAndLongestStreaks(sessions: Seq[Session]): (Int, Int) = {
+
+    val zone = ZoneId.of("America/Chicago")
+
+    var longest: Int = 0
+    var current: Int = 0
+
+    for (dailyTotal <- dailyTotals(zone)(sessions)) {
+      if (dailyTotal != 0.0) {
+        current += 1
+      } else {
+
+        // Check if we have a new longest streak
+        if (current > longest) {
+          longest = current
+        }
+
+        // Reset the current streak counter
+        current = 0
+      }
+    }
+
+    // Check the last (current) streak
+    if (current > longest) {
+      longest = current
+    }
+
+    (current, longest)
   }
 
   def longestOffStreak(sessions: Seq[Session]): BSONInteger = {
+
     ???
   }
 
@@ -191,15 +246,14 @@ object Stats {
     * @param sessions
     * @return
     */
-  def groupDays(sessions: Seq[Session]): (Seq[(Date, Date)], Seq[Seq[Session]]) = {
+  def groupDays(zone: ZoneId)(sessions: Seq[Session]): (Seq[(Date, Date)], Seq[Seq[Session]]) = {
 
+    // TODO: Ues ZonedDateTimes instead of dates
     // TODO: Generalize this to accept a temporal unit
     // TODO: Make it an iterator
 
-    val zone = ZoneId.of("America/Chicago")
-
     // Epoch second to instant
-    val startInstant = time.Instant.ofEpochSecond(sessions.head.startTime.toInstant.getEpochSecond)
+    val startInstant = sessions.head.startTime.toInstant
 
     // Should use the current instant, not the last session
     val endInstant = time.Instant.now()
@@ -231,7 +285,7 @@ object Stats {
 
   def testGroupDays(sessions: Seq[Session]): BSONDocument = {
 
-    val (bounds, sessionGroups) = groupDays(sessions)
+    val (bounds, sessionGroups) = groupDays(ZoneId.of("America/Chicago"))(sessions)
 
     val groupTotals = sessionGroups.map(sessionGroup => sessionGroup.map(session => session.endTime.getTime - session.startTime.getTime).sum)
 
@@ -241,12 +295,39 @@ object Stats {
     )
   }
 
+  def sumSessions(sessions: Seq[Session]): Double = {
+    sessions.foldLeft(0L)((total: Long, session: Session) => {
+      total + (session.endTime.getTime - session.startTime.getTime)
+    }).toDouble / (3600 * 1000)
+  }
+
+  def dailyTotals(zone: ZoneId)(sessions: Seq[Session]): Seq[Double] = {
+
+    groupDays(zone)(sessions)._2.map(s => sumSessions(s))
+  }
+
+  def startDate(zone: ZoneId)(sessions: Seq[Session]): ZonedDateTime = {
+
+    // TODO: check for empty lists
+    val startInstant = sessions.head.startTime.toInstant
+
+    val startZDT = time.ZonedDateTime.ofInstant(startInstant, zone)
+
+    startZDT
+  }
+
+  def daysSinceStart(zone: ZoneId)(sessions: Seq[Session]): Long = {
+
+    val now = ZonedDateTime.now(zone)
+
+    startDate(zone)(sessions).until(now, ChronoUnit.DAYS)
+  }
 
   def probability(numBins: Int)(sessions: Seq[Session]): Seq[(LocalTime, Double)] = {
 
     val bins = Array.fill[Double](numBins)(0)
 
-    val (groupBounds, dayGroups) = groupDays(sessions)
+    val (groupBounds, dayGroups) = groupDays(ZoneId.of("America/Chicago"))(sessions)
 
     for ((bounds, group) <- groupBounds.zip(dayGroups)) {
 
