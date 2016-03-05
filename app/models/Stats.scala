@@ -54,7 +54,8 @@ object Stats {
       "start" -> BSONArray(BSONInteger(startZDT.getMonthValue), BSONInteger(startZDT.getDayOfMonth), BSONInteger(startZDT.getYear)),
       "dailyAverage" -> BSONDouble(dailyAverage),
       "currentStreak" -> BSONInteger(streaks._1),
-      "longestStreak" -> BSONInteger(streaks._2)
+      "longestStreak" -> BSONInteger(streaks._2),
+      "daysSinceStart" -> BSONInteger(daysSinceStart(zone)(sessions).toInt)
     )
   }
 
@@ -320,7 +321,8 @@ object Stats {
 
     val now = ZonedDateTime.now(zone)
 
-    startDate(zone)(sessions).until(now, ChronoUnit.DAYS)
+    // We include the current day, hence the + 1
+    startDate(zone)(sessions).until(now, ChronoUnit.DAYS) + 1
   }
 
   def probability(numBins: Int)(sessions: Seq[Session]): Seq[(LocalTime, Double)] = {
