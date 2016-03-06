@@ -2,7 +2,7 @@ package models
 
 import java.time
 import java.time.{ZonedDateTime, LocalTime, Period, ZoneId}
-import java.time.temporal.ChronoUnit
+import java.time.temporal.{TemporalField, ChronoUnit}
 
 import reactivemongo.bson._
 
@@ -23,7 +23,8 @@ object Stats {
     "averageSessionGoogle" -> averageSessionGoogle,
     "subjectCumulativeGoogle" -> subjectCumulativeGoogle,
     "testGroupDays" -> testGroupDays,
-    "probabilityGoogle" -> probabilityGoogle(100)
+    "probabilityGoogle" -> probabilityGoogle(100),
+    "todaysSessionsGoogle" -> todaysSessionsGoogle
   )
 
 
@@ -323,6 +324,27 @@ object Stats {
 
     // We include the current day, hence the + 1
     startDate(zone)(sessions).until(now, ChronoUnit.DAYS) + 1
+  }
+
+  def todaysSessions(zone: ZoneId)(sessions: Vector[Session]): Vector[Session] = {
+
+    val startOfToday = ZonedDateTime.now(zone).truncatedTo(ChronoUnit.DAYS).toEpochSecond
+
+    // Call reverse to get sessions in chronological order
+    sessions.reverseIterator.takeWhile(s => s.startTime.toInstant.getEpochSecond >= startOfToday).toVector.reverse
+  }
+
+  def todaysSessionsGoogle(sessions: Seq[Session]): BSONDocument = {
+
+    BSONDocument(
+      "columns" -> BSONArray(
+        BSONArray(BSONString("string"), BSONString("Subject")),
+        BSONArray(BSONString("number"), BSONString("Start")),
+        BSONArray(BSONString("number"), BSONString("Finish"))
+      ),
+      "rows" -> BSONArray(todaysSessions(ZoneId.of("America/Chicago"))(sessions.toVector).map(s => BSONArray(BSONString(s.subject), BSONLong(s.startTime.getTime), BSONLong(s.endTime.getTime))))
+    )
+
   }
 
   def probability(numBins: Int)(sessions: Seq[Session]): Seq[(LocalTime, Double)] = {

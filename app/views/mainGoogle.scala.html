@@ -27,18 +27,18 @@
         <script>
 
                 var titleIsBold = true;
-                var titleFontSize = 30;
+                var titleFontSize = 32;
                 var hAxisFontSize = 16;
                 var vAxisFontSize = 16;
 
                 // Load the material line chart
-                google.charts.load('44', {packages: ['line', 'bar']});
+                google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
 
                 function writeIntroMessage(data, elementId) {
 
                     var introElem = document.getElementById(elementId);
 
-                    <!-- Should I just do the formatting on the server? Yes. -->
+                    <!-- Should I just do the formatting on the server? -->
                     introElem.querySelector("#startDate").textContent = data.start[0].toString() + "/" + data.start[1].toString() + "/" + data.start[2].toString();
                     introElem.querySelector("#total").textContent = Math.floor(data.total).toString();
                     introElem.querySelector("#dailyAverage").textContent = data.dailyAverage.toFixed(2).toString();
@@ -48,6 +48,51 @@
 
                 }
 
+
+                function getTodaysSessionsGooglePlotDrawer(plotData, elementId) {
+
+                    function tmp() {
+                        var table = new google.visualization.DataTable();
+
+                        var options = {
+                            chart: {
+                                title: "Cumulative Hours Studied Per Subject"
+                            },
+                            titleTextStyle: {
+                                fontSize: titleFontSize,
+                                bold: titleIsBold
+                            },
+                            legend: {
+                                position: 'none'
+                            },
+                            hAxis: {
+                                title: "",
+                                textStyle: {
+                                    fontSize: hAxisFontSize
+                                }
+                            },
+                            vAxis: {
+                                textStyle: {
+                                    fontSize: 20
+                                }
+                            }
+                        };
+
+                        // Add columns to the data table
+                        plotData.columns.forEach(function(curr, i, arr) {
+                            table.addColumn(curr[0], curr[1]);
+                        });
+
+                        // Add the rows of data to the data table
+                        table.addRows(plotData.rows);
+
+                        var chart = new google.visualization.Timeline(document.getElementById(elementId));
+
+                        chart.draw(table, options);
+                    }
+
+                    return tmp;
+                }
 
                 function getCumulativeGooglePlotDrawer(data, id) {
 
@@ -69,9 +114,6 @@
                             },
                             hAxis: {
                                 title: "",
-                                titleTextStyle: {
-                                    fontSize: 0
-                                },
                                 textStyle: {
                                     fontSize: hAxisFontSize
                                 }
@@ -119,9 +161,6 @@
                             },
                             hAxis: {
                                 title: "",
-                                titleTextStyle: {
-                                    fontSize: 0
-                                },
                                 textStyle: {
                                     fontSize: hAxisFontSize
                                 }
@@ -168,9 +207,6 @@
                             },
                             hAxis: {
                                 title: "",
-                                titleTextStyle: {
-                                    fontSize: 0
-                                },
                                 textStyle: {
                                     fontSize: hAxisFontSize
                                 }
@@ -220,10 +256,7 @@
                                 position: 'none'
                             },
                             hAxis: {
-                                title: "assdf",
-                                titleTextStyle: {
-                                    fontSize: 0
-                                },
+                                title: "",
                                 textStyle: {
                                     fontSize: hAxisFontSize
                                 },
@@ -275,9 +308,6 @@
                             },
                             hAxis: {
                                 title: "",
-                                titleTextStyle: {
-                                    fontSize: 0
-                                },
                                 textStyle: {
                                     fontSize: hAxisFontSize
                                 },
@@ -345,8 +375,9 @@
                     if (error) {
                         return console.warn(error);
                     } else {
-                        var rawSubjectTotalsGoogleData = json.result.subjectTotalsGoogle.data;
-                        var rawCumulativeGoogleData = json.result.cumulativeGoogle.data;
+                        var todaysSessionsGoogleData = json.result.todaysSessionsGoogle.data;
+                        var subjectTotalsGoogleData = json.result.subjectTotalsGoogle.data;
+                        var cumulativeGoogleData = json.result.cumulativeGoogle.data;
                         var rawAverageSessionGoogleData = json.result.averageSessionGoogle.data;
                         var rawSubjectCumulativeGoogleData = json.result.subjectCumulativeGoogle.data;
                         var rawProbabilityGoogleData = json.result.probabilityGoogle.data;
@@ -356,13 +387,14 @@
 
                         console.log(json.result);
 
-                        convertDates(rawCumulativeGoogleData);
+                        convertDates(cumulativeGoogleData);
                         convertDates(rawSubjectCumulativeGoogleData);
 
                         // Set up call-backs to draw the plots
-                        google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(rawCumulativeGoogleData, "cumulativeGooglePlot"));
+                        google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(todaysSessionsGoogleData, "todaysSessionsGooglePlot"));
+                        google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(cumulativeGoogleData, "cumulativeGooglePlot"));
                         google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(rawSubjectCumulativeGoogleData, "subjectCumulativeGooglePlot"));
-                        google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(rawSubjectTotalsGoogleData, "subjectTotalsGooglePlot"));
+                        google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(subjectTotalsGoogleData, "subjectTotalsGooglePlot"));
                         google.charts.setOnLoadCallback(getAverageSessionGooglePlotDrawer(rawAverageSessionGoogleData, "averageSessionGooglePlot"));
                         google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(rawProbabilityGoogleData, "probabilityGooglePlot"));
                     }

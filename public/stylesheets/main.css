@@ -6,3 +6,7 @@
 #introMessage {
     font-size: xx-large;
 }
+
+.googlePlotContainer {
+    height: 500px;
+}
