@@ -330,7 +330,7 @@ object Stats {
 
     val startOfToday = ZonedDateTime.now(zone).truncatedTo(ChronoUnit.DAYS).toEpochSecond
 
-    // Call reverse to get sessions in chronological order
+    // Call reverse to get sessions back in chronological order
     sessions.reverseIterator.takeWhile(s => s.startTime.toInstant.getEpochSecond >= startOfToday).toVector.reverse
   }
 
@@ -338,11 +338,12 @@ object Stats {
 
     BSONDocument(
       "columns" -> BSONArray(
-        BSONArray(BSONString("string"), BSONString("Subject")),
+        BSONArray(BSONString("string"), BSONString("Row Label")),
+        BSONArray(BSONString("string"), BSONString("Bar Label")),
         BSONArray(BSONString("number"), BSONString("Start")),
         BSONArray(BSONString("number"), BSONString("Finish"))
       ),
-      "rows" -> BSONArray(todaysSessions(ZoneId.of("America/Chicago"))(sessions.toVector).map(s => BSONArray(BSONString(s.subject), BSONLong(s.startTime.getTime), BSONLong(s.endTime.getTime))))
+      "rows" -> BSONArray(todaysSessions(ZoneId.of("America/Chicago"))(sessions.toVector).map(s => BSONArray(BSONString("What I've Worked On Today"), BSONString(s.subject), BSONLong(s.startTime.getTime), BSONLong(s.endTime.getTime))))
     )
 
   }
