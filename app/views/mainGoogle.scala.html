@@ -355,13 +355,13 @@
                     if (error) {
                         return console.warn(error);
                     } else {
-                        var todaysSessionsGoogleData = json.result.todaysSessionsGoogle.data;
-                        var subjectTotalsGoogleData = json.result.subjectTotalsGoogle.data;
-                        var cumulativeGoogleData = json.result.cumulativeGoogle.data;
-                        var rawAverageSessionGoogleData = json.result.averageSessionGoogle.data;
-                        var rawSubjectCumulativeGoogleData = json.result.subjectCumulativeGoogle.data;
-                        var rawProbabilityGoogleData = json.result.probabilityGoogle.data;
-                        var introMessageData = json.result.introMessage.data;
+                        var todaysSessionsGoogleData = json.result.todaysSessionsGoogle;
+                        var subjectTotalsGoogleData = json.result.subjectTotalsGoogle;
+                        var cumulativeGoogleData = json.result.cumulativeGoogle;
+                        var rawAverageSessionGoogleData = json.result.averageSessionGoogle;
+                        var rawSubjectCumulativeGoogleData = json.result.subjectCumulativeGoogle;
+                        var rawProbabilityGoogleData = json.result.probabilityGoogle;
+                        var introMessageData = json.result.introMessage;
 
                         writeIntroMessage(introMessageData, "introMessage");
 

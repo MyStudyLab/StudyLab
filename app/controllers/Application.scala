@@ -1,6 +1,6 @@
 package controllers
 
-import models.{SessionList, SessionStart, User, Session, Stats, Textbook}
+import models.{SessionVector, SessionStart, User, Session, Stats, Textbook}
 
 import reactivemongo.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONArray}
 import scala.concurrent.{ExecutionContext, Future}
@@ -209,39 +209,40 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
     futResult
   }
 
-  // Should we update all stats whenever we have to pull the session data?
-  def updateStat(stat: String, user_id: Int) = Action.async {
+  // Should we update all stats whenever we have to pull the session data? Yes
+  def updateStats(user_id: Int) = Action.async {
 
     val selector = BSONDocument("user_id" -> user_id)
 
     // Query for the given user's session data
-    bsonSessionsCollection.find(selector).one[SessionList].flatMap { optSessionList =>
+    bsonSessionsCollection.find(selector).one[SessionVector].flatMap { optSessionList =>
 
       // Check the success of the query
-      optSessionList.fold(Future(wrapResult(None, failMessage = "Invalid user!")))(sessionList => {
+      optSessionList.fold(Future(wrapResult(None, failMessage = "Invalid user!")))(sessionVector => {
 
-        // Get the appropriate update function for the given statistic
-        Stats.stats.get(stat).fold(Future(wrapResult(None, failMessage = "Invalid Statistic")))(func => {
+        // Build the modifier
+        Stats.stats.map(p => (p._1, p._2(sessionVector.sessions)))
 
 
-          // Compute the statistic
-          val modifier = BSONDocument(
-            "$currentDate" -> BSONDocument(
-              s"$stat.lastUpdate" -> true
-            ),
-            "$set" -> BSONDocument(
-              s"$stat.data" -> func(sessionList.sessions)
-            )
+        // Compute the statistic
+        val modifier = BSONDocument(
+          "$currentDate" -> BSONDocument(
+            "lastUpdate" -> true
+          ),
+          "$set" -> BSONDocument(
+            Stats.stats.map(p => (p._1, p._2(sessionVector.sessions)))
           )
+        )
 
-          // Update the statistic
-          bsonStatsCollection.update(selector, modifier, multi = false).map(updateResult => Ok(updateResult.getMessage))
-        })
+        // Update the stats
+        bsonStatsCollection.update(selector, modifier, multi = false).map(updateResult => Ok(updateResult.getMessage))
+
       })
     }
   }
 
 
+  // TODO: Check the lastUpdate timestamp here
   def getStats(user_id: Int) = Action.async {
 
     val selector = Json.obj("user_id" -> user_id)

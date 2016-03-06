@@ -4,20 +4,20 @@
 
 # Home page
 GET         /                              controllers.Application.index
-
-GET         /search/id/:id                 controllers.Application.getByUserId(id: Int)
-
-GET         /search/textbook/:title        controllers.Application.getTextbooksByTitle(title: String)
-
-GET         /sessions/:id                  controllers.Application.getUserSessions(id: Int)
-
-GET         /update/:stat/:id              controllers.Application.updateStat(stat: String, id: Int)
+#
+#GET         /search/id/:id                 controllers.Application.getByUserId(id: Int)
+#
+#GET         /search/textbook/:title        controllers.Application.getTextbooksByTitle(title: String)
+#
+# GET         /sessions/:id                  controllers.Application.getUserSessions(id: Int)
+#
+GET         /update/:id                    controllers.Application.updateStats(id: Int)
 
 GET         /stats/:id                     controllers.Application.getStats(id: Int)
-
-POST        /start/:id                     controllers.Application.startSession(id: Int)
-
-POST        /stop/:id                      controllers.Application.stopSession(id: Int)
+#
+#POST        /start/:id                     controllers.Application.startSession(id: Int)
+#
+#POST        /stop/:id                      controllers.Application.stopSession(id: Int)
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                  controllers.Assets.at(path="/public", file)
