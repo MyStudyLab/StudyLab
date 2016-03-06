@@ -43,7 +43,7 @@ object Stats {
 
     val totalHours = total(sessions)
 
-    val dailyAverage = totalHours.toDouble / daysSinceStart(zone)(sessions)
+    val dailyAverage = totalHours / daysSinceStart(zone)(sessions)
 
     val startZDT = startDate(zone)(sessions)
 
