@@ -259,4 +259,8 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
     Ok(views.html.index())
   }
 
+  def about = Action {
+    Ok(views.html.about())
+  }
+
 }

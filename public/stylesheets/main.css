@@ -3,6 +3,10 @@
     color: green;
 }
 
+.introMessageValue:hover {
+    color: #ff4730;
+}
+
 #introMessage {
     font-size: xx-large;
     font-family: Roboto, serif;
@@ -10,6 +14,10 @@
 
 .googlePlotContainer {
     height: 500px;
+}
+
+.plotSpacer {
+    height: 100px;
 }
 
 #todaysOverview {

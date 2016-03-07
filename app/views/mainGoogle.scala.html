@@ -18,17 +18,53 @@
             <!-- Bootstrap -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
-            <!-- D3 -->
-        <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
-
             <!-- Google charts loader -->
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     </head>
     <body>
+
+            <!-- Navbar -->
+        <nav class="navbar navbar-inverse" style="border-radius: 0em ; font-family: Roboto ;">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a href="/" class="navbar-brand">Jordan G. Dodson</a>
+                </div>
+
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li><a href=@routes.Assets.at("pdfs/resume.pdf")>Resume</a></li>
+                        <li><a href="/about">About</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
             <!-- The content of the page. -->
         @content
 
         <script>
+
+                function loadJSONFile(path, callback) {
+
+                    var httpRequest = new XMLHttpRequest();
+
+                    httpRequest.onreadystatechange = function() {
+                        if (httpRequest.readyState === 4) {
+                            if (httpRequest.status === 200) {
+
+                                // Parse the response text as JSON
+                                var data = JSON.parse(httpRequest.responseText);
+
+                                if (callback) {
+                                    callback(data);
+                                }
+                            }
+                        }
+                    };
+                    httpRequest.open('GET', path);
+                    httpRequest.send();
+                }
+
 
                 // Global plot properties
                 var titleIsBold = true;
@@ -62,7 +98,7 @@
                         var table = new google.visualization.DataTable();
 
                         var options = {
-                            height: 125
+                            height: 110
                         };
 
                         // Add columns to the data table
@@ -359,37 +395,34 @@
                 }
 
                 // Load the chart data and setup callbacks to plot when we have it.
-                d3.json("/stats/1", function(error, json) {
+                loadJSONFile("/stats/1", function(json) {
 
-                    if (error) {
-                        return console.warn(error);
-                    } else {
-                        var todaysSessionsGoogleData = json.todaysSessionsGoogle;
-                        var subjectTotalsGoogleData = json.subjectTotalsGoogle;
-                        var cumulativeGoogleData = json.cumulativeGoogle;
-                        var rawAverageSessionGoogleData = json.averageSessionGoogle;
-                        var rawSubjectCumulativeGoogleData = json.subjectCumulativeGoogle;
-                        var rawProbabilityGoogleData = json.probabilityGoogle;
-                        var introMessageData = json.introMessage;
+                    var todaysSessionsGoogleData = json.todaysSessionsGoogle;
+                    var subjectTotalsGoogleData = json.subjectTotalsGoogle;
+                    var cumulativeGoogleData = json.cumulativeGoogle;
+                    var rawAverageSessionGoogleData = json.averageSessionGoogle;
+                    var rawSubjectCumulativeGoogleData = json.subjectCumulativeGoogle;
+                    var rawProbabilityGoogleData = json.probabilityGoogle;
+                    var introMessageData = json.introMessage;
 
-                        writeIntroMessage(introMessageData, "introMessage");
+                    writeIntroMessage(introMessageData, "introMessage");
 
-                        console.log(json.result);
+                    console.log(json.result);
 
-                        convertDates(cumulativeGoogleData);
-                        convertDates(rawSubjectCumulativeGoogleData);
+                    convertDates(cumulativeGoogleData);
+                    convertDates(rawSubjectCumulativeGoogleData);
 
-                        // Set up call-backs to draw the plots
-                        if (todaysSessionsGoogleData.rows.length > 0) {
-                            google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(todaysSessionsGoogleData, "todaysSessionsGooglePlot"));
-                        }
-
-                        google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(cumulativeGoogleData, "cumulativeGooglePlot"));
-                        google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(rawSubjectCumulativeGoogleData, "subjectCumulativeGooglePlot"));
-                        google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(subjectTotalsGoogleData, "subjectTotalsGooglePlot"));
-                        google.charts.setOnLoadCallback(getAverageSessionGooglePlotDrawer(rawAverageSessionGoogleData, "averageSessionGooglePlot"));
-                        google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(rawProbabilityGoogleData, "probabilityGooglePlot"));
+                    // Set up call-backs to draw the plots
+                    if (todaysSessionsGoogleData.rows.length > 0) {
+                        google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(todaysSessionsGoogleData, "todaysSessionsGooglePlot"));
                     }
+
+                    google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(cumulativeGoogleData, "cumulativeGooglePlot"));
+                    google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(rawSubjectCumulativeGoogleData, "subjectCumulativeGooglePlot"));
+                    google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(subjectTotalsGoogleData, "subjectTotalsGooglePlot"));
+                    google.charts.setOnLoadCallback(getAverageSessionGooglePlotDrawer(rawAverageSessionGoogleData, "averageSessionGooglePlot"));
+                    google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(rawProbabilityGoogleData, "probabilityGooglePlot"));
+
                 })
         </script>
     </body>
