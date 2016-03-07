@@ -169,7 +169,7 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
           // Modifier to add the new session
           val sessionModifier = BSONDocument(
             "$push" -> BSONDocument(
-              "sessions" -> Session(status.start, new java.util.Date(), status.subject)
+              "sessions" -> Session(status.start, System.currentTimeMillis(), status.subject)
             )
           )
 
@@ -215,22 +215,21 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
     val selector = BSONDocument("user_id" -> user_id)
 
     // Query for the given user's session data
-    bsonSessionsCollection.find(selector).one[SessionVector].flatMap { optSessionList =>
+    bsonSessionsCollection.find(selector).one[SessionVector].flatMap { optSessionVector =>
 
       // Check the success of the query
-      optSessionList.fold(Future(wrapResult(None, failMessage = "Invalid user!")))(sessionVector => {
+      optSessionVector.fold(Future(wrapResult(None, failMessage = "Invalid user!")))(sessionVector => {
 
-        // Build the modifier
-        Stats.stats.map(p => (p._1, p._2(sessionVector.sessions)))
+        // Compute the new stats
+        val newStats = Stats.stats.map(p => (p._1, p._2(sessionVector.sessions)))
 
-
-        // Compute the statistic
+        // Construct create the modifier
         val modifier = BSONDocument(
           "$currentDate" -> BSONDocument(
             "lastUpdate" -> true
           ),
           "$set" -> BSONDocument(
-            Stats.stats.map(p => (p._1, p._2(sessionVector.sessions)))
+            newStats
           )
         )
 
@@ -242,7 +241,7 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
   }
 
 
-  // TODO: Check the lastUpdate timestamp here
+  // TODO:  Check the lastUpdate timestamp here
   def getStats(user_id: Int) = Action.async {
 
     val selector = Json.obj("user_id" -> user_id)
