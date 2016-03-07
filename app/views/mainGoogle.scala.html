@@ -9,7 +9,11 @@
             <!-- Favicon -->
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
 
+            <!-- Static assets -->
         <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+
+            <!-- Roboto font from Google -->
+        <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
 
             <!-- Bootstrap -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -26,13 +30,15 @@
 
         <script>
 
+                // Global plot properties
                 var titleIsBold = true;
                 var titleFontSize = 32;
-                var hAxisFontSize = 16;
+                var hAxisFontSize = 20;
                 var vAxisFontSize = 16;
 
-                // Load the material line chart
+                // Load the  charts
                 google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
+
 
                 function writeIntroMessage(data, elementId) {
 
@@ -45,6 +51,7 @@
                     introElem.querySelector("#daysSinceStart").textContent = data.daysSinceStart.toString();
                     introElem.querySelector("#longestStreak").textContent = data.longestStreak.toString();
                     introElem.querySelector("#currentStreak").textContent = data.currentStreak.toString();
+                    introElem.querySelector("#todaysTotal").textContent = data.todaysTotal.toFixed(2).toString();
 
                 }
 
@@ -103,7 +110,10 @@
                                     fontSize: 20
                                 }
                             },
-                            lineWidth: 10
+                            // Not working
+                            lineWidth: 10,
+                            // Not working
+                            curveType: 'function'
                         };
 
 
@@ -149,7 +159,9 @@
                                 textStyle: {
                                     fontSize: 20
                                 }
-                            }
+                            },
+                            // Not working
+                            curveType: 'function'
                         };
 
                         // Add columns to the data table
@@ -241,8 +253,7 @@
                                     fontSize: hAxisFontSize
                                 },
                                 // This is not working
-                                slantedText: true,
-                                slantedTextAngle: 72
+                                slantedText: true
                                 // - - - - - - - - - -
                             },
                             vAxis: {
@@ -292,9 +303,7 @@
                                     fontSize: hAxisFontSize
                                 },
                                 // The format string is based on ICU pattern set
-                                format: "h a",
-
-                                minValue: 0
+                                format: "h a"
                             },
                             vAxis: {
                                 textStyle: {
@@ -355,13 +364,13 @@
                     if (error) {
                         return console.warn(error);
                     } else {
-                        var todaysSessionsGoogleData = json.result.todaysSessionsGoogle;
-                        var subjectTotalsGoogleData = json.result.subjectTotalsGoogle;
-                        var cumulativeGoogleData = json.result.cumulativeGoogle;
-                        var rawAverageSessionGoogleData = json.result.averageSessionGoogle;
-                        var rawSubjectCumulativeGoogleData = json.result.subjectCumulativeGoogle;
-                        var rawProbabilityGoogleData = json.result.probabilityGoogle;
-                        var introMessageData = json.result.introMessage;
+                        var todaysSessionsGoogleData = json.todaysSessionsGoogle;
+                        var subjectTotalsGoogleData = json.subjectTotalsGoogle;
+                        var cumulativeGoogleData = json.cumulativeGoogle;
+                        var rawAverageSessionGoogleData = json.averageSessionGoogle;
+                        var rawSubjectCumulativeGoogleData = json.subjectCumulativeGoogle;
+                        var rawProbabilityGoogleData = json.probabilityGoogle;
+                        var introMessageData = json.introMessage;
 
                         writeIntroMessage(introMessageData, "introMessage");
 
@@ -371,7 +380,10 @@
                         convertDates(rawSubjectCumulativeGoogleData);
 
                         // Set up call-backs to draw the plots
-                        google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(todaysSessionsGoogleData, "todaysSessionsGooglePlot"));
+                        if (todaysSessionsGoogleData.rows.length > 0) {
+                            google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(todaysSessionsGoogleData, "todaysSessionsGooglePlot"));
+                        }
+
                         google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(cumulativeGoogleData, "cumulativeGooglePlot"));
                         google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(rawSubjectCumulativeGoogleData, "subjectCumulativeGooglePlot"));
                         google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(subjectTotalsGoogleData, "subjectTotalsGooglePlot"));

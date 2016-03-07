@@ -49,13 +49,16 @@ object Stats {
 
     val streaks = currentAndLongestStreaks(sessions)
 
+    val todaysTotal = sumSessions(todaysSessions(zone)(sessions))
+
     BSONDocument(
       "total" -> BSONDouble(totalHours),
       "start" -> BSONArray(BSONInteger(startZDT.getMonthValue), BSONInteger(startZDT.getDayOfMonth), BSONInteger(startZDT.getYear)),
       "dailyAverage" -> BSONDouble(dailyAverage),
       "currentStreak" -> BSONInteger(streaks._1),
       "longestStreak" -> BSONInteger(streaks._2),
-      "daysSinceStart" -> BSONInteger(daysSinceStart(zone)(sessions).toInt)
+      "daysSinceStart" -> BSONInteger(daysSinceStart(zone)(sessions).toInt),
+      "todaysTotal" -> BSONDouble(todaysTotal)
     )
   }
 
@@ -88,8 +91,12 @@ object Stats {
     }
 
     // Check the last (current) streak
-    if (dTotals.last > 0 && current + 1 > longest) {
-      longest = current + 1
+    if (dTotals.last > 0) {
+      current += 1
+    }
+
+    if (current > longest) {
+      longest = current
     }
 
     (current, longest)
@@ -102,28 +109,28 @@ object Stats {
   }
 
 
-  def subjectTotals(sessions: Vector[Session]): Vector[(String, Double)] = {
+  def subjectTotals(sessions: Vector[Session]): Map[String, Double] = {
 
     val kv = sessions.foldLeft(Map[String, Long]())((totals, session) => {
 
       val previous = totals.getOrElse(session.subject, 0L)
 
       totals.updated(session.subject, previous + (session.endTime - session.startTime))
-    }).toVector.sortBy(pair => -pair._2).map(pair => (pair._1, pair._2.toDouble / (3600 * 1000)))
+    }).mapValues(total => total.toDouble / (3600 * 1000))
 
     kv
   }
 
   def subjectTotalsGoogle(sessions: Vector[Session]): BSONDocument = {
 
-    val totals = subjectTotals(sessions)
+    val sortedTotals = subjectTotals(sessions).toVector.sortBy(p => -p._2)
 
     BSONDocument(
       "columns" -> BSONArray(
         BSONArray(BSONString("string"), BSONString("Subject")),
         BSONArray(BSONString("number"), BSONString("Total Hours"))
       ),
-      "rows" -> BSONArray(totals.map(p => BSONArray(BSONString(p._1), BSONDouble(p._2))))
+      "rows" -> BSONArray(sortedTotals.map(p => BSONArray(p._1, p._2)))
     )
   }
 
@@ -187,9 +194,10 @@ object Stats {
   }
 
 
+  // TODO: Still wanting a more elegant way to do this
   def subjectCumulative(sessions: Vector[Session]): (Vector[Long], Map[String, Vector[Double]]) = {
 
-    val marks = ((for (year <- 115 until 116; month <- 0 until 12) yield new Date(year, month, 1).getTime) ++ Seq(new Date(116, 0, 1).getTime, new Date(116, 1, 1).getTime)).toVector
+    val marks = monthMarksSince(ZoneId.of("America/Chicago"))(sessions.head.startTime)
 
     val step1: Map[String, Vector[Session]] = sessions.foldLeft(Map[String, Vector[Session]]())((acc, s) =>
       acc.updated(s.subject, acc.getOrElse(s.subject, Vector[Session]()) :+ s)
@@ -312,6 +320,36 @@ object Stats {
     startZDT
   }
 
+  def dayMarksSince(zone: ZoneId)(start: Long): Vector[Long] = {
+
+    val startInstant = time.Instant.ofEpochMilli(start)
+
+    val endInstant = time.Instant.now()
+
+    val startDayZDT = ZonedDateTime.ofInstant(startInstant, zone).truncatedTo(ChronoUnit.DAYS)
+
+    val diff = startDayZDT.until(ZonedDateTime.ofInstant(endInstant, zone), ChronoUnit.DAYS)
+
+    val dayMarks = (for (i <- 0L to diff) yield startDayZDT.plusDays(i).toInstant.toEpochMilli).toVector
+
+    dayMarks
+  }
+
+  def monthMarksSince(zone: ZoneId)(start: Long): Vector[Long] = {
+
+    val startInstant = time.Instant.ofEpochMilli(start)
+
+    val endInstant = time.Instant.now()
+
+    val startDayZDT = ZonedDateTime.ofInstant(startInstant, zone).truncatedTo(ChronoUnit.DAYS).withDayOfMonth(1)
+
+    val diff = startDayZDT.until(ZonedDateTime.ofInstant(endInstant, zone), ChronoUnit.MONTHS)
+
+    val monthMarks = (for (i <- 0L to diff) yield startDayZDT.plusMonths(i).toInstant.toEpochMilli).toVector
+
+    monthMarks
+  }
+
   def daysSinceStart(zone: ZoneId)(sessions: Vector[Session]): Long = {
 
     val now = ZonedDateTime.now(zone)
@@ -337,7 +375,7 @@ object Stats {
         BSONArray(BSONString("number"), BSONString("Start")),
         BSONArray(BSONString("number"), BSONString("Finish"))
       ),
-      "rows" -> BSONArray(todaysSessions(ZoneId.of("America/Chicago"))(sessions.toVector).map(s => BSONArray(BSONString("What I've Worked On Today"), BSONString(s.subject), BSONLong(s.startTime), BSONLong(s.endTime))))
+      "rows" -> BSONArray(todaysSessions(ZoneId.of("America/Chicago"))(sessions.toVector).map(s => BSONArray(BSONString("What I've Done Today"), BSONString(s.subject), BSONLong(s.startTime), BSONLong(s.endTime))))
     )
 
   }

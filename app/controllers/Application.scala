@@ -241,17 +241,16 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
   }
 
 
-  // TODO:  Check the lastUpdate timestamp here
   def getStats(user_id: Int) = Action.async {
 
     val selector = Json.obj("user_id" -> user_id)
 
     // Don't send the object id
-    val projector = Json.obj("_id" -> 0)
+    val projector = Json.obj("_id" -> 0, "user_id" -> 0)
 
     val futOptJson: Future[Option[JsObject]] = jsonStatsCollection.find(selector, projector).one[JsObject]
 
-    val futResult: Future[Result] = futOptJson.map(opt => wrapResult(opt, failMessage = "Invalid user!"))
+    val futResult: Future[Result] = futOptJson.map(opt => Ok(opt.getOrElse(JsObject(Seq()))))
 
     futResult
   }

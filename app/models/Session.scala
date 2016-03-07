@@ -13,6 +13,7 @@ object Session {
 
   implicit object sessionReader extends BSONDocumentReader[Session] {
 
+    // TODO: decide what format I want to use for the timestamps
     def read(bson: BSONDocument): Session = {
       val optSession = for {
         startTime <- bson.getAs[BSONNumberLike]("startTime")

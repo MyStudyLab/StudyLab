@@ -3,10 +3,10 @@
 @mainGoogle("Jordan G. Dodson") {
 
     <!-- Navbar -->
-    <nav class="navbar navbar-inverse" style="border-radius: 0em ;">
+    <nav class="navbar navbar-inverse" style="border-radius: 0em ; font-family: Roboto ;">
         <div class="container-fluid">
             <div class="navbar-header">
-                <a href="index.html" class="navbar-brand">Jordan G. Dodson</a>
+                <a href="/" class="navbar-brand">Jordan G. Dodson</a>
             </div>
 
             <div class="collapse navbar-collapse">
@@ -29,7 +29,8 @@
                     hours per day for <span id="daysSinceStart" class="introMessageValue"></span> days.
                     My longest programming streak is <span id="longestStreak" class="introMessageValue"></span>
                     days, and I'm currently on a <span id="currentStreak" class="introMessageValue"></span>
-                    day streak. Scroll down for more detailed statistics.
+                    day streak. I've programmed <span id="todaysTotal" class="introMessageValue"></span>
+                    hours today. Scroll down for more detailed statistics.
 
                     <hr>
                 </div>
@@ -40,7 +41,12 @@
 
         <div class="row">
             <div class="col-md-offset-1 col-md-10">
+                    <!--
+                <div id="todaysOverview">Total hours programmed today: <span id="todaysTotal">0</span></div>
+                -->
                 <div id="todaysSessionsGooglePlot" class=""></div>
+
+                <hr>
             </div>
         </div>
 

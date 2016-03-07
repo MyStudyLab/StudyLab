@@ -5,8 +5,16 @@
 
 #introMessage {
     font-size: xx-large;
+    font-family: Roboto, serif;
 }
 
 .googlePlotContainer {
     height: 500px;
+}
+
+#todaysOverview {
+    font-family: Roboto, serif;
+    font-size: xx-large;
+    font-weight: bold;
+    color: #757575;;
 }
