@@ -1,8 +1,9 @@
 package controllers
 
-import models.{SessionVector, SessionStart, User, Session, Stats, Textbook}
+import forms.{SessionStart, SessionStop}
+import models.{SessionVector, User, Session, Stats}
 
-import reactivemongo.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONArray}
+import reactivemongo.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter}
 import scala.concurrent.{ExecutionContext, Future}
 
 import play.api._
@@ -18,8 +19,6 @@ import javax.inject.Inject
 
 import reactivemongo.api.Cursor
 import reactivemongo.api.collections.bson.BSONCollection
-
-import scala.util.{Success, Failure}
 
 import reactivemongo.play.json._
 import play.modules.reactivemongo.json.collection._
@@ -96,29 +95,28 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
   }
 
 
-  def startSession(user_id: Int) = Action.async { implicit request =>
+  // DONE: Rewrite so that we bind the form BEFORE getting the user's status
+  def start() = Action.async { implicit request =>
 
-    // Send start info to database
-    // What is the best db design?
+    val futResult: Future[Result] = SessionStart.startForm.bindFromRequest()(request).fold(
+      badForm => Future(BadRequest("Invalid form")),
+      sessionStart => {
 
-    val startForm = SessionStart.startForm
+        val selector = BSONDocument("user_id" -> sessionStart.user_id)
 
-    val selector = BSONDocument("user_id" -> user_id)
+        val futOptUser: Future[Option[User]] = bsonUsersCollection.find(selector).one[User]
 
-    val futOptUser: Future[Option[User]] = bsonUsersCollection.find(selector).one[User]
+        futOptUser.flatMap { optUser =>
 
-    val futResult: Future[Result] = futOptUser.flatMap { optUser =>
+          optUser.fold(Future(BadRequest("Invalid User")))((user: User) => {
 
-      optUser.fold(Future(wrapResult(None, failMessage = "Invalid user!")))((user: User) => {
+            if (user.status.isStudying) {
 
-        val status = user.status
+              Future(BadRequest("Already Studying"))
+            } else if (!user.subjects.contains(sessionStart.subject)) {
 
-        if (!status.isStudying) {
-          startForm.bindFromRequest.fold(
-            badForm => {
-              Future(wrapResult(None, failMessage = "Errors in form"))
-            },
-            sessionStart => {
+              Future(BadRequest("Invalid Subject"))
+            } else {
 
               val modifier = BSONDocument(
                 "$currentDate" -> BSONDocument(
@@ -130,73 +128,97 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
                 )
               )
 
-              // Check that subject is valid for the user
-              if (!user.subjects.contains(sessionStart.subject)) {
-                Future(wrapResult(None, failMessage = "Invalid subject!"))
-              } else {
-                // Convert the update result to a JSON
-                bsonUsersCollection.update(selector, modifier, multi = false).map(updateResult => Ok(updateResult.getMessage))
-              }
+              // Update the status
+              bsonUsersCollection.update(selector, modifier, multi = false).map(updateResult => Ok(updateResult.getMessage))
             }
-          )
-        } else {
-          Future(wrapResult(None, failMessage = "Already studying!"))
+          })
         }
-      })
-
-    }
+      }
+    )
 
     futResult
   }
 
 
-  def stopSession(user_id: Int) = Action.async { implicit request =>
+  def stop() = Action.async { implicit request =>
 
-    val selector = BSONDocument("user_id" -> user_id)
+    val futResult: Future[Result] = SessionStop.stopForm.bindFromRequest()(request).fold(
+      badForm => Future(Ok("Invalid Form")),
+      sessionStop => {
 
-    val futOptUser: Future[Option[User]] = bsonUsersCollection.find(selector).one[User]
+        val selector = BSONDocument("user_id" -> sessionStop.user_id)
 
-    val futResult: Future[Result] = futOptUser.flatMap { optUser =>
+        val futOptUser: Future[Option[User]] = bsonUsersCollection.find(selector).one[User]
 
-      optUser.fold(Future(wrapResult(None, failMessage = "Invalid user!")))(user => {
+        futOptUser.flatMap { optUser =>
 
-        // We need to check the user's current status
-        val status = user.status
+          optUser.fold(Future(Ok("Invalid User")))((user: User) => {
 
-        // Check if the user is currently studying
-        if (status.isStudying) {
+            if (!user.status.isStudying) {
 
-          // Modifier to add the new session
-          val sessionModifier = BSONDocument(
-            "$push" -> BSONDocument(
-              "sessions" -> Session(status.start, System.currentTimeMillis(), status.subject)
-            )
-          )
+              Future(Ok("Not Studying"))
+            } else {
 
-          // Modifier to update the user's status
-          val statusModifier = BSONDocument(
-            "$set" -> BSONDocument(
-              "status.isStudying" -> false,
-              "status.subject" -> "",
-              "status.start" -> new java.util.Date(0)
-            )
-          )
+              // Modifier to add the new session
+              val sessionModifier = BSONDocument(
+                "$push" -> BSONDocument(
+                  "sessions" -> Session(user.status.start, System.currentTimeMillis(), user.status.subject)
+                )
+              )
 
-          // Update the database with the new session
-          bsonSessionsCollection.update(selector, sessionModifier, multi = false).map(updateResult => Ok(updateResult.getMessage))
-          bsonUsersCollection.update(selector, statusModifier, multi = false).map(updateResult => Ok(updateResult.getMessage))
-        } else {
+              val statusModifier = BSONDocument(
+                "$currentDate" -> BSONDocument(
+                  "status.start" -> true
+                ),
+                "$set" -> BSONDocument(
+                  "status.isStudying" -> false,
+                  "status.subject" -> ""
+                )
+              )
 
-          // If the user wasn't studying, they can't end a session.
-          Future(wrapResult(None, failMessage = "You are not studying at the moment."))
+              // Update the database with the new session
+              // Could probably throw a few flatMaps in here
+              // Can these be done together in an atomic fashion?
+              bsonSessionsCollection.update(selector, sessionModifier, multi = false).flatMap(sessionsUpdateResult => {
+
+                if (sessionsUpdateResult.ok) {
+                  bsonUsersCollection.update(selector, statusModifier, multi = false).flatMap(userUpdateResult => {
+                    if (userUpdateResult.ok) {
+                      updateStats(sessionStop.user_id)(request)
+                    } else {
+                      Future(Ok(""))
+                    }
+                  })
+                } else {
+                  Future(Ok(""))
+                }
+              })
+
+            }
+          })
         }
-      })
-    }
+      }
+    )
 
     // Return our future result
     futResult
   }
 
+
+  // Abort the current session
+  def abort() = Action.async { implicit request =>
+    ???
+  }
+
+
+  // Pause the current session
+  def pause() = Action.async { implicit request =>
+    ???
+  }
+
+  def status(user_id: Int) = Action.async { implicit request =>
+    ???
+  }
 
   def getUserSessions(user_id: Int) = Action.async {
 
@@ -210,7 +232,7 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
   }
 
   // Should we update all stats whenever we have to pull the session data? Yes
-  def updateStats(user_id: Int) = Action.async {
+  def updateStats(user_id: Int) = Action.async { implicit request =>
 
     val selector = BSONDocument("user_id" -> user_id)
 

@@ -18,13 +18,17 @@
             <!-- Bootstrap -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
+            <!-- Font awesome glyphicons -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
             <!-- Google charts loader -->
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+            <!-- Not sure if Google's cdn is causing the caching errors-->
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/googleChartsLoader.js")"></script>
     </head>
     <body>
 
             <!-- Navbar -->
-        <nav class="navbar navbar-inverse" style="border-radius: 0em ; font-family: Roboto ;">
+        <nav class="navbar navbar-inverse" style="border-radius: 0;">
             <div class="container-fluid">
                 <div class="navbar-header">
                     <a href="/" class="navbar-brand">Jordan G. Dodson</a>
@@ -32,7 +36,7 @@
 
                 <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
-                        <li><a href=@routes.Assets.at("pdfs/resume.pdf")>Resume</a></li>
+                        <li><a href="@routes.Assets.at("pdfs/resume.pdf")">Resume</a></li>
                         <li><a href="/about">About</a></li>
                     </ul>
                 </div>
@@ -42,6 +46,7 @@
             <!-- The content of the page. -->
         @content
 
+            <!-- Script that sets up callbacks to draw plots. -->
         <script>
 
                 function loadJSONFile(path, callback) {
@@ -82,7 +87,7 @@
 
                     <!-- Should I just do the formatting on the server? -->
                     introElem.querySelector("#startDate").textContent = data.start[0].toString() + "/" + data.start[1].toString() + "/" + data.start[2].toString();
-                    introElem.querySelector("#total").textContent = Math.floor(data.total).toString();
+                    introElem.querySelector("#total").textContent = Math.round(data.total).toString();
                     introElem.querySelector("#dailyAverage").textContent = data.dailyAverage.toFixed(2).toString();
                     introElem.querySelector("#daysSinceStart").textContent = data.daysSinceStart.toString();
                     introElem.querySelector("#longestStreak").textContent = data.longestStreak.toString();
@@ -117,257 +122,176 @@
                     return tmp;
                 }
 
-                function getCumulativeGooglePlotDrawer(data, id) {
+                function getCumulativeGooglePlotDrawer(plotData, elementId) {
 
-                    function tmp() {
+                    var options = {
+                        chart: {
+                            title: "Cumulative Hours Studied"
+                        },
+                        legend: {
+                            position: 'none'
+                        },
+                        colors: ['green'],
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        hAxis: {
+                            title: "",
+                            textStyle: {
+                                fontSize: hAxisFontSize
+                            }
+                        },
+                        vAxis: {
+                            textStyle: {
+                                fontSize: 20
+                            }
+                        },
+                        // Not working
+                        lineWidth: 10,
+                        // Not working
+                        curveType: 'function'
+                    };
 
-                        var table = new google.visualization.DataTable();
-
-                        var options = {
-                            chart: {
-                                title: "Cumulative Hours Studied"
-                            },
-                            legend: {
-                                position: 'none'
-                            },
-                            colors: ['green'],
-                            titleTextStyle: {
-                                fontSize: titleFontSize,
-                                bold: titleIsBold
-                            },
-                            hAxis: {
-                                title: "",
-                                textStyle: {
-                                    fontSize: hAxisFontSize
-                                }
-                            },
-                            vAxis: {
-                                textStyle: {
-                                    fontSize: 20
-                                }
-                            },
-                            // Not working
-                            lineWidth: 10,
-                            // Not working
-                            curveType: 'function'
-                        };
-
-
-                        // Add columns to the data table
-                        data.columns.forEach(function(curr, i, arr) {
-                            table.addColumn(curr[0], curr[1]);
-                        });
-
-                        // Add the rows of data to the data table
-                        table.addRows(data.rows);
-
-                        var chart = new google.charts.Line(document.getElementById(id));
-
-                        chart.draw(table, google.charts.Line.convertOptions(options));
-                    }
-
-                    return tmp;
+                    return getGoogleMaterialPlotDrawer(plotData, options, "Line", elementId);
                 }
 
                 function getSubjectCumulativeGooglePlotDrawer(plotData, elementId) {
 
-                    function tmp() {
-                        var table = new google.visualization.DataTable();
+                    var options = {
+                        chart: {
+                            title: "Cumulative Hours Studied Per Subject"
+                        },
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        legend: {
+                            position: 'none'
+                        },
+                        hAxis: {
+                            title: "",
+                            textStyle: {
+                                fontSize: hAxisFontSize
+                            }
+                        },
+                        vAxis: {
+                            textStyle: {
+                                fontSize: 20
+                            }
+                        },
+                        // Not working
+                        curveType: 'function'
+                    };
 
-                        var options = {
-                            chart: {
-                                title: "Cumulative Hours Studied Per Subject"
-                            },
-                            titleTextStyle: {
-                                fontSize: titleFontSize,
-                                bold: titleIsBold
-                            },
-                            legend: {
-                                position: 'none'
-                            },
-                            hAxis: {
-                                title: "",
-                                textStyle: {
-                                    fontSize: hAxisFontSize
-                                }
-                            },
-                            vAxis: {
-                                textStyle: {
-                                    fontSize: 20
-                                }
-                            },
-                            // Not working
-                            curveType: 'function'
-                        };
 
-                        // Add columns to the data table
-                        plotData.columns.forEach(function(curr, i, arr) {
-                            table.addColumn(curr[0], curr[1]);
-                        });
-
-                        // Add the rows of data to the data table
-                        table.addRows(plotData.rows);
-
-                        var chart = new google.charts.Line(document.getElementById(elementId));
-
-                        chart.draw(table, google.charts.Line.convertOptions(options));
-                    }
-
-                    return tmp;
+                    return getGoogleMaterialPlotDrawer(plotData, options, "Line", elementId);
                 }
+
 
                 // Returns a function that will draw the SubjectTotals plot
                 function getSubjectTotalsGooglePlotDrawer(plotData, elementId) {
 
-                    function tmp() {
-                        var table = new google.visualization.DataTable();
+                    var options = {
+                        chart: {
+                            title: "Total Hours Studied Per Subject"
+                        },
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        legend: {
+                            position: 'none'
+                        },
+                        hAxis: {
+                            title: "",
+                            textStyle: {
+                                fontSize: hAxisFontSize
+                            }
+                        },
+                        vAxis: {
+                            textStyle: {
+                                fontSize: 20
+                            }
+                        },
+                        bars: 'vertical',
+                        colors: ['green']
+                    };
 
-                        var options = {
-                            chart: {
-                                title: "Total Hours Studied Per Subject"
-                            },
-                            titleTextStyle: {
-                                fontSize: titleFontSize,
-                                bold: titleIsBold
-                            },
-                            legend: {
-                                position: 'none'
-                            },
-                            hAxis: {
-                                title: "",
-                                textStyle: {
-                                    fontSize: hAxisFontSize
-                                }
-                            },
-                            vAxis: {
-                                textStyle: {
-                                    fontSize: 20
-                                }
-                            },
-                            bars: 'vertical',
-                            colors: ['green']
-                        };
-
-
-                        // Add columns to the data table
-                        plotData.columns.forEach(function(curr, i, arr) {
-                            table.addColumn(curr[0], curr[1]);
-                        });
-
-                        // Add the rows of data to the data table
-                        table.addRows(plotData.rows);
-
-
-                        var chart = new google.charts.Bar(document.getElementById(elementId));
-
-                        chart.draw(table, google.charts.Bar.convertOptions(options));
-                    }
-
-                    return tmp;
+                    return getGoogleMaterialPlotDrawer(plotData, options, "Bar", elementId);
                 }
+
 
                 // Returns a function that will draw the AverageSession plot
                 function getAverageSessionGooglePlotDrawer(plotData, elementId) {
 
-                    function tmp() {
-                        var table = new google.visualization.DataTable();
-
-                        var options = {
-                            chart: {
-                                title: "Average Study Session Length Per Subject"
+                    var options = {
+                        chart: {
+                            title: "Average Study Session Length Per Subject"
+                        },
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        legend: {
+                            position: 'none'
+                        },
+                        hAxis: {
+                            title: "",
+                            textStyle: {
+                                fontSize: hAxisFontSize
                             },
-                            titleTextStyle: {
-                                fontSize: titleFontSize,
-                                bold: titleIsBold
-                            },
-                            legend: {
-                                position: 'none'
-                            },
-                            hAxis: {
-                                title: "",
-                                textStyle: {
-                                    fontSize: hAxisFontSize
-                                },
-                                // This is not working
-                                slantedText: true
-                                // - - - - - - - - - -
-                            },
-                            vAxis: {
-                                textStyle: {
-                                    fontSize: 20
-                                }
-                            },
-                            bars: 'vertical'
-                        };
+                            // This is not working
+                            slantedText: true
+                            // - - - - - - - - - -
+                        },
+                        vAxis: {
+                            textStyle: {
+                                fontSize: 20
+                            }
+                        },
+                        bars: 'vertical'
+                    };
 
 
-                        // Add columns to the data table
-                        plotData.columns.forEach(function(curr, i, arr) {
-                            table.addColumn(curr[0], curr[1]);
-                        });
-
-                        // Add the rows of data to the data table
-                        table.addRows(plotData.rows);
-
-                        var chart = new google.charts.Bar(document.getElementById(elementId));
-
-                        chart.draw(table, google.charts.Bar.convertOptions(options));
-                    }
-
-                    return tmp;
+                    return getGoogleMaterialPlotDrawer(plotData, options, "Bar", elementId);
                 }
+
 
                 function getProbabilityGooglePlotDrawer(plotData, elementId) {
 
-                    function tmp() {
-                        var table = new google.visualization.DataTable();
-
-                        var options = {
-                            chart: {
-                                title: "Probability That I'm Programming"
+                    var options = {
+                        chart: {
+                            title: "Probability That I'm Programming"
+                        },
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        legend: {
+                            position: 'none'
+                        },
+                        hAxis: {
+                            title: "",
+                            textStyle: {
+                                fontSize: hAxisFontSize
                             },
-                            titleTextStyle: {
-                                fontSize: titleFontSize,
-                                bold: titleIsBold
-                            },
-                            legend: {
-                                position: 'none'
-                            },
-                            hAxis: {
-                                title: "",
-                                textStyle: {
-                                    fontSize: hAxisFontSize
-                                },
-                                // The format string is based on ICU pattern set
-                                format: "h a"
-                            },
-                            vAxis: {
-                                textStyle: {
-                                    fontSize: 20
-                                }
-                            },
-                            colors: ['green']
-                        };
+                            // The format string is based on ICU pattern set
+                            format: "h a"
+                        },
+                        vAxis: {
+                            textStyle: {
+                                fontSize: 20
+                            }
+                        },
+                        colors: ['green']
+                    };
 
-                        // Add columns to the data table
-                        plotData.columns.forEach(function(curr, i, arr) {
-                            table.addColumn(curr[0], curr[1]);
-                        });
-
-                        // Add the rows of data to the data table
-                        table.addRows(plotData.rows);
-
-                        var chart = new google.charts.Line(document.getElementById(elementId));
-
-                        chart.draw(table, google.charts.Line.convertOptions(options));
-                    }
-
-                    return tmp;
+                    return getGoogleMaterialPlotDrawer(plotData, options, "Line", elementId);
                 }
 
-                // If options are stored on the server, we can use this function to
-                // generate a drawing function for most of the plots
-                function getGooglePlotDrawer(plotData, plotType, elementId) {
+
+                function getGoogleMaterialPlotDrawer(plotData, plotOptions, plotType, elementId) {
 
                     function tmp() {
                         var table = new google.visualization.DataTable();
@@ -382,7 +306,9 @@
 
                         var chart = new google.charts[plotType](document.getElementById(elementId));
 
-                        chart.draw(table, plotData.options);
+                        var convertedOptions = google.charts[plotType].convertOptions(plotOptions)
+
+                        chart.draw(table, convertedOptions);
                     }
 
                     return tmp;
@@ -395,33 +321,29 @@
                 }
 
                 // Load the chart data and setup callbacks to plot when we have it.
-                loadJSONFile("/stats/1", function(json) {
+                loadJSONFile("/stats/1", function(stats) {
 
-                    var todaysSessionsGoogleData = json.todaysSessionsGoogle;
-                    var subjectTotalsGoogleData = json.subjectTotalsGoogle;
-                    var cumulativeGoogleData = json.cumulativeGoogle;
-                    var rawAverageSessionGoogleData = json.averageSessionGoogle;
-                    var rawSubjectCumulativeGoogleData = json.subjectCumulativeGoogle;
-                    var rawProbabilityGoogleData = json.probabilityGoogle;
-                    var introMessageData = json.introMessage;
+                    writeIntroMessage(stats.introMessage, "introMessage");
 
-                    writeIntroMessage(introMessageData, "introMessage");
+                    var cumulativeGoogleData = stats.cumulativeGoogle;
+                    var rawSubjectCumulativeGoogleData = stats.subjectCumulativeGoogle;
 
-                    console.log(json.result);
+                    // TODO: Debug
+                    console.log(stats);
 
                     convertDates(cumulativeGoogleData);
                     convertDates(rawSubjectCumulativeGoogleData);
 
                     // Set up call-backs to draw the plots
-                    if (todaysSessionsGoogleData.rows.length > 0) {
-                        google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(todaysSessionsGoogleData, "todaysSessionsGooglePlot"));
+                    if (stats.todaysSessionsGoogle.rows.length > 0) {
+                        google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(stats.todaysSessionsGoogle, "todaysSessionsGooglePlot"));
                     }
 
-                    google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(cumulativeGoogleData, "cumulativeGooglePlot"));
+                    google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(stats.cumulativeGoogle, "cumulativeGooglePlot"));
                     google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(rawSubjectCumulativeGoogleData, "subjectCumulativeGooglePlot"));
-                    google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(subjectTotalsGoogleData, "subjectTotalsGooglePlot"));
-                    google.charts.setOnLoadCallback(getAverageSessionGooglePlotDrawer(rawAverageSessionGoogleData, "averageSessionGooglePlot"));
-                    google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(rawProbabilityGoogleData, "probabilityGooglePlot"));
+                    google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(stats.subjectTotalsGoogle, "subjectTotalsGooglePlot"));
+                    google.charts.setOnLoadCallback(getAverageSessionGooglePlotDrawer(stats.averageSessionGoogle, "averageSessionGooglePlot"));
+                    google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(stats.probabilityGoogle, "probabilityGooglePlot"));
 
                 })
         </script>

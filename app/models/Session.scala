@@ -1,7 +1,5 @@
 package models
 
-import java.util.Date
-
 import reactivemongo.bson._
 
 
@@ -9,21 +7,7 @@ case class Session(startTime: Long, endTime: Long, subject: String)
 
 object Session {
 
-  // implicit val sessionReader = Macros.reader[Session]
-
-  implicit object sessionReader extends BSONDocumentReader[Session] {
-
-    // TODO: decide what format I want to use for the timestamps
-    def read(bson: BSONDocument): Session = {
-      val optSession = for {
-        startTime <- bson.getAs[BSONNumberLike]("startTime")
-        endTime <- bson.getAs[BSONNumberLike]("endTime")
-        subject <- bson.getAs[String]("subject")
-      } yield Session(startTime.toLong, endTime.toLong, subject)
-
-      optSession.get
-    }
-  }
+  implicit val sessionReader = Macros.reader[Session]
 
   implicit val sessionWriter = Macros.writer[Session]
 

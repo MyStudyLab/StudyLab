@@ -3,19 +3,22 @@
 # ~~~~
 
 # Home page
-GET        /                    controllers.Application.index
+GET         /                    controllers.Application.index
 
-GET        /about               controllers.Application.about
+GET         /about               controllers.Application.about
 
-GET        /update/:id          controllers.Application.updateStats(id: Int)
+# Updating will be done automatically
+#GET         /update/:id          controllers.Application.updateStats(id: Int)
 
-GET        /stats/:id           controllers.Application.getStats(id: Int)
+GET         /stats/:id           controllers.Application.getStats(id: Int)
 
-#POST        /start/:id                     controllers.Application.startSession(id: Int)
+POST        /start               controllers.Application.start()
 
-#POST        /stop/:id                      controllers.Application.stopSession(id: Int)
+POST        /stop                controllers.Application.stop()
+
+POST        /abort               controllers.Application.abort()
 
 # Map static resources from the /public folder to the /assets URL path
-GET        /assets/*file        controllers.Assets.at(path="/public", file)
+GET         /assets/*file        controllers.Assets.at(path="/public", file)
 
     

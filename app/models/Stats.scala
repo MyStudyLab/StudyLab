@@ -358,12 +358,18 @@ object Stats {
     startDate(zone)(sessions).until(now, ChronoUnit.DAYS) + 1
   }
 
+  // DONE: BUG - does not split sessions. Need to make forward and reverse splitDay iterators
   def todaysSessions(zone: ZoneId)(sessions: Vector[Session]): Vector[Session] = {
 
-    val startOfToday = ZonedDateTime.now(zone).truncatedTo(ChronoUnit.DAYS).toEpochSecond
+    val startOfToday = ZonedDateTime.now(zone).truncatedTo(ChronoUnit.DAYS).toInstant.toEpochMilli
 
     // Call reverse to get sessions back in chronological order
-    sessions.reverseIterator.takeWhile(s => s.startTime / 1000 >= startOfToday).toVector.reverse
+    val todays = sessions.reverseIterator.takeWhile(s => s.endTime > startOfToday).toVector
+
+    // Handle the case where a session spans midnight
+    val first = todays.lastOption.map(s => Session(math.max(s.startTime, startOfToday), s.endTime, s.subject))
+
+    first.toVector ++ todays.dropRight(1).reverse
   }
 
   def todaysSessionsGoogle(sessions: Vector[Session]): BSONDocument = {

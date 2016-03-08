@@ -2,14 +2,24 @@ package models
 
 import java.util.Date
 
-import reactivemongo.bson.Macros
+import reactivemongo.bson.{BSONNumberLike, BSONDocument, BSONDocumentReader, Macros}
 
 case class UserStatus(isStudying: Boolean, subject: String, start: Long)
 
 object UserStatus {
 
-  // TODO: Write custom reader to convert bsondatetime to long
-  implicit val UserStatusReader = Macros.reader[UserStatus]
+  implicit object statusReader extends BSONDocumentReader[UserStatus] {
+
+    def read(bson: BSONDocument): UserStatus = {
+      val optStatus = for {
+        isStudying <- bson.getAs[Boolean]("isStudying")
+        subject <- bson.getAs[String]("subject")
+        start <- bson.getAs[BSONNumberLike]("start")
+      } yield UserStatus(isStudying, subject, start.toLong)
+
+      optStatus.get
+    }
+  }
 
   implicit val UserStatusWriter = Macros.writer[UserStatus]
 

@@ -7,4 +7,6 @@ object Global extends GlobalSettings {
 
   }
 
+  // Check if it is a new day, and update stats if so.
+
 }
