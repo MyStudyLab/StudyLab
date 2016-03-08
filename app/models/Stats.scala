@@ -1,12 +1,10 @@
 package models
 
 import java.time
-import java.time.{ZonedDateTime, LocalTime, Period, ZoneId}
-import java.time.temporal.{TemporalField, ChronoUnit}
+import java.time.{ZonedDateTime, LocalTime, ZoneId}
+import java.time.temporal.ChronoUnit
 
 import reactivemongo.bson._
-
-import java.util.Date
 
 import scala.collection.mutable
 
@@ -74,7 +72,6 @@ object Stats {
   }
 
   // TODO: Return the corresponding dates as well
-  // DONE: Don't call it a zero day streak if the user hasn't programmed today.
   def currentAndLongestStreaks(sessions: Vector[Session]): (Int, Int) = {
 
     val zone = ZoneId.of("America/Chicago")
@@ -87,7 +84,9 @@ object Stats {
 
     // We don't analyze today's total until later
     for (dailyTotal <- dTotals.dropRight(1)) {
-      if (dailyTotal != 0.0) {
+      if (dailyTotal > 0.0) {
+
+        // The current streak continues
         current += 1
       } else {
 
@@ -101,16 +100,18 @@ object Stats {
       }
     }
 
-    // Check the last (current) streak
-    if (dTotals.last > 0) {
-      current += 1
-    }
+    // Increment the last (current) streak if the user has programmed today
+    dTotals.lastOption.fold((current, longest))(last => {
+      if (last > 0) {
+        current += 1
+      }
 
-    if (current > longest) {
-      longest = current
-    }
+      if (current > longest) {
+        longest = current
+      }
 
-    (current, longest)
+      (current, longest)
+    })
   }
 
 
@@ -267,35 +268,23 @@ object Stats {
     groups._2 :+ groups._1
   }
 
-  /**
-    *
-    *
-    * Assumes that the sessions are in order
-    *
-    * @param sessions
-    * @return
-    */
+
+  // TODO: Generalize this to accept a temporal unit
+  // TODO: Make it an iterator
   def groupDays(zone: ZoneId)(sessions: Vector[Session]): Vector[((Long, Long), Vector[Session])] = {
 
-    // TODO: Generalize this to accept a temporal unit
-    // TODO: Make it an iterator
-
     // Epoch second to instant
+    // TODO: fails on empty vector
     val startInstant = time.Instant.ofEpochMilli(sessions.head.startTime)
 
     // Should use the current instant, not the last session
     val endInstant = time.Instant.now()
 
-    // Instant to zoned datetime in default zone
-    val startZDT = time.ZonedDateTime.ofInstant(startInstant, zone)
-
-    val endZDT = time.ZonedDateTime.ofInstant(endInstant, zone)
-
     // Get end of first day
-    val startDayZDT = startZDT.truncatedTo(ChronoUnit.DAYS).plusDays(1)
+    val startDayZDT = time.ZonedDateTime.ofInstant(startInstant, zone).truncatedTo(ChronoUnit.DAYS).plusDays(1)
 
     // Get start of last day
-    val endDayZDT = endZDT.truncatedTo(ChronoUnit.DAYS)
+    val endDayZDT = time.ZonedDateTime.now(zone).truncatedTo(ChronoUnit.DAYS)
 
     val diff = startDayZDT.until(endDayZDT, ChronoUnit.DAYS)
 
