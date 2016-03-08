@@ -49,7 +49,9 @@ object Stats {
 
     val streaks = currentAndLongestStreaks(sessions)
 
-    val todaysTotal = sumSessions(todaysSessions(zone)(sessions))
+    val todaysSessionsVec = todaysSessions(zone)(sessions)
+
+    val todaysTotal = sumSessions(todaysSessionsVec)
 
     BSONDocument(
       "total" -> BSONDouble(totalHours),
@@ -58,7 +60,16 @@ object Stats {
       "currentStreak" -> BSONInteger(streaks._1),
       "longestStreak" -> BSONInteger(streaks._2),
       "daysSinceStart" -> BSONInteger(daysSinceStart(zone)(sessions).toInt),
-      "todaysTotal" -> BSONDouble(todaysTotal)
+      "todaysTotal" -> BSONDouble(todaysTotal),
+      "todaysSessionsGoogle" -> BSONDocument(
+        "columns" -> BSONArray(
+          BSONArray(BSONString("string"), BSONString("Row Label")),
+          BSONArray(BSONString("string"), BSONString("Bar Label")),
+          BSONArray(BSONString("number"), BSONString("Start")),
+          BSONArray(BSONString("number"), BSONString("Finish"))
+        ),
+        "rows" -> BSONArray(todaysSessionsVec.map(s => BSONArray(BSONString("What I've Done Today"), BSONString(s.subject), BSONLong(s.startTime), BSONLong(s.endTime))))
+      )
     )
   }
 
@@ -363,14 +374,21 @@ object Stats {
 
     val startOfToday = ZonedDateTime.now(zone).truncatedTo(ChronoUnit.DAYS).toInstant.toEpochMilli
 
+    sessionsSince(startOfToday)(sessions)
+  }
+
+
+  def sessionsSince(since: Long)(sessions: Vector[Session]): Vector[Session] = {
+
     // Call reverse to get sessions back in chronological order
-    val todays = sessions.reverseIterator.takeWhile(s => s.endTime > startOfToday).toVector
+    val unsplitSessions = sessions.reverseIterator.takeWhile(s => s.endTime > since).toVector
 
     // Handle the case where a session spans midnight
-    val first = todays.lastOption.map(s => Session(math.max(s.startTime, startOfToday), s.endTime, s.subject))
+    val first = unsplitSessions.lastOption.map(s => Session(math.max(s.startTime, since), s.endTime, s.subject))
 
-    first.toVector ++ todays.dropRight(1).reverse
+    first.toVector ++ unsplitSessions.dropRight(1).reverse
   }
+
 
   def todaysSessionsGoogle(sessions: Vector[Session]): BSONDocument = {
 

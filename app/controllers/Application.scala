@@ -3,7 +3,7 @@ package controllers
 import forms.{SessionStart, SessionStop}
 import models.{SessionVector, User, Session, Stats}
 
-import reactivemongo.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter}
+import reactivemongo.bson.BSONDocument
 import scala.concurrent.{ExecutionContext, Future}
 
 import play.api._
@@ -17,7 +17,6 @@ import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMo
 
 import javax.inject.Inject
 
-import reactivemongo.api.Cursor
 import reactivemongo.api.collections.bson.BSONCollection
 
 import reactivemongo.play.json._
@@ -27,12 +26,7 @@ import play.modules.reactivemongo.json.collection._
 class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: MessagesApi)
   extends Controller with MongoController with ReactiveMongoComponents with I18nSupport {
 
-  // Determine what type of collection to use
-  def jsonUsersCollection: JSONCollection = db.collection[JSONCollection]("users")
-
   def bsonUsersCollection: BSONCollection = db.collection[BSONCollection]("users")
-
-  def jsonSessionsCollection: JSONCollection = db.collection[JSONCollection]("sessions")
 
   def bsonSessionsCollection: BSONCollection = db.collection[BSONCollection]("sessions")
 
@@ -50,31 +44,6 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
     val failResult = Ok(JsObject(Seq("worked" -> JsBoolean(false), "result" -> JsObject(Seq()), "message" -> JsString(failMessage))))
 
     optResult.fold(failResult)(result => Ok(JsObject(Seq("worked" -> JsBoolean(true), "result" -> result, "message" -> JsString("")))))
-  }
-
-  def create(name: String, age: Int) = Action.async {
-    val json = Json.obj(
-      "name" -> name,
-      "age" -> age,
-      "created" -> new java.util.Date().getTime())
-
-    jsonUsersCollection.insert(json).map(writeResult =>
-      Ok("Mongo WriteResult: " + writeResult))
-  }
-
-  def getByUserId(user_id: Int) = Action.async {
-
-    val query = Json.obj("user_id" -> user_id)
-
-    val futureOption: Future[Option[JsObject]] = jsonUsersCollection.find(query).one[JsObject]
-
-    futureOption.map(opt => wrapResult(opt, failMessage = "Invalid user!"))
-  }
-
-
-  def insertUser(user: User)(implicit writer: BSONDocumentWriter[User]) = Action.async {
-
-    bsonUsersCollection.insert(user).map(writeResult => Ok("Write Result: " + writeResult.getMessage))
   }
 
 
@@ -108,9 +77,12 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
         futOptUser.flatMap { optUser =>
 
-          optUser.fold(Future(BadRequest("Invalid User")))((user: User) => {
+          optUser.fold(Future(BadRequest("Invalid user or password")))((user: User) => {
 
-            if (user.status.isStudying) {
+            if (sessionStart.password != user.password) {
+
+              Future(Ok("Invalid user or password"))
+            } else if (user.status.isStudying) {
 
               Future(BadRequest("Already Studying"))
             } else if (!user.subjects.contains(sessionStart.subject)) {
@@ -129,7 +101,13 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
               )
 
               // Update the status
-              bsonUsersCollection.update(selector, modifier, multi = false).map(updateResult => Ok(updateResult.getMessage))
+              bsonUsersCollection.update(selector, modifier, multi = false).map(updateResult => {
+                if (updateResult.ok) {
+                  Ok("now studying " + sessionStart.subject)
+                } else {
+                  Ok(updateResult.getMessage)
+                }
+              })
             }
           })
         }
@@ -143,20 +121,31 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
   def stop() = Action.async { implicit request =>
 
     val futResult: Future[Result] = SessionStop.stopForm.bindFromRequest()(request).fold(
+
+      // When we can't bind the form
       badForm => Future(Ok("Invalid Form")),
+
+      // When we can bind the form
       sessionStop => {
 
+        // We want to pull documents for the given user
         val selector = BSONDocument("user_id" -> sessionStop.user_id)
 
+        // Get basic info about the user from the database
         val futOptUser: Future[Option[User]] = bsonUsersCollection.find(selector).one[User]
 
         futOptUser.flatMap { optUser =>
 
-          optUser.fold(Future(Ok("Invalid User")))((user: User) => {
+          optUser.fold(Future(Ok("Invalid user or password")))((user: User) => {
 
-            if (!user.status.isStudying) {
+            if (sessionStop.password != user.password) {
+
+              Future(Ok("Invalid user or password"))
+
+            } else if (!user.status.isStudying) {
 
               Future(Ok("Not Studying"))
+
             } else {
 
               // Modifier to add the new session
@@ -177,23 +166,27 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
               )
 
               // Update the database with the new session
-              // Could probably throw a few flatMaps in here
               // Can these be done together in an atomic fashion?
               bsonSessionsCollection.update(selector, sessionModifier, multi = false).flatMap(sessionsUpdateResult => {
 
                 if (sessionsUpdateResult.ok) {
                   bsonUsersCollection.update(selector, statusModifier, multi = false).flatMap(userUpdateResult => {
+
                     if (userUpdateResult.ok) {
+
                       updateStats(sessionStop.user_id)(request)
                     } else {
-                      Future(Ok(""))
+
+                      Future(Ok("Failed to update status"))
                     }
+
                   })
                 } else {
-                  Future(Ok(""))
-                }
-              })
 
+                  Future(Ok("Failed to add session"))
+                }
+
+              })
             }
           })
         }
@@ -220,18 +213,7 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
     ???
   }
 
-  def getUserSessions(user_id: Int) = Action.async {
 
-    val query = Json.obj("user_id" -> user_id)
-
-    val fut: Future[Option[JsObject]] = jsonSessionsCollection.find(query).one[JsObject]
-
-    val futResult: Future[Result] = fut.map(opt => wrapResult(opt, failMessage = "Invalid user!"))
-
-    futResult
-  }
-
-  // Should we update all stats whenever we have to pull the session data? Yes
   def updateStats(user_id: Int) = Action.async { implicit request =>
 
     val selector = BSONDocument("user_id" -> user_id)
@@ -256,8 +238,13 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
         )
 
         // Update the stats
-        bsonStatsCollection.update(selector, modifier, multi = false).map(updateResult => Ok(updateResult.getMessage))
-
+        bsonStatsCollection.update(selector, modifier, multi = false).map(updateResult => {
+          if (updateResult.ok) {
+            Ok("update successful")
+          } else {
+            Ok(updateResult.message)
+          }
+        })
       })
     }
   }

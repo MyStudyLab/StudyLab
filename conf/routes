@@ -7,9 +7,6 @@ GET         /                    controllers.Application.index
 
 GET         /about               controllers.Application.about
 
-# Updating will be done automatically
-#GET         /update/:id          controllers.Application.updateStats(id: Int)
-
 GET         /stats/:id           controllers.Application.getStats(id: Int)
 
 POST        /start               controllers.Application.start()

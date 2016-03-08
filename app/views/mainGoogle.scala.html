@@ -22,13 +22,12 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 
             <!-- Google charts loader -->
-            <!-- Not sure if Google's cdn is causing the caching errors-->
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/googleChartsLoader.js")"></script>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     </head>
     <body>
 
             <!-- Navbar -->
-        <nav class="navbar navbar-inverse" style="border-radius: 0;">
+        <nav class="navbar navbar-inverse" style="border-radius: 0 ;">
             <div class="container-fluid">
                 <div class="navbar-header">
                     <a href="/" class="navbar-brand">Jordan G. Dodson</a>
@@ -335,8 +334,8 @@
                     convertDates(rawSubjectCumulativeGoogleData);
 
                     // Set up call-backs to draw the plots
-                    if (stats.todaysSessionsGoogle.rows.length > 0) {
-                        google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(stats.todaysSessionsGoogle, "todaysSessionsGooglePlot"));
+                    if (stats.introMessage.todaysSessionsGoogle.rows.length > 0) {
+                        google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(stats.introMessage.todaysSessionsGoogle, "todaysSessionsGooglePlot"));
                     }
 
                     google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(stats.cumulativeGoogle, "cumulativeGooglePlot"));
