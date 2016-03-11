@@ -322,15 +322,18 @@
                 }
 
                 // Load the chart data and setup callbacks to plot when we have it.
-                loadJSONFile("/stats/1", function(stats) {
+                loadJSONFile("/stats/1", function(data) {
+
+                    // TODO: Debug
+                    console.log(data);
+
+                    var stats = data.stats;
 
                     writeIntroMessage(stats.introMessage, "introMessage");
 
                     var cumulativeGoogleData = stats.cumulativeGoogle;
                     var rawSubjectCumulativeGoogleData = stats.subjectCumulativeGoogle;
 
-                    // TODO: Debug
-                    console.log(stats);
 
                     convertDates(cumulativeGoogleData);
                     convertDates(rawSubjectCumulativeGoogleData);
