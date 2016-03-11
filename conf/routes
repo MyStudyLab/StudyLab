@@ -5,14 +5,19 @@
 # Home page
 GET         /                    controllers.Application.index
 
+# Go the the about page
 GET         /about               controllers.Application.about
 
+# Get stats for the user id
 GET         /stats/:id           controllers.Application.getStats(id: Int)
 
+# Start a study session
 POST        /start               controllers.Application.start()
 
+# Stop a study session
 POST        /stop                controllers.Application.stop()
 
+# Abort a study session
 POST        /abort               controllers.Application.abort()
 
 # Map static resources from the /public folder to the /assets URL path

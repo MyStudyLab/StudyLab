@@ -9,8 +9,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import play.api._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
-import play.api.data._
-import play.api.data.Forms._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
@@ -131,8 +129,10 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
         // We want to pull documents for the given user
         val selector = BSONDocument("user_id" -> sessionStop.user_id)
 
+        val projector = BSONDocument("_id" -> 0)
+
         // Get basic info about the user from the database
-        val futOptUser: Future[Option[User]] = bsonUsersCollection.find(selector).one[User]
+        val futOptUser: Future[Option[User]] = bsonUsersCollection.find(selector, projector).one[User]
 
         futOptUser.flatMap { optUser =>
 
