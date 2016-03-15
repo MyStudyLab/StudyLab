@@ -27,27 +27,6 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
   def bsonUsersCollection: BSONCollection = db.collection[BSONCollection]("users")
 
-  def jsonTextbooksCollection: JSONCollection = db.collection[JSONCollection]("textbooks")
-
-  def bsonTextbooksCollection: BSONCollection = db.collection[BSONCollection]("textbooks")
-
-
-  def getTextbooksByTitle(title: String) = Action.async {
-
-    // Perform a text home search.
-    val selector = Json.obj("$text" -> Json.obj(
-      "$search" -> title,
-      "$caseSensitive" -> false
-    ))
-
-    // Don't include the object id.
-    val projector = Json.obj("_id" -> 0)
-
-    val objList: Future[List[JsObject]] = jsonTextbooksCollection.find(selector, projector).cursor[JsObject]().collect[List]()
-
-    objList.map(bookObjects => Ok(bookObjects.foldLeft(JsArray())((bookArr, book) => bookArr :+ book)))
-  }
-
 
   // DONE: Rewrite so that we bind the form BEFORE getting the user's status
   def start() = Action.async { implicit request =>
