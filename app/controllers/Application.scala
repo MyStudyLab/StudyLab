@@ -6,7 +6,6 @@ import models.{Session, UserWithSessions, UserStatus, User, SessionVector, Stats
 import reactivemongo.bson.{BSONBoolean, BSONDocument}
 import scala.concurrent.{ExecutionContext, Future}
 
-import play.api._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
@@ -235,8 +234,21 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
   }
 
 
+  // TODO: Send status info with stats and remove this function.
   def status(user_id: Int) = Action.async { implicit request =>
-    ???
+
+    val selector = BSONDocument("user_id" -> user_id)
+
+    val projector = BSONDocument("sessions" -> 0, "stats" -> 0, "_id" -> 0)
+
+    bsonUsersCollection.find(selector, projector).one[User].map(opt =>
+      opt.map(user =>
+        if (user.status.isStudying) {
+          Ok("You are studying " + user.status.subject)
+        } else {
+          Ok("You are not studying.")
+        }
+      ).getOrElse(Ok("Invalid user")))
   }
 
 

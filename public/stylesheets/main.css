@@ -24,7 +24,15 @@
     font-family: Roboto, serif;
     font-size: xx-large;
     font-weight: bold;
-    color: #757575;;
+    color: #757575;
+}
+
+#about-para {
+    font-size: xx-large;
+}
+
+.header-content-padding {
+    height: 15px;
 }
 
 body {

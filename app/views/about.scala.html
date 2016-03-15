@@ -1,22 +1,18 @@
 @()(implicit messages: Messages)
 
-@mainGoogle("Jordan G. Dodson") {
+    @mainGoogle("Jordan G. Dodson") {
 
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4 col-md-offset-4">
-                <table class="center-block text-center table">
-                    <tr>
-                        <td><img src="@routes.Assets.at("/images/headshot-books-crop1.jpg")" class="img-responsive img-rounded"></td>
-                    </tr>
-                    <tr>
-                        <td class="text-justify">
-                            Hi. I'm Jordan. My goal is to connect the physical with the digital, giving humanity greater knowledge of
-                            and control over the world.
-                        </td>
-                    </tr>
-                </table>
+        <div class="container">
+            <div class="row">
+
+                <div class="col-md-5 col-md-offset-1 text-justify" id="about-para">
+                    Hi. I'm Jordan. My goal is to connect the physical with the digital, giving humanity greater knowledge of
+                    and control over the world.
+                </div>
+
+                <div class="col-md-4 col-md-offset-1">
+                    <img src="@routes.Assets.at("/images/headshot-books-crop1.jpg")" class="img-responsive img-rounded">
+                </div>
             </div>
         </div>
-    </div>
-}
+    }

@@ -8,6 +8,8 @@ import reactivemongo.bson._
 
 import scala.collection.mutable
 
+case class Stats(total: Double)
+
 // How to organize? One object, or a class for each stat?
 // TODO: In normal use, will need to update stats given past values and a single session
 // TODO: Optimize and combine the update functions to reduce repeated computation
