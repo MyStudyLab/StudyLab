@@ -50,6 +50,10 @@
     width: 50px;
 }
 
+#nav-social-glyph-links > li:hover {
+    background-color: #f9f9fd;
+}
+
 #nav-github-link {
     color: #44a340;
 }
@@ -62,11 +66,6 @@
     color: #0077b5;
 }
 
-/* change this */
-#nav-codewars-link {
-    height: 50px;
-}
-
 .raised-element {
     box-shadow: 0 1px 3px #3d4643;
     padding: 25px 15px;
@@ -74,4 +73,5 @@
 
 body {
     font-family: Roboto, serif;
+    background-color: #f9f9fd;
 }
