@@ -261,6 +261,14 @@
 
                 function getProbabilityGooglePlotDrawer(plotData, elementId) {
 
+                    var max = 0.0;
+
+                    plotData.rows.forEach(function(elem, i, self) {
+                        if (elem[1] > max) {
+                            max = elem[1];
+                        }
+                    });
+
                     var options = {
                         chart: {
                             title: "Probability That I'm Programming"
@@ -283,6 +291,9 @@
                         vAxis: {
                             textStyle: {
                                 fontSize: 20
+                            },
+                            viewWindow: {
+                                max: max + 0.05
                             },
                             // Not working
                             maxValue: .5
@@ -318,8 +329,8 @@
                 }
 
                 function convertDates(plotData) {
-                    plotData.rows.forEach(function(curr, i, arr) {
-                        curr[0] = new Date(curr[0]);
+                    plotData.rows.forEach(function(elem, i, self) {
+                        elem[0] = new Date(elem[0]);
                     });
                 }
 
