@@ -6,7 +6,7 @@
     <div class="container-fluid">
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10">
+            <div class="col-md-offset-1 col-md-10 raised-element">
                 <div id="introMessage">
                     Since <span id="startDate" class="introMessageValue"></span>
                     I've spent <span id="total" class="introMessageValue"></span> hours programming!
@@ -16,7 +16,7 @@
                     My longest programming streak is <span id="longestStreak" class="introMessageValue"></span>
                     days, and I'm currently on a <span id="currentStreak" class="introMessageValue"></span>
                     day streak. Scroll down for more detailed statistics.
-                    <hr>
+
                 </div>
             </div>
         </div>
@@ -24,16 +24,15 @@
         <div style="height: 30px ;"></div>
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10">
+            <div class="col-md-offset-1 col-md-10 raised-element">
                 <div id="todaysSessionsGooglePlot" class=""></div>
-                <hr>
             </div>
         </div>
 
         <div style="height: 30px ;"></div>
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10">
+            <div class="col-md-offset-1 col-md-10 raised-element">
                 <div id="cumulativeGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
@@ -41,7 +40,7 @@
         <div class="plotSpacer"></div>
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10">
+            <div class="col-md-offset-1 col-md-10 raised-element">
                 <div id="subjectTotalsGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
@@ -49,7 +48,7 @@
         <div class="plotSpacer"></div>
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10">
+            <div class="col-md-offset-1 col-md-10 raised-element">
                 <div id="subjectCumulativeGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
@@ -57,7 +56,7 @@
         <div class="plotSpacer"></div>
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10">
+            <div class="col-md-offset-1 col-md-10 raised-element">
                 <div id="averageSessionGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
@@ -65,7 +64,7 @@
         <div class="plotSpacer"></div>
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10">
+            <div class="col-md-offset-1 col-md-10 raised-element">
                 <div id="probabilityGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
@@ -128,7 +127,11 @@
                     var table = new google.visualization.DataTable();
 
                     var options = {
-                        height: 110
+                        height: 110,
+                        hAxis: {
+                            title: "",
+                            fontSize: 0
+                        }
                     };
 
                     // Add columns to the data table

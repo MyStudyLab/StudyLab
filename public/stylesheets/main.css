@@ -17,7 +17,7 @@
 }
 
 .plotSpacer {
-    height: 100px;
+    height: 80px;
 }
 
 #todaysOverview {
@@ -35,16 +35,41 @@
     height: 15px;
 }
 
-#nav-github-link:hover {
+.navbar {
+    border-radius: 0;
+    font-size: medium;
+    box-shadow: 0 5px 3px #3d4643;
+}
+
+#nav-social-glyph-links {
+    font-size: large;
+}
+
+#nav-social-glyph-links > li {
+    height: 50px;
+    width: 50px;
+}
+
+#nav-github-link {
     color: #44a340;
 }
 
-#nav-twitter-link:hover {
+#nav-twitter-link {
     color: #55acee;
 }
 
-#nav-linkedin-link:hover {
+#nav-linkedin-link {
     color: #0077b5;
+}
+
+/* change this */
+#nav-codewars-link {
+    height: 50px;
+}
+
+.raised-element {
+    box-shadow: 0 1px 3px #3d4643;
+    padding: 25px 15px;
 }
 
 body {
