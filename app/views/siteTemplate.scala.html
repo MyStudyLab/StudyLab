@@ -9,9 +9,6 @@
             <!-- Favicon -->
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
 
-            <!-- Static assets -->
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
-
             <!-- Roboto font from Google -->
         <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
 
@@ -20,6 +17,9 @@
 
             <!-- Font awesome glyphicons -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+            <!-- Static assets -->
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
 
             <!-- Google charts loader -->
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -37,8 +37,9 @@
     <body>
 
             <!-- Navbar -->
-        <nav class="navbar navbar-inverse" style="border-radius: 0 ;">
+        <nav class="navbar navbar-inverse" style="border-radius: 0 ; font-size: medium ;>
             <div class="container-fluid">
+
                 <div class="navbar-header">
                     <a href="/" class="navbar-brand">Jordan G. Dodson</a>
                 </div>
@@ -48,7 +49,15 @@
                         <li><a href="@routes.Assets.at("pdfs/resume.pdf")">Resume</a></li>
                         <li><a href="/about">About</a></li>
                     </ul>
+
+                    <ul class="nav navbar-nav navbar-right" style="font-size: large ;">
+                        <li><a id="nav-github-link" href="https://www.github.com/pilgrimshadow"><i class="fa fa-lg fa-github"></i></a></li>
+                        <li><a id="nav-twitter-link" href="https://www.twitter.com/jgdodson_"><i class="fa fa-lg fa-twitter"></i></a></li>
+                        <li><a id="nav-linkedin-link" href="https://www.linkedin.com/in/jgdodson"><i class="fa fa-lg fa-linkedin"></i></a></li>
+                    </ul>
                 </div>
+
+
             </div>
         </nav>
 
