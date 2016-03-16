@@ -50,8 +50,12 @@
     width: 50px;
 }
 
-#nav-social-glyph-links > li:hover {
-    background-color: #f9f9fd;
+.navbar-nav {
+    color: #f9f9fd;
+}
+
+.navbar-nav > li:hover {
+    background-color: #373737;
 }
 
 #nav-github-link {
