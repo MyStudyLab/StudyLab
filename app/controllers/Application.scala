@@ -1,5 +1,7 @@
 package controllers
 
+import java.time.{ZoneId, ZonedDateTime}
+
 import forms.{SessionStart, SessionStop}
 import models.{Session, UserWithSessions, UserStatus, User, SessionVector, Stats}
 
@@ -57,12 +59,10 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
             } else {
 
               val modifier = BSONDocument(
-                "$currentDate" -> BSONDocument(
-                  "status.start" -> true
-                ),
                 "$set" -> BSONDocument(
                   "status.isStudying" -> true,
-                  "status.subject" -> sessionStart.subject
+                  "status.subject" -> sessionStart.subject,
+                  "status.start" -> System.currentTimeMillis()
                 )
               )
 
@@ -139,7 +139,7 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
                 if (updateResult.ok) {
 
-                  Ok("update successful")
+                  Ok("updated")
                 } else {
 
                   Ok("failed to update")
@@ -206,61 +206,70 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
   }
 
 
-  // Pause the current session
-  // TODO: Modify the database to handle this data
-  def pause() = Action.async { implicit request =>
-    ???
-  }
+  def updateStats() = Action.async { implicit request =>
 
+    SessionStop.stopForm.bindFromRequest().fold(badForm => Future(Ok("Bad Form")), goodForm => {
 
-  def updateStats(user_id: Int) = Action.async { implicit request =>
+      val selector = BSONDocument("user_id" -> goodForm.user_id)
 
-    val selector = BSONDocument("user_id" -> user_id)
+      val projector = BSONDocument("_id" -> 0)
 
-    val projector = BSONDocument("sessions" -> 1, "_id" -> 0)
+      // Query for the given user's session data
+      bsonUsersCollection.find(selector, projector).one[UserWithSessions].flatMap { optUser =>
 
-    // Query for the given user's session data
-    bsonUsersCollection.find(selector, projector).one[SessionVector].flatMap { optSessionVector =>
+        // Check the success of the query
+        optUser.fold(Future(Ok("Invalid user or password.")))(user => {
 
-      // Check the success of the query
-      optSessionVector.fold(Future(Ok("Invalid user!")))(sessionVector => {
-
-        // Compute the new stats
-        val newStats = Stats.stats.map(p => ("stats." + p._1, p._2(sessionVector.sessions)))
-
-        // Construct create the modifier
-        val modifier = BSONDocument(
-          "$currentDate" -> BSONDocument(
-            "stats.lastUpdate" -> true
-          ),
-          "$set" -> BSONDocument(
-            newStats
-          )
-        )
-
-        // Update the stats
-        bsonUsersCollection.update(selector, modifier, multi = false).map(updateResult => {
-          if (updateResult.ok) {
-            Ok("update successful")
+          if (user.password != goodForm.password) {
+            Future(Ok("Invalid user or password."))
           } else {
-            Ok(updateResult.message)
+
+            // Compute the new stats
+            val newStats = Stats.stats.map(p => ("stats." + p._1, p._2(user.sessions)))
+
+            // Construct the modifier
+            val modifier = BSONDocument(
+              "$currentDate" -> BSONDocument(
+                "stats.lastUpdate" -> true
+              ),
+              "$set" -> BSONDocument(
+                newStats
+              )
+            )
+
+            // Update the stats
+            bsonUsersCollection.update(selector, modifier, multi = false).map(updateResult => {
+              if (updateResult.ok) {
+                Ok("updated")
+              } else {
+                Ok(updateResult.message)
+              }
+            })
           }
         })
-      })
-    }
+      }
+
+    })
   }
 
 
   def getStats(user_id: Int) = Action.async {
 
+    val nowMilli = ZonedDateTime.now(ZoneId.of("America/Chicago")).toInstant.toEpochMilli
+
+    // Add the current epoch millisecond to the JSON response
+    def addTime(js: JsObject): JsObject = {
+      js +("currentTime", JsNumber(nowMilli))
+    }
+
     val selector = Json.obj("user_id" -> user_id)
 
-    // Don't send the object id
     val projector = Json.obj("stats" -> 1, "status" -> 1, "_id" -> 0)
 
     val futOptJson: Future[Option[JsObject]] = jsonUsersCollection.find(selector, projector).one[JsObject]
 
-    val futResult: Future[Result] = futOptJson.map(opt => Ok(opt.getOrElse(JsObject(Seq()))))
+    // Return the result with the current time in the users timezone
+    val futResult: Future[Result] = futOptJson.map(optJson => Ok(addTime(optJson.getOrElse(JsObject(Seq())))))
 
     futResult
   }

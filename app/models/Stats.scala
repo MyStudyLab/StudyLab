@@ -8,13 +8,27 @@ import reactivemongo.bson._
 
 import scala.collection.mutable
 
-case class Stats(total: Double)
+// TODO: Make case class and Reader/Writer (Coast-to-Coast)
+case class Stats(lastUpdate: Long,
+                 introMessage: IntroMessage,
+                 cumulative: Vector[Double],
+                 // subjectCumulatives: Vector[(String, Vector[Double])],
+                 //subjectTotals: Map[String, Double],
+                 //sessionAverages: Map[String, Double],
+                 probability: Vector[Double],
+                 todaysSessions: Vector[Session])
 
 // How to organize? One object, or a class for each stat?
 // TODO: In normal use, will need to update stats given past values and a single session
 // TODO: Optimize and combine the update functions to reduce repeated computation
 // TODO: Idea: language for specifying partial results of a computation (every intermediate value should be accessible)
 object Stats {
+
+  // BSONDocumentReader for the Stats class
+  implicit val StatsReader = Macros.reader[Stats]
+
+  // BSONDocumentWriter for the Stats class
+  implicit val StatsWriter = Macros.writer[Stats]
 
   // The list of available stats
   val stats: Map[String, Vector[Session] => BSONValue] = Map(

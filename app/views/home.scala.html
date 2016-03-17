@@ -6,7 +6,7 @@
     <div class="container-fluid">
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10 raised-element">
+            <div class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="introMessage">
                     Since <span id="startDate" class="introMessageValue"></span>
                     I've spent <span id="total" class="introMessageValue"></span> hours programming!
@@ -24,7 +24,7 @@
         <div style="height: 30px ;"></div>
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10 raised-element">
+            <div class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="todaysSessionsGooglePlot" class=""></div>
             </div>
         </div>
@@ -32,7 +32,7 @@
         <div style="height: 30px ;"></div>
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10 raised-element">
+            <div class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="cumulativeGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
@@ -40,7 +40,7 @@
         <div class="plotSpacer"></div>
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10 raised-element">
+            <div class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="subjectTotalsGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
@@ -48,7 +48,7 @@
         <div class="plotSpacer"></div>
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10 raised-element">
+            <div class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="subjectCumulativeGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
@@ -56,7 +56,7 @@
         <div class="plotSpacer"></div>
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10 raised-element">
+            <div class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="averageSessionGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
@@ -64,7 +64,7 @@
         <div class="plotSpacer"></div>
 
         <div class="row">
-            <div class="col-md-offset-1 col-md-10 raised-element">
+            <div class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="probabilityGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
@@ -109,7 +109,6 @@
 
                 var introElem = document.getElementById(elementId);
 
-                <!-- Should I just do the formatting on the server? -->
                 introElem.querySelector("#startDate").textContent = data.start[0].toString() + "/" + data.start[1].toString() + "/" + data.start[2].toString();
                 introElem.querySelector("#total").textContent = Math.round(data.total).toString();
                 introElem.querySelector("#dailyAverage").textContent = data.dailyAverage.toFixed(2).toString();
@@ -117,7 +116,6 @@
                 introElem.querySelector("#longestStreak").textContent = data.longestStreak.toString();
                 introElem.querySelector("#currentStreak").textContent = data.currentStreak.toString();
                 introElem.querySelector("#todaysTotal").textContent = data.todaysTotal.toFixed(2).toString();
-
             }
 
 
@@ -181,6 +179,8 @@
                     curveType: 'function'
                 };
 
+                convertDates(plotData, 0);
+
                 return getGoogleMaterialPlotDrawer(plotData, options, "Line", elementId);
             }
 
@@ -212,6 +212,7 @@
                     curveType: 'function'
                 };
 
+                convertDates(plotData, 0);
 
                 return getGoogleMaterialPlotDrawer(plotData, options, "Line", elementId);
             }
@@ -331,6 +332,7 @@
             }
 
 
+            // Get a function that will draw a material-style google chart.
             function getGoogleMaterialPlotDrawer(plotData, plotOptions, plotType, elementId) {
 
                 function tmp() {
@@ -354,39 +356,56 @@
                 return tmp;
             }
 
-            function convertDates(plotData) {
+            // Convert the values in the given columns to Date objects
+            function convertDates(plotData, column) {
                 plotData.rows.forEach(function(elem, i, self) {
-                    elem[0] = new Date(elem[0]);
+                    elem[column] = new Date(elem[0]);
                 });
             }
 
-            // Load the chart data and setup callbacks to plot when we have it.
+            // Return the number hours since the given epoch millisecond
+            function hoursSinceMilli(startMillis) {
+
+                var currMillis = new Date().getTime();
+
+                return (currMillis - startMillis) / (3600 * 1000);
+            }
+
+            // Load the chart data and setup callbacks to draw plots when we have it.
             loadJSONFile("/stats/1", function(data) {
 
-                // TODO: Debug
+                // TODO: Remove this when done debugging
                 console.log(data);
 
-                var stats = data.stats;
 
-                writeIntroMessage(stats.introMessage, "introMessage");
+                // Incorporate data for current session where applicable
+                if (data.status.isStudying) {
 
-                var cumulativeGoogleData = stats.cumulativeGoogle;
-                var rawSubjectCumulativeGoogleData = stats.subjectCumulativeGoogle;
+                    // Add duration of current session to today's total
+                    data.stats.introMessage.todaysTotal += hoursSinceMilli(data.status.start);
 
+                    // TODO: Do I really need the current time from the server?
+                    data.stats.introMessage.todaysSessionsGoogle.rows.push(
+                            ["What I've Done Today", data.status.subject, data.status.start, data.currentTime]
+                    );
 
-                convertDates(cumulativeGoogleData);
-                convertDates(rawSubjectCumulativeGoogleData);
-
-                // Set up call-backs to draw the plots
-                if (stats.introMessage.todaysSessionsGoogle.rows.length > 0) {
-                    google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(stats.introMessage.todaysSessionsGoogle, "todaysSessionsGooglePlot"));
                 }
 
-                google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(stats.cumulativeGoogle, "cumulativeGooglePlot"));
-                google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(rawSubjectCumulativeGoogleData, "subjectCumulativeGooglePlot"));
-                google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(stats.subjectTotalsGoogle, "subjectTotalsGooglePlot"));
-                google.charts.setOnLoadCallback(getAverageSessionGooglePlotDrawer(stats.averageSessionGoogle, "averageSessionGooglePlot"));
-                google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(stats.probabilityGoogle, "probabilityGooglePlot"));
+                // Fill in the values in the intro message.
+                writeIntroMessage(data.stats.introMessage, "introMessage");
+
+                // - - - Set up call-backs to draw the plots - - - - - - - - - -
+
+                // Only show the current day's overview if the user has studied today.
+                if (data.stats.introMessage.todaysSessionsGoogle.rows.length > 0) {
+                    google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(data.stats.introMessage.todaysSessionsGoogle, "todaysSessionsGooglePlot"));
+                }
+
+                google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(data.stats.cumulativeGoogle, "cumulativeGooglePlot"));
+                google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(data.stats.subjectCumulativeGoogle, "subjectCumulativeGooglePlot"));
+                google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(data.stats.subjectTotalsGoogle, "subjectTotalsGooglePlot"));
+                google.charts.setOnLoadCallback(getAverageSessionGooglePlotDrawer(data.stats.averageSessionGoogle, "averageSessionGooglePlot"));
+                google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(data.stats.probabilityGoogle, "probabilityGooglePlot"));
 
             })
     </script>
