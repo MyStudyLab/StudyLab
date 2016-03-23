@@ -3,27 +3,45 @@
 # ~~~~
 
 # Home page
-GET         /                    controllers.Application.index
+GET         /                       controllers.Application.index
 
 # Go the the about page
-GET         /about               controllers.Application.about
+GET         /about                  controllers.Application.about
 
-# Get stats for the user id
-GET         /stats/:id           controllers.Application.getStats(id: Int)
+# Get stats as JSON for the user id
+GET         /json/stats/:id         controllers.Application.getStats(id: Int)
+
+# Get quotes as JSON for the user id
+GET         /json/quotes/:id        controllers.Application.getQuotes(id: Int)
+
+# Get movies as JSON for the user id
+GET         /json/movies/:id        controllers.Application.getMovies(id: Int)
+
+# Get books as JSON for the user id
+GET         /json/books/:id         controllers.Application.getBooks(id: Int)
+
+# Go to the quotes page
+GET         /quotes                 controllers.Application.quotes()
+
+# Go to the books page
+GET         /books                  controllers.Application.books()
+
+# Go to the movies page
+GET         /movies                 controllers.Application.movies()
 
 # Start a study session
-POST        /start               controllers.Application.start()
+POST        /start                  controllers.Application.start()
 
 # Stop a study session
-POST        /stop                controllers.Application.stop()
+POST        /stop                   controllers.Application.stop()
 
 # Abort a study session
-POST        /abort               controllers.Application.abort()
+POST        /abort                  controllers.Application.abort()
 
 # Ensure that the stats are updated
-POST        /update              controllers.Application.updateStats()
+POST        /update                 controllers.Application.updateStats()
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file        controllers.Assets.at(path="/public", file)
+GET         /assets/*file           controllers.Assets.at(path="/public", file)
 
     

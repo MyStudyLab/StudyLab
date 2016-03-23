@@ -29,8 +29,13 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
   def bsonUsersCollection: BSONCollection = db.collection[BSONCollection]("users")
 
+  def jsonQuotesCollection: JSONCollection = db.collection[JSONCollection]("quotes")
 
-  // DONE: Rewrite so that we bind the form BEFORE getting the user's status
+  def jsonBooksCollection: JSONCollection = db.collection[JSONCollection]("books")
+
+  def jsonMoviesCollection: JSONCollection = db.collection[JSONCollection]("movies")
+
+
   def start() = Action.async { implicit request =>
 
     val futResult: Future[Result] = SessionStart.startForm.bindFromRequest()(request).fold(
@@ -280,6 +285,51 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
   def about = Action {
     Ok(views.html.about())
+  }
+
+  def getQuotes(user_id: Int) = Action.async {
+
+    val selector = Json.obj("user_id" -> 1)
+
+    val projector = Json.obj("_id" -> 0, "user_id" -> 0)
+
+    val futOptJson = jsonQuotesCollection.find(selector, projector).one[JsObject]
+
+    futOptJson.map(optJson => Ok(optJson.getOrElse(JsObject(Seq())).value("quotes")))
+  }
+
+  def getBooks(user_id: Int) = Action.async {
+
+    val selector = Json.obj("user_id" -> 1)
+
+    val projector = Json.obj("_id" -> 0, "user_id" -> 0)
+
+    val futOptJson = jsonBooksCollection.find(selector, projector).one[JsObject]
+
+    futOptJson.map(optJson => Ok(optJson.getOrElse(JsObject(Seq())).value("books")))
+  }
+
+  def getMovies(user_id: Int) = Action.async {
+
+    val selector = Json.obj("user_id" -> 1)
+
+    val projector = Json.obj("_id" -> 0, "user_id" -> 0)
+
+    val futOptJson = jsonMoviesCollection.find(selector, projector).one[JsObject]
+
+    futOptJson.map(optJson => Ok(optJson.getOrElse(JsObject(Seq())).value("movies")))
+  }
+
+  def quotes = Action {
+    Ok(views.html.quotes())
+  }
+
+  def movies = Action {
+    Ok(views.html.movies())
+  }
+
+  def books = Action {
+    Ok(views.html.books())
   }
 
 }

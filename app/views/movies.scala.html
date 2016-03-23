@@ -1,0 +1,101 @@
+@()(implicit messages: Messages)
+
+@siteTemplate("Jordan G. Dodson") {
+
+    <div id="movie-list" class="container">
+
+        <div class="row smallLowerPadding">
+            <div class="col-md-10 col-md-offset-1 raised-element">
+                <div id="introMessage">
+                    I've watched <span id="movieTotal" class="introMessageValue"></span> films
+                    from <span id="directorTotal" class="introMessageValue">0</span> directors.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+            function loadJSON(path, callback) {
+
+                var httpRequest = new XMLHttpRequest();
+
+                httpRequest.onreadystatechange = function () {
+                    if (httpRequest.readyState === 4) {
+                        if (httpRequest.status === 200) {
+
+                            // Parse the response text as JSON
+                            var data = JSON.parse(httpRequest.responseText);
+
+                            if (callback) {
+                                callback(data);
+                            }
+                        }
+                    }
+                };
+                httpRequest.open('GET', path);
+                httpRequest.send();
+            }
+
+
+            // Build an element for a single quote
+            function buildMovie(movie) {
+                var row = document.createElement("div");
+                var d1 = document.createElement("div");
+                var titleDiv = document.createElement("div");
+                var dateDiv = document.createElement("div");
+                var directorDiv = document.createElement("div");
+                var ratingDiv = document.createElement("div");
+                var ratingSpan = document.createElement("span");
+
+                titleDiv.appendChild(document.createTextNode(movie.title));
+                directorDiv.appendChild(document.createTextNode("Director: " + movie.directors.join(", ")));
+
+                var ratingText = movie.userRating.toString() + "/10";
+
+                ratingSpan.appendChild(document.createTextNode(ratingText));
+                ratingDiv.appendChild(document.createTextNode("My Rating: "));
+                ratingDiv.appendChild(ratingSpan);
+
+
+                dateDiv.appendChild(document.createTextNode("Watched: " + movie.watched.join("/")));
+
+                // Set attributes
+                row.setAttribute("class", "row");
+                d1.setAttribute("class", "col-md-10 col-md-offset-1 book raised-element");
+                titleDiv.setAttribute("class", "book-title");
+                directorDiv.setAttribute("class", "book-info");
+                dateDiv.setAttribute("class", "book-info");
+                ratingDiv.setAttribute("class", "book-info");
+
+                var colors = [
+                    "#FF0000", "#F50A03", "#EB1405", "#E01F08", "#D6290A",
+                    "#5CA329", "#52AD2B", "#47B82E", "#3DC230", "#33CC33"
+                ];
+
+                ratingSpan.style.color = colors[movie.userRating - 1];
+
+                d1.appendChild(titleDiv);
+                d1.appendChild(directorDiv);
+                d1.appendChild(dateDiv);
+                d1.appendChild(ratingDiv);
+
+                row.appendChild(d1);
+
+                return row;
+            }
+
+            loadJSON("/json/movies/1", function (movies) {
+
+                var movieTotal = document.getElementById("movieTotal");
+
+                movieTotal.textContent = movies.length.toString();
+
+                var movieList = document.getElementById("movie-list");
+
+                for (var i = 0; i < movies.length; i++) {
+                    movieList.appendChild(buildMovie(movies[i]));
+                }
+            });
+    </script>
+}

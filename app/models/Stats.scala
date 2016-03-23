@@ -38,19 +38,41 @@ object Stats {
     "averageSessionGoogle" -> averageSessionGoogle,
     "subjectCumulativeGoogle" -> subjectCumulativeGoogle,
     "probabilityGoogle" -> probabilityGoogle(100),
-    "todaysSessionsGoogle" -> todaysSessionsGoogle
+    "todaysSessionsGoogle" -> todaysSessionsGoogle,
+    "slidingAverageGoogle" -> slidingAverageGoogle(15)
   )
 
 
+  /**
+    * Total duration of the sessions.
+    *
+    * @param sessions The vector of sessions to sum.
+    * @return
+    */
   def total(sessions: Vector[Session]): Double = {
     sessions.foldLeft(0L)((total: Long, session: Session) => {
       total + session.durationMillis()
     }).toDouble / (3600 * 1000)
   }
 
+
+  /**
+    * Average duration of a session.
+    *
+    * @param sessions The vector of sessions to average.
+    * @return
+    */
+  def average(sessions: Vector[Session]): Double = {
+    sessions.foldLeft(0L)((total: Long, session: Session) => {
+      total + session.durationMillis()
+    }).toDouble / (3600 * 1000 * sessions.length)
+  }
+
+
   def totalBSON(sessions: Vector[Session]): BSONDouble = {
     BSONDouble(total(sessions))
   }
+
 
   def introMessage(sessions: Vector[Session]): BSONDocument = {
 
@@ -205,6 +227,33 @@ object Stats {
         BSONArray(BSONString("number"), BSONString("Cumulative Hours"))
       ),
       "rows" -> BSONArray(cumulatives.map(p => BSONArray(BSONLong(p._1), BSONDouble(p._2))))
+    )
+  }
+
+  def slidingAverage(radius: Int)(sessions: Vector[Session]): Vector[(Long, Double)] = {
+
+    val dailyTotals = groupDays(ZoneId.of("America/Chicago"))(sessions).map(p => (p._1._1, total(p._2)))
+
+    val startIndex = radius
+    val endIndex = dailyTotals.length - radius
+    val windowSize = 1 + 2 * radius
+
+    for (i <- Vector.range(startIndex, endIndex)) yield {
+      (dailyTotals(i)._1, dailyTotals.slice(i - radius, i + radius).map(_._2).sum / windowSize)
+    }
+  }
+
+
+  def slidingAverageGoogle(radius: Int)(sessions: Vector[Session]): BSONDocument = {
+
+    val averages = slidingAverage(radius)(sessions)
+
+    BSONDocument(
+      "columns" -> BSONArray(
+        BSONArray(BSONString("date"), BSONString("Date")),
+        BSONArray(BSONString("number"), BSONString("Daily Total"))
+      ),
+      "rows" -> BSONArray(averages.map(p => BSONArray(BSONLong(p._1), BSONDouble(p._2))))
     )
   }
 

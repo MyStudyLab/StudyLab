@@ -1,0 +1,108 @@
+@()(implicit messages: Messages)
+
+@siteTemplate("Jordan G. Dodson") {
+
+    <div id="book-list" class="container">
+        <div class="row smallLowerPadding">
+            <div class="col-md-10 col-md-offset-1 raised-element">
+                <div id="introMessage">
+                    I've read <span id="bookTotal" class="introMessageValue"></span> books
+                    by <span id="authorTotal" class="introMessageValue">0</span> authors.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+            function loadJSONFile(path, callback) {
+
+                var httpRequest = new XMLHttpRequest();
+
+                httpRequest.onreadystatechange = function () {
+                    if (httpRequest.readyState === 4) {
+                        if (httpRequest.status === 200) {
+
+                            // Parse the response text as JSON
+                            var data = JSON.parse(httpRequest.responseText);
+
+                            if (callback) {
+                                callback(data);
+                            }
+                        }
+                    }
+                };
+                httpRequest.open('GET', path);
+                httpRequest.send();
+            }
+
+
+            // Build an element for a single quote
+            function buildBook(book) {
+                var row = document.createElement("div");
+                var d1 = document.createElement("div");
+                var titleDiv = document.createElement("div");
+                var authorDiv = document.createElement("div");
+                var dateDiv = document.createElement("div");
+                var ratingDiv = document.createElement("div");
+
+                titleDiv.appendChild(document.createTextNode(book.title));
+
+                var ratingText = null;
+
+                if (book.rating === "") {
+                    ratingText = "-";
+                } else {
+                    ratingText = book.rating;
+                }
+
+                ratingDiv.appendChild(document.createTextNode("My Rating: " + ratingText + "/5"));
+
+                var dateString = new Date(book.read_at).toDateString().substr(4);
+
+                dateDiv.appendChild(document.createTextNode("Date Finished: " + dateString));
+
+                // Set attributes
+                row.setAttribute("class", "row");
+                d1.setAttribute("class", "col-md-10 col-md-offset-1 book raised-element");
+                titleDiv.setAttribute("class", "book-title");
+                authorDiv.setAttribute("class", "book-info");
+                dateDiv.setAttribute("class", "book-info");
+                ratingDiv.setAttribute("class", "book-info");
+
+                var authNames = book.authors.map(function (curr, i, arr) {
+                    return curr.name;
+                });
+
+                var authLabel = null;
+
+                if (authNames.length > 1) {
+                    authLabel = "Authors: ";
+                } else {
+                    authLabel = "Author: ";
+                }
+
+                authorDiv.appendChild(document.createTextNode(authLabel + authNames.join(", ")));
+
+                d1.appendChild(titleDiv);
+                d1.appendChild(authorDiv);
+                d1.appendChild(dateDiv);
+                d1.appendChild(ratingDiv);
+
+                row.appendChild(d1);
+
+                return row;
+            }
+
+            loadJSONFile("/json/books/1", function (books) {
+
+                var bookTotal = document.getElementById("bookTotal");
+                var bookList = document.getElementById("book-list");
+
+                bookTotal.textContent = books.length.toString();
+
+                for (var i = 0; i < books.length; i++) {
+                    bookList.appendChild(buildBook(books[i]));
+                }
+            });
+    </script>
+}

@@ -5,7 +5,7 @@
     <!-- The body of the page. Contains all charts. -->
     <div class="container-fluid">
 
-        <div class="row">
+        <div class="row smallLowerPadding">
             <div class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="introMessage">
                     Since <span id="startDate" class="introMessageValue"></span>
@@ -21,55 +21,49 @@
             </div>
         </div>
 
-        <div style="height: 30px ;"></div>
 
-        <div class="row">
+        <div class="row smallLowerPadding">
             <div class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="todaysSessionsGooglePlot" class=""></div>
             </div>
         </div>
 
-        <div style="height: 30px ;"></div>
 
         <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
                 <div id="cumulativeGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
 
-        <div class="plotSpacer"></div>
-
         <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
                 <div id="subjectTotalsGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
 
-        <div class="plotSpacer"></div>
-
         <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
                 <div id="subjectCumulativeGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
 
-        <div class="plotSpacer"></div>
-
         <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
                 <div id="averageSessionGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
 
-        <div class="plotSpacer"></div>
-
         <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
                 <div id="probabilityGooglePlot" class="googlePlotContainer"></div>
             </div>
         </div>
 
-        <div class="plotSpacer"></div>
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                <div id="slidingAverageGooglePlot" class="googlePlotContainer"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -77,7 +71,7 @@
 
                 var httpRequest = new XMLHttpRequest();
 
-                httpRequest.onreadystatechange = function() {
+                httpRequest.onreadystatechange = function () {
                     if (httpRequest.readyState === 4) {
                         if (httpRequest.status === 200) {
 
@@ -133,7 +127,7 @@
                     };
 
                     // Add columns to the data table
-                    plotData.columns.forEach(function(curr, i, arr) {
+                    plotData.columns.forEach(function (curr, i, arr) {
                         table.addColumn(curr[0], curr[1]);
                     });
 
@@ -153,6 +147,43 @@
                 var options = {
                     chart: {
                         title: "Cumulative Hours Studied"
+                    },
+                    legend: {
+                        position: 'none'
+                    },
+                    colors: ['green'],
+                    titleTextStyle: {
+                        fontSize: titleFontSize,
+                        bold: titleIsBold
+                    },
+                    hAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: hAxisFontSize
+                        }
+                    },
+                    vAxis: {
+                        textStyle: {
+                            fontSize: 20
+                        }
+                    },
+                    // Not working
+                    lineWidth: 10,
+                    // Not working
+                    curveType: 'function'
+                };
+
+                convertDates(plotData, 0);
+
+                return getGoogleMaterialPlotDrawer(plotData, options, "Line", elementId);
+            }
+
+            function getSlidingAverageGooglePlotDrawer(plotData, elementId) {
+
+                var options = {
+                    chart: {
+                        title: "Sliding Average of Daily Total",
+                        subtitle: "31 day window"
                     },
                     legend: {
                         position: 'none'
@@ -292,7 +323,7 @@
 
                 var max = 0.0;
 
-                plotData.rows.forEach(function(elem, i, self) {
+                plotData.rows.forEach(function (elem, i, self) {
                     if (elem[1] > max) {
                         max = elem[1];
                     }
@@ -300,7 +331,8 @@
 
                 var options = {
                     chart: {
-                        title: "Probability That I'm Programming"
+                        title: "Probability That I'm Programming",
+                        subtitle: "at a particular time on an average day"
                     },
                     titleTextStyle: {
                         fontSize: titleFontSize,
@@ -339,7 +371,7 @@
                     var table = new google.visualization.DataTable();
 
                     // Add columns to the data table
-                    plotData.columns.forEach(function(curr, i, arr) {
+                    plotData.columns.forEach(function (curr, i, arr) {
                         table.addColumn(curr[0], curr[1]);
                     });
 
@@ -358,7 +390,7 @@
 
             // Convert the values in the given columns to Date objects
             function convertDates(plotData, column) {
-                plotData.rows.forEach(function(elem, i, self) {
+                plotData.rows.forEach(function (elem, i, self) {
                     elem[column] = new Date(elem[0]);
                 });
             }
@@ -372,7 +404,7 @@
             }
 
             // Load the chart data and setup callbacks to draw plots when we have it.
-            loadJSONFile("/stats/1", function(data) {
+            loadJSONFile("/json/stats/1", function (data) {
 
                 // TODO: Remove this when done debugging
                 console.log(data);
@@ -383,6 +415,9 @@
 
                     // Add duration of current session to today's total
                     data.stats.introMessage.todaysTotal += hoursSinceMilli(data.status.start);
+
+                    // Add duration of current session to global total.
+                    data.stats.introMessage.total += hoursSinceMilli(data.status.start);
 
                     // TODO: Do I really need the current time from the server?
                     data.stats.introMessage.todaysSessionsGoogle.rows.push(
@@ -401,6 +436,7 @@
                     google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(data.stats.introMessage.todaysSessionsGoogle, "todaysSessionsGooglePlot"));
                 }
 
+                google.charts.setOnLoadCallback(getSlidingAverageGooglePlotDrawer(data.stats.slidingAverageGoogle, "slidingAverageGooglePlot"));
                 google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(data.stats.cumulativeGoogle, "cumulativeGooglePlot"));
                 google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(data.stats.subjectCumulativeGoogle, "subjectCumulativeGooglePlot"));
                 google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(data.stats.subjectTotalsGoogle, "subjectTotalsGooglePlot"));

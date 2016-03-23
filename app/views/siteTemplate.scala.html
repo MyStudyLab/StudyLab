@@ -26,10 +26,17 @@
 
             <!-- Google Analytics -->
         <script>
-                (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-                            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-                        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-                })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+                (function (i, s, o, g, r, a, m) {
+                    i['GoogleAnalyticsObject'] = r;
+                    i[r] = i[r] || function () {
+                                (i[r].q = i[r].q || []).push(arguments)
+                            }, i[r].l = 1 * new Date();
+                    a = s.createElement(o),
+                            m = s.getElementsByTagName(o)[0];
+                    a.async = 1;
+                    a.src = g;
+                    m.parentNode.insertBefore(a, m)
+                })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
                 ga('create', 'UA-75149527-1', 'auto');
                 ga('send', 'pageview');
@@ -48,6 +55,9 @@
                 <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
                         <li><a href="@routes.Assets.at("pdfs/resume.pdf")">Resume</a></li>
+                        <li><a href="/books">Books</a></li>
+                        <li><a href="/movies">Movies</a></li>
+                        <li><a href="/quotes">Quotes</a></li>
                         <li><a href="/about">About</a></li>
                     </ul>
 

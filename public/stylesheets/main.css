@@ -9,15 +9,14 @@
 
 #introMessage {
     font-size: xx-large;
-    font-family: Roboto, serif;
 }
 
 .googlePlotContainer {
     height: 500px;
 }
 
-.plotSpacer {
-    height: 80px;
+.spaced-plot {
+    margin-bottom: 80px;
 }
 
 #todaysOverview {
@@ -73,6 +72,34 @@
 .raised-element {
     box-shadow: 0 1px 3px #3d4643;
     padding: 25px 15px;
+}
+
+.quote {
+    margin-bottom: 35px;
+    font-size: x-large;
+}
+
+.quote-attrib {
+    margin-top: 7px;
+    text-align: right;
+    color: #757575;
+}
+
+.book {
+    margin-bottom: 35px;
+}
+
+.book-title {
+    font-size: xx-large;
+}
+
+.book-info {
+    margin-top: 5px;
+    color: #757575;
+}
+
+.smallLowerPadding {
+    padding-bottom: 30px;
 }
 
 body {
