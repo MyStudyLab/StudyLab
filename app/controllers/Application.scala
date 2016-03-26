@@ -3,21 +3,18 @@ package controllers
 import java.time.{ZoneId, ZonedDateTime}
 
 import forms.{SessionStart, SessionStop}
-import models.{Session, UserWithSessions, UserStatus, User, SessionVector, Stats}
-
+import models.{Session, _}
 import reactivemongo.bson.{BSONBoolean, BSONDocument}
-import scala.concurrent.{ExecutionContext, Future}
 
+import scala.concurrent.{ExecutionContext, Future}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
-
 import javax.inject.Inject
 
 import reactivemongo.api.collections.bson.BSONCollection
-
 import reactivemongo.play.json._
 import play.modules.reactivemongo.json.collection._
 
@@ -31,6 +28,8 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
   def jsonQuotesCollection: JSONCollection = db.collection[JSONCollection]("quotes")
 
+  def bsonBooksCollection: BSONCollection = db.collection[BSONCollection]("books")
+
   def jsonBooksCollection: JSONCollection = db.collection[JSONCollection]("books")
 
   def jsonMoviesCollection: JSONCollection = db.collection[JSONCollection]("movies")
@@ -39,7 +38,7 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
   def start() = Action.async { implicit request =>
 
     val futResult: Future[Result] = SessionStart.startForm.bindFromRequest()(request).fold(
-      badForm => Future(BadRequest("Invalid form")),
+      badForm => Future(Ok("Invalid form")),
       sessionStart => {
 
         val selector = BSONDocument("user_id" -> sessionStart.user_id)
@@ -50,17 +49,17 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
         futOptUser.flatMap { optUser =>
 
-          optUser.fold(Future(BadRequest("Invalid user or password")))((user: User) => {
+          optUser.fold(Future(Ok("Invalid user or password")))((user: User) => {
 
             if (sessionStart.password != user.password) {
 
               Future(Ok("Invalid user or password"))
             } else if (user.status.isStudying) {
 
-              Future(BadRequest("Already Studying"))
+              Future(Ok("Already Studying"))
             } else if (!user.subjects.contains(sessionStart.subject)) {
 
-              Future(BadRequest("Invalid Subject"))
+              Future(Ok("Invalid Subject"))
             } else {
 
               val modifier = BSONDocument(
@@ -123,16 +122,11 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
               val newSession = Session(user.status.start, System.currentTimeMillis(), user.status.subject)
 
-              // Compute the new stats
-              val newStats = Stats.stats.map(p => ("stats." + p._1, p._2(user.sessions :+ newSession)))
-
               // Construct the modifier
               val modifier = BSONDocument(
-                "$currentDate" -> BSONDocument(
-                  "stats.lastUpdate" -> true
-                ),
                 "$set" -> BSONDocument(
-                  newStats.toSeq ++ Seq("status.isStudying" -> BSONBoolean(false))
+                  "stats" -> Stats.stats(SessionVector(user.sessions :+ newSession)),
+                  "status.isStudying" -> BSONBoolean(false)
                 ),
                 "$push" -> BSONDocument(
                   "sessions" -> newSession
@@ -229,16 +223,10 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
             Future(Ok("Invalid user or password."))
           } else {
 
-            // Compute the new stats
-            val newStats = Stats.stats.map(p => ("stats." + p._1, p._2(user.sessions)))
-
             // Construct the modifier
             val modifier = BSONDocument(
-              "$currentDate" -> BSONDocument(
-                "stats.lastUpdate" -> true
-              ),
               "$set" -> BSONDocument(
-                newStats
+                "stats" -> Stats.stats(SessionVector(user.sessions))
               )
             )
 
@@ -254,6 +242,59 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
         })
       }
 
+    })
+  }
+
+
+  def updateBooks() = Action.async { implicit request =>
+
+    SessionStop.stopForm.bindFromRequest().fold(badForm => Future(Ok("Bad Form")), goodForm => {
+
+      // Will look for the user with the given id
+      val selector = BSONDocument("user_id" -> goodForm.user_id)
+
+      val projector = BSONDocument("_id" -> 0, "sessions" -> 0, "stats" -> 0)
+
+      // Query for the given user's info data
+      bsonUsersCollection.find(selector, projector).one[User].flatMap { optUser =>
+
+        // Check the success of the query
+        optUser.fold(Future(Ok("Invalid user or password.")))(user => {
+
+          // Check the password
+          if (user.password != goodForm.password) {
+
+            Future(Ok("Invalid user or password."))
+          } else {
+
+            // Will get book data here
+            val projector = BSONDocument("_id" -> 0, "books" -> 1)
+
+            // Get books for user
+            bsonBooksCollection.find(selector, projector).one[BookVector].flatMap { optBookVector =>
+
+              optBookVector.fold(Future(Ok("Failed to get books")))(bookVec => {
+
+                // Construct the modifier
+                val modifier = BSONDocument(
+                  "$set" -> BSONDocument(
+                    "stats" -> BookStats.stats(bookVec)
+                  )
+                )
+
+                // Update the book stats
+                bsonBooksCollection.update(selector, modifier, multi = false).map(updateResult => {
+                  if (updateResult.ok) {
+                    Ok("updated books")
+                  } else {
+                    Ok(updateResult.message)
+                  }
+                })
+              })
+            }
+          }
+        })
+      }
     })
   }
 
@@ -306,7 +347,7 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
     val futOptJson = jsonBooksCollection.find(selector, projector).one[JsObject]
 
-    futOptJson.map(optJson => Ok(optJson.getOrElse(JsObject(Seq())).value("books")))
+    futOptJson.map(optJson => Ok(optJson.getOrElse(JsObject(Seq()))))
   }
 
   def getMovies(user_id: Int) = Action.async {

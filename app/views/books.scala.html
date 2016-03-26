@@ -7,13 +7,26 @@
             <div class="col-md-10 col-md-offset-1 raised-element">
                 <div id="introMessage">
                     I've read <span id="bookTotal" class="introMessageValue"></span> books
-                    by <span id="authorTotal" class="introMessageValue">0</span> authors.
+                    by <span id="authorTotal" class="introMessageValue"></span> authors. At an
+                    average of <span id="averagePageCount" class="introMessageValue"></span> pages per book,
+                    that's <span id="pageCount" class="introMessageValue"></span> pages in total.
                 </div>
             </div>
         </div>
+
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                <div id="cumulativePagesPlot" class="googlePlotContainer"></div>
+            </div>
+        </div>
+
     </div>
 
     <script>
+
+            google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
+
+
             function loadJSONFile(path, callback) {
 
                 var httpRequest = new XMLHttpRequest();
@@ -44,22 +57,19 @@
                 var authorDiv = document.createElement("div");
                 var dateDiv = document.createElement("div");
                 var ratingDiv = document.createElement("div");
+                var ratingSpan = document.createElement("span");
 
                 titleDiv.appendChild(document.createTextNode(book.title));
 
-                var ratingText = null;
+                var ratingText = book.userRating + "/5";
+                ratingSpan.appendChild(document.createTextNode(ratingText));
 
-                if (book.rating === "") {
-                    ratingText = "-";
-                } else {
-                    ratingText = book.rating;
-                }
+                ratingDiv.appendChild(document.createTextNode("My Rating: "));
+                ratingDiv.appendChild(ratingSpan);
 
-                ratingDiv.appendChild(document.createTextNode("My Rating: " + ratingText + "/5"));
+                var dateString = new Date(book.finished).toDateString().substr(4);
 
-                var dateString = new Date(book.read_at).toDateString().substr(4);
-
-                dateDiv.appendChild(document.createTextNode("Date Finished: " + dateString));
+                dateDiv.appendChild(document.createTextNode("Finished: " + dateString));
 
                 // Set attributes
                 row.setAttribute("class", "row");
@@ -69,19 +79,20 @@
                 dateDiv.setAttribute("class", "book-info");
                 ratingDiv.setAttribute("class", "book-info");
 
-                var authNames = book.authors.map(function (curr, i, arr) {
-                    return curr.name;
-                });
+                var colors = [
+                    "#FF0000", "#D91300", "#664D00", "#336600", "#008000"
+                ];
 
-                var authLabel = null;
+                ratingSpan.style.color = colors[book.userRating - 1];
 
-                if (authNames.length > 1) {
+                var authLabel;
+                if (book.authors.length > 1) {
                     authLabel = "Authors: ";
                 } else {
                     authLabel = "Author: ";
                 }
 
-                authorDiv.appendChild(document.createTextNode(authLabel + authNames.join(", ")));
+                authorDiv.appendChild(document.createTextNode(authLabel + book.authors.join(", ")));
 
                 d1.appendChild(titleDiv);
                 d1.appendChild(authorDiv);
@@ -93,15 +104,93 @@
                 return row;
             }
 
+
+            // Global plot properties
+            var titleIsBold = true;
+            var titleFontSize = 32;
+            var hAxisFontSize = 20;
+            var vAxisFontSize = 16;
+
+            // Convert the values in the given columns to Date objects
+            function convertDates(rows, column) {
+                rows.forEach(function (elem, i, self) {
+                    elem[column] = new Date(elem[0]);
+                });
+            }
+
+            // Get a function that will draw a material-style google chart.
+            function getCumulativePagesDrawer(bookData, elementId) {
+
+                var options = {
+                    chart: {
+                        title: "Cumulative Pages Read"
+                    },
+                    legend: {
+                        position: 'none'
+                    },
+                    colors: ['green'],
+                    titleTextStyle: {
+                        fontSize: titleFontSize,
+                        bold: titleIsBold
+                    },
+                    hAxis: {
+                        title: "Pages Read",
+                        textStyle: {
+                            fontSize: hAxisFontSize
+                        },
+                        ticks: [new Date(10000000)]
+                    },
+                    vAxis: {
+                        textStyle: {
+                            fontSize: 20
+                        }
+                    },
+                    // Not working
+                    lineWidth: 10,
+                    // Not working
+                    curveType: 'function'
+                };
+
+                function tmp() {
+                    var table = new google.visualization.DataTable();
+
+                    table.addColumn("date", "Millis Since Epoch");
+                    table.addColumn("number", "Cumulative number of pages read");
+
+                    convertDates(bookData.cumulativePages, 0);
+
+                    table.addRows(bookData.cumulativePages);
+
+                    var chart = new google.charts.Line(document.getElementById(elementId));
+
+                    var convertedOptions = google.charts.Line.convertOptions(options);
+
+                    chart.draw(table, convertedOptions);
+                }
+
+                return tmp;
+            }
+
+
             loadJSONFile("/json/books/1", function (books) {
 
-                var bookTotal = document.getElementById("bookTotal");
+                console.log(books);
+
+                google.charts.setOnLoadCallback(getCumulativePagesDrawer(books.stats, "cumulativePagesPlot"));
+
                 var bookList = document.getElementById("book-list");
+                var bookTotal = document.getElementById("bookTotal");
+                var authorTotal = document.getElementById("authorTotal");
+                var averagePageCount = document.getElementById("averagePageCount");
+                var pageCount = document.getElementById("pageCount");
 
-                bookTotal.textContent = books.length.toString();
+                bookTotal.textContent = books.stats.bookCount.toString();
+                authorTotal.textContent = books.stats.authorCount.toString();
+                averagePageCount.textContent = books.stats.averagePageCount.toString();
+                pageCount.textContent = books.stats.pageCount.toString();
 
-                for (var i = 0; i < books.length; i++) {
-                    bookList.appendChild(buildBook(books[i]));
+                for (var i = 0; i < books.books.length; i++) {
+                    bookList.appendChild(buildBook(books.books[i]));
                 }
             });
     </script>

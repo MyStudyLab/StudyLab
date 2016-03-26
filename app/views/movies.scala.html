@@ -8,7 +8,7 @@
             <div class="col-md-10 col-md-offset-1 raised-element">
                 <div id="introMessage">
                     I've watched <span id="movieTotal" class="introMessageValue"></span> films
-                    from <span id="directorTotal" class="introMessageValue">0</span> directors.
+                    from <span id="directorTotal" class="introMessageValue"></span> directors.
                 </div>
             </div>
         </div>
@@ -85,13 +85,25 @@
                 return row;
             }
 
+            function directorCount(movies) {
+                var directors = new Set();
+                for (var i = 0; i < movies.length; i++) {
+                    for (var j = 0; j < movies[i].directors.length; j++) {
+                        directors.add(movies[i].directors[j]);
+                    }
+                }
+
+                return directors.size;
+            }
+
             loadJSON("/json/movies/1", function (movies) {
 
+                var movieList = document.getElementById("movie-list");
                 var movieTotal = document.getElementById("movieTotal");
+                var directorTotal = document.getElementById("directorTotal");
 
                 movieTotal.textContent = movies.length.toString();
-
-                var movieList = document.getElementById("movie-list");
+                directorTotal.textContent = directorCount(movies);
 
                 for (var i = 0; i < movies.length; i++) {
                     movieList.appendChild(buildMovie(movies[i]));

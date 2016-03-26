@@ -30,17 +30,20 @@ object Stats {
   // BSONDocumentWriter for the Stats class
   implicit val StatsWriter = Macros.writer[Stats]
 
-  // The list of available stats
-  val stats: Map[String, Vector[Session] => BSONValue] = Map(
-    "introMessage" -> introMessage,
-    "subjectTotalsGoogle" -> subjectTotalsGoogle,
-    "cumulativeGoogle" -> cumulativeGoogle,
-    "averageSessionGoogle" -> averageSessionGoogle,
-    "subjectCumulativeGoogle" -> subjectCumulativeGoogle,
-    "probabilityGoogle" -> probabilityGoogle(100),
-    "todaysSessionsGoogle" -> todaysSessionsGoogle,
-    "slidingAverageGoogle" -> slidingAverageGoogle(15)
-  )
+
+  def stats(sessionVec: SessionVector): BSONDocument = {
+
+    BSONDocument(
+      "introMessage" -> introMessage(sessionVec.sessions),
+      "subjectTotalsGoogle" -> subjectTotalsGoogle(sessionVec.sessions),
+      "cumulativeGoogle" -> cumulativeGoogle(sessionVec.sessions),
+      "averageSessionGoogle" -> averageSessionGoogle(sessionVec.sessions),
+      "subjectCumulativeGoogle" -> subjectCumulativeGoogle(sessionVec.sessions),
+      "probabilityGoogle" -> probabilityGoogle(100)(sessionVec.sessions),
+      "todaysSessionsGoogle" -> todaysSessionsGoogle(sessionVec.sessions),
+      "slidingAverageGoogle" -> slidingAverageGoogle(15)(sessionVec.sessions)
+    )
+  }
 
 
   /**
@@ -287,20 +290,15 @@ object Stats {
   }
 
 
-  // TODO: Still wanting a more elegant way to do this
   def subjectCumulative(sessions: Vector[Session]): (Vector[Long], Map[String, Vector[Double]]) = {
 
     val marks = monthMarksSince(ZoneId.of("America/Chicago"))(sessions.head.startTime)
 
-    val step1: Map[String, Vector[Session]] = sessions.foldLeft(Map[String, Vector[Session]]())((acc, s) =>
-      acc.updated(s.subject, acc.getOrElse(s.subject, Vector[Session]()) :+ s)
-    )
+    val step1: Map[String, Vector[Session]] = sessions.groupBy(_.subject)
 
     val step2: Map[String, Vector[Vector[Session]]] = step1.mapValues(subSessions => groupSessions(subSessions, marks))
 
-    val step3: Map[String, Vector[Double]] = step2.mapValues(
-      vec => vec.map(sessionGroup => sessionGroup.map(sess => sess.durationMillis()).sum.toDouble / (3600 * 1000))
-    )
+    val step3: Map[String, Vector[Double]] = step2.mapValues(groups => groups.map(sessionGroup => total(sessionGroup)))
 
     // Cumulate the values. We drop the first (zero) element due to the way scanLeft works
     val step4: Map[String, Vector[Double]] = step3.mapValues(_.scanLeft(0.0)(_ + _).drop(1))
