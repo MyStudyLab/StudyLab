@@ -4,7 +4,7 @@ import reactivemongo.bson.Macros
 
 
 case class Movie(title: String, directors: Vector[String],
-                 released: Vector[Int], watched: Vector[Int],
+                 releaseYear: Int, watched: Long,
                  runtime: Int, userRating: Int)
 
 object Movie {

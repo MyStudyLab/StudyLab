@@ -2,7 +2,7 @@ package controllers
 
 import java.time.{ZoneId, ZonedDateTime}
 
-import forms.{SessionStart, SessionStop}
+import forms.{SessionStart, SessionStop, UpdateForm}
 import models.{Session, _}
 import reactivemongo.bson.{BSONBoolean, BSONDocument}
 
@@ -31,6 +31,8 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
   def bsonBooksCollection: BSONCollection = db.collection[BSONCollection]("books")
 
   def jsonBooksCollection: JSONCollection = db.collection[JSONCollection]("books")
+
+  def bsonMoviesCollection: BSONCollection = db.collection[BSONCollection]("movies")
 
   def jsonMoviesCollection: JSONCollection = db.collection[JSONCollection]("movies")
 
@@ -125,7 +127,7 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
               // Construct the modifier
               val modifier = BSONDocument(
                 "$set" -> BSONDocument(
-                  "stats" -> Stats.stats(SessionVector(user.sessions :+ newSession)),
+                  "stats" -> SessionStats.stats(SessionVector(user.sessions :+ newSession)),
                   "status.isStudying" -> BSONBoolean(false)
                 ),
                 "$push" -> BSONDocument(
@@ -246,56 +248,102 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
   }
 
 
-  def updateBooks() = Action.async { implicit request =>
+  def updateBooks(user_id: Int) = Action.async { implicit request =>
 
-    SessionStop.stopForm.bindFromRequest().fold(badForm => Future(Ok("Bad Form")), goodForm => {
+    // Will look for the user with the given id
+    val selector = BSONDocument("user_id" -> user_id)
 
-      // Will look for the user with the given id
+    // Will get book data here
+    val projector = BSONDocument("_id" -> 0, "books" -> 1)
+
+    // Get books for user
+    bsonBooksCollection.find(selector, projector).one[BookVector].flatMap { optBookVector =>
+
+      optBookVector.fold(Future(Ok("Failed to get books")))(bookVec => {
+
+        // Construct the modifier
+        val modifier = BSONDocument(
+          "$set" -> BSONDocument(
+            "stats" -> Stats.stats(bookVec)
+          )
+        )
+
+        // Update the book stats
+        bsonBooksCollection.update(selector, modifier, multi = false).map(updateResult => {
+          if (updateResult.ok) {
+            Ok("updated books")
+          } else {
+            Ok(updateResult.message)
+          }
+        })
+      })
+    }
+  }
+
+  // Handles all requests that update the database
+  def routeUpdate(collection: String) = Action.async { implicit request =>
+
+    // Check the collection here, before making any requests to db
+
+    UpdateForm.form.bindFromRequest().fold(badForm => Future(Ok("Bad Form")), goodForm => {
+
       val selector = BSONDocument("user_id" -> goodForm.user_id)
 
       val projector = BSONDocument("_id" -> 0, "sessions" -> 0, "stats" -> 0)
 
-      // Query for the given user's info data
+      // Check user credentials
       bsonUsersCollection.find(selector, projector).one[User].flatMap { optUser =>
 
-        // Check the success of the query
-        optUser.fold(Future(Ok("Invalid user or password.")))(user => {
+        optUser.fold(Future(Ok("Invalid user or password")))(user => {
 
-          // Check the password
-          if (user.password != goodForm.password) {
-
-            Future(Ok("Invalid user or password."))
+          if (goodForm.password != user.password) {
+            Future(Ok("Invalid username or password"))
           } else {
 
-            // Will get book data here
-            val projector = BSONDocument("_id" -> 0, "books" -> 1)
-
-            // Get books for user
-            bsonBooksCollection.find(selector, projector).one[BookVector].flatMap { optBookVector =>
-
-              optBookVector.fold(Future(Ok("Failed to get books")))(bookVec => {
-
-                // Construct the modifier
-                val modifier = BSONDocument(
-                  "$set" -> BSONDocument(
-                    "stats" -> BookStats.stats(bookVec)
-                  )
-                )
-
-                // Update the book stats
-                bsonBooksCollection.update(selector, modifier, multi = false).map(updateResult => {
-                  if (updateResult.ok) {
-                    Ok("updated books")
-                  } else {
-                    Ok(updateResult.message)
-                  }
-                })
-              })
+            if (collection == "movies") {
+              updateMovies(goodForm.user_id)(request)
+            } else if (collection == "books") {
+              updateBooks(goodForm.user_id)(request)
+            } else {
+              Future(Ok("Invalid collection"))
             }
           }
         })
+
       }
     })
+  }
+
+  def updateMovies(user_id: Int) = Action.async { implicit request =>
+
+    // Will look for the user with the given id
+    val selector = BSONDocument("user_id" -> user_id)
+
+    // Will get book data here
+    val projector = BSONDocument("_id" -> 0, "movies" -> 1)
+
+    // Get books for user
+    bsonMoviesCollection.find(selector, projector).one[MovieVector].flatMap { optMovieVector =>
+
+      optMovieVector.fold(Future(Ok("Failed to get movies")))(movieVec => {
+
+        // Construct the modifier
+        val modifier = BSONDocument(
+          "$set" -> BSONDocument(
+            "stats" -> Stats.stats(movieVec)
+          )
+        )
+
+        // Update the movie stats
+        bsonMoviesCollection.update(selector, modifier, multi = false).map(updateResult => {
+          if (updateResult.ok) {
+            Ok("updated movies")
+          } else {
+            Ok(updateResult.message)
+          }
+        })
+      })
+    }
   }
 
 
@@ -358,7 +406,7 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
     val futOptJson = jsonMoviesCollection.find(selector, projector).one[JsObject]
 
-    futOptJson.map(optJson => Ok(optJson.getOrElse(JsObject(Seq())).value("movies")))
+    futOptJson.map(optJson => Ok(optJson.getOrElse(JsObject(Seq()))))
   }
 
   def quotes = Action {

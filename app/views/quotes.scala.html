@@ -2,7 +2,7 @@
 
 @siteTemplate("Jordan G. Dodson") {
 
-    <div id="quote-list" class="container"></div>
+    <div id="quote-list" class="container-fluid"></div>
 
     <script>
             function loadJSONFile(path, callback) {
@@ -30,9 +30,10 @@
             // Build an element for a single quote
             function buildQuote(quote) {
                 var row = document.createElement("div");
-                var d1 = document.createElement("div");
-                var d2 = document.createTextNode(quote.text);
-                var d3 = document.createElement("div");
+                var d1  = document.createElement("div");
+                var d2  = document.createTextNode(quote.text);
+                var d3  = document.createElement("div");
+
 
                 // The attribution string for the quote.
                 var attrib = null;

@@ -2,7 +2,7 @@
 
 @siteTemplate("Jordan G. Dodson") {
 
-    <div id="movie-list" class="container">
+    <div id="movie-list" class="container-fluid">
 
         <div class="row smallLowerPadding">
             <div class="col-md-10 col-md-offset-1 raised-element">
@@ -13,9 +13,43 @@
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                <div id="cumulativeMoviesPlot" class="googlePlotContainer"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                <div id="moviesPerDirectorPlot" class="googlePlotContainer"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                <div id="moviesPerReleaseYearPlot" class="googlePlotContainer"></div>
+            </div>
+        </div>
+
     </div>
 
     <script>
+
+            google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
+
+            // Global plot properties
+            var titleIsBold = true;
+            var titleFontSize = 32;
+            var hAxisFontSize = 20;
+            var vAxisFontSize = 16;
+
+            // Convert the values in the given columns to Date objects
+            function convertDates(rows, column) {
+                rows.forEach(function (elem, i, self) {
+                    elem[column] = new Date(elem[0]);
+                });
+            }
+
             function loadJSON(path, callback) {
 
                 var httpRequest = new XMLHttpRequest();
@@ -38,6 +72,150 @@
             }
 
 
+            function getMoviesPerDirectorDrawer(movieData, elementId) {
+
+                var options = {
+                    chart: {
+                        title: "Movies per director",
+                        subtitle: "top 15 most-watched directors"
+                    },
+                    titleTextStyle: {
+                        fontSize: titleFontSize,
+                        bold: titleIsBold
+                    },
+                    legend: {
+                        position: 'none'
+                    },
+                    hAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: hAxisFontSize
+                        }
+                    },
+                    vAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: 20
+                        }
+                    },
+                    bars: 'horizontal'
+                };
+
+
+                function tmp() {
+                    var table = new google.visualization.DataTable();
+
+                    table.addColumn("string", "Director");
+                    table.addColumn("number", "Movies Watched");
+
+                    table.addRows(movieData.moviesPerDirector.slice(0, 15));
+
+                    var chart = new google.charts.Bar(document.getElementById(elementId));
+
+                    var convertedOptions = google.charts.Bar.convertOptions(options);
+
+                    chart.draw(table, convertedOptions);
+                }
+
+                return tmp;
+            }
+
+            function getCumulativeMoviesDrawer(movieData, elementId) {
+
+                var options = {
+                    chart: {
+                        title: "Cumulative Movies Watched"
+                    },
+                    legend: {
+                        position: 'none'
+                    },
+                    colors: ['green'],
+                    titleTextStyle: {
+                        fontSize: titleFontSize,
+                        bold: titleIsBold
+                    },
+                    hAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: hAxisFontSize
+                        }
+                    },
+                    vAxis: {
+                        textStyle: {
+                            fontSize: 20
+                        }
+                    }
+                };
+
+                function tmp() {
+                    var table = new google.visualization.DataTable();
+
+                    table.addColumn("date", "Date");
+                    table.addColumn("number", "Cumulative number of movies watched");
+
+                    table.addRows(movieData.cumulativeMovies);
+
+                    var chart = new google.charts.Line(document.getElementById(elementId));
+
+                    var convertedOptions = google.charts.Line.convertOptions(options);
+
+                    chart.draw(table, convertedOptions);
+                }
+
+                return tmp;
+            }
+
+            function getMoviesPerReleaseYearDrawer(bookData, elementId) {
+
+                var options = {
+                    chart: {
+                        title: "Movies Watched Per Release Year",
+                        subtitle: ""
+                    },
+                    titleTextStyle: {
+                        fontSize: titleFontSize,
+                        bold: titleIsBold
+                    },
+                    legend: {
+                        position: "none"
+                    },
+                    hAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: hAxisFontSize
+                        },
+                        format: "####",
+                        // Not working
+                        slantedText: true
+                    },
+                    vAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: 20
+                        }
+                    },
+                    bars: 'vertical'
+                };
+
+
+                function tmp() {
+                    var table = new google.visualization.DataTable();
+
+                    table.addColumn("number", "Year");
+                    table.addColumn("number", "Movies watched");
+
+                    table.addRows(bookData.moviesPerReleaseYear);
+
+                    var chart = new google.charts.Bar(document.getElementById(elementId));
+
+                    var convertedOptions = google.charts.Bar.convertOptions(options);
+
+                    chart.draw(table, convertedOptions);
+                }
+
+                return tmp;
+            }
+
             // Build an element for a single quote
             function buildMovie(movie) {
                 var row = document.createElement("div");
@@ -58,7 +236,7 @@
                 ratingDiv.appendChild(ratingSpan);
 
 
-                dateDiv.appendChild(document.createTextNode("Watched: " + movie.watched.join("/")));
+                dateDiv.appendChild(document.createTextNode("Watched: " + new Date(movie.watched).toDateString()));
 
                 // Set attributes
                 row.setAttribute("class", "row");
@@ -85,16 +263,6 @@
                 return row;
             }
 
-            function directorCount(movies) {
-                var directors = new Set();
-                for (var i = 0; i < movies.length; i++) {
-                    for (var j = 0; j < movies[i].directors.length; j++) {
-                        directors.add(movies[i].directors[j]);
-                    }
-                }
-
-                return directors.size;
-            }
 
             loadJSON("/json/movies/1", function (movies) {
 
@@ -102,11 +270,17 @@
                 var movieTotal = document.getElementById("movieTotal");
                 var directorTotal = document.getElementById("directorTotal");
 
-                movieTotal.textContent = movies.length.toString();
-                directorTotal.textContent = directorCount(movies);
+                movieTotal.textContent = movies.stats.movieCount.toString();
+                directorTotal.textContent = movies.stats.directorCount.toString();
 
-                for (var i = 0; i < movies.length; i++) {
-                    movieList.appendChild(buildMovie(movies[i]));
+                convertDates(movies.stats.cumulativeMovies, 0);
+
+                google.charts.setOnLoadCallback(getMoviesPerDirectorDrawer(movies.stats, "moviesPerDirectorPlot"));
+                google.charts.setOnLoadCallback(getCumulativeMoviesDrawer(movies.stats, "cumulativeMoviesPlot"));
+                google.charts.setOnLoadCallback(getMoviesPerReleaseYearDrawer(movies.stats, "moviesPerReleaseYearPlot"));
+
+                for (var i = 0; i < movies.movies.length; i++) {
+                    movieList.appendChild(buildMovie(movies.movies[i]));
                 }
             });
     </script>

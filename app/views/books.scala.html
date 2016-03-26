@@ -2,9 +2,9 @@
 
 @siteTemplate("Jordan G. Dodson") {
 
-    <div id="book-list" class="container">
+    <div id="book-list" class="container-fluid">
         <div class="row smallLowerPadding">
-            <div class="col-md-10 col-md-offset-1 raised-element">
+            <div class="col-sm-10 col-sm-offset-1 raised-element">
                 <div id="introMessage">
                     I've read <span id="bookTotal" class="introMessageValue"></span> books
                     by <span id="authorTotal" class="introMessageValue"></span> authors. At an
@@ -244,7 +244,7 @@
 
                 var options = {
                     chart: {
-                        title: "Books Read Per Publish Year",
+                        title: "Books Read Per Publication Year",
                         subtitle: ""
                     },
                     titleTextStyle: {
@@ -320,7 +320,7 @@
                  bookList.appendChild(buildBook(books.books[i]));
                  }
                  */
-                
+
             });
     </script>
 }
