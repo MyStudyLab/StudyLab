@@ -20,6 +20,18 @@
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                <div id="pagesPerAuthorPlot" class="googlePlotContainer"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                <div id="booksPerPubYearPlot" class="googlePlotContainer"></div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -53,11 +65,13 @@
             function buildBook(book) {
                 var row = document.createElement("div");
                 var d1 = document.createElement("div");
+                var d2 = document.createElement("div");
                 var titleDiv = document.createElement("div");
                 var authorDiv = document.createElement("div");
                 var dateDiv = document.createElement("div");
                 var ratingDiv = document.createElement("div");
                 var ratingSpan = document.createElement("span");
+                var coverImage = document.createElement("img");
 
                 titleDiv.appendChild(document.createTextNode(book.title));
 
@@ -78,6 +92,11 @@
                 authorDiv.setAttribute("class", "book-info");
                 dateDiv.setAttribute("class", "book-info");
                 ratingDiv.setAttribute("class", "book-info");
+                coverImage.setAttribute("src", book.imageURL);
+                coverImage.style.float = "right";
+
+                d2.style.width = "60%";
+                d2.style.display = "inline-block";
 
                 var colors = [
                     "#FF0000", "#D91300", "#664D00", "#336600", "#008000"
@@ -94,10 +113,13 @@
 
                 authorDiv.appendChild(document.createTextNode(authLabel + book.authors.join(", ")));
 
-                d1.appendChild(titleDiv);
-                d1.appendChild(authorDiv);
-                d1.appendChild(dateDiv);
-                d1.appendChild(ratingDiv);
+                d2.appendChild(titleDiv);
+                d2.appendChild(authorDiv);
+                d2.appendChild(dateDiv);
+                d2.appendChild(ratingDiv);
+
+                d1.appendChild(d2);
+                d1.appendChild(coverImage);
 
                 row.appendChild(d1);
 
@@ -118,7 +140,7 @@
                 });
             }
 
-            // Get a function that will draw a material-style google chart.
+
             function getCumulativePagesDrawer(bookData, elementId) {
 
                 var options = {
@@ -134,11 +156,11 @@
                         bold: titleIsBold
                     },
                     hAxis: {
-                        title: "Pages Read",
+                        title: "",
                         textStyle: {
                             fontSize: hAxisFontSize
                         },
-                        ticks: [new Date(10000000)]
+                        ticks: [new Date(1000000000), new Date(12345678900)]
                     },
                     vAxis: {
                         textStyle: {
@@ -157,8 +179,6 @@
                     table.addColumn("date", "Millis Since Epoch");
                     table.addColumn("number", "Cumulative number of pages read");
 
-                    convertDates(bookData.cumulativePages, 0);
-
                     table.addRows(bookData.cumulativePages);
 
                     var chart = new google.charts.Line(document.getElementById(elementId));
@@ -172,11 +192,117 @@
             }
 
 
+            function getPagesPerAuthorDrawer(bookData, elementId) {
+
+                var options = {
+                    chart: {
+                        title: "Pages per author",
+                        subtitle: "top 15 most-read authors"
+                    },
+                    titleTextStyle: {
+                        fontSize: titleFontSize,
+                        bold: titleIsBold
+                    },
+                    legend: {
+                        position: 'none'
+                    },
+                    hAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: hAxisFontSize
+                        }
+                    },
+                    vAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: 20
+                        }
+                    },
+                    bars: 'horizontal'
+                };
+
+
+                function tmp() {
+                    var table = new google.visualization.DataTable();
+
+                    table.addColumn("string", "Author");
+                    table.addColumn("number", "Pages read");
+
+                    table.addRows(bookData.pagesPerAuthor.slice(0, 15));
+
+                    var chart = new google.charts.Bar(document.getElementById(elementId));
+
+                    var convertedOptions = google.charts.Bar.convertOptions(options);
+
+                    chart.draw(table, convertedOptions);
+                }
+
+                return tmp;
+            }
+
+            function getBooksPerPubYearDrawer(bookData, elementId) {
+
+                var options = {
+                    chart: {
+                        title: "Books Read Per Publish Year",
+                        subtitle: ""
+                    },
+                    titleTextStyle: {
+                        fontSize: titleFontSize,
+                        bold: titleIsBold
+                    },
+                    legend: {
+                        position: "none"
+                    },
+                    hAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: hAxisFontSize
+                        },
+                        format: "####",
+                        // Not working
+                        slantedText: true
+                    },
+                    vAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: 20
+                        }
+                    },
+                    bars: 'vertical'
+                };
+
+
+                function tmp() {
+                    var table = new google.visualization.DataTable();
+
+                    table.addColumn("number", "Year");
+                    table.addColumn("number", "Books read");
+
+                    table.addRows(bookData.booksPerPubYear);
+
+                    var chart = new google.charts.Bar(document.getElementById(elementId));
+
+                    var convertedOptions = google.charts.Bar.convertOptions(options);
+
+                    chart.draw(table, convertedOptions);
+                }
+
+                return tmp;
+            }
+
+
             loadJSONFile("/json/books/1", function (books) {
 
                 console.log(books);
 
+                convertDates(books.stats.cumulativePages, 0);
+
+
+                // Set up callbacks
                 google.charts.setOnLoadCallback(getCumulativePagesDrawer(books.stats, "cumulativePagesPlot"));
+                google.charts.setOnLoadCallback(getPagesPerAuthorDrawer(books.stats, "pagesPerAuthorPlot"));
+                google.charts.setOnLoadCallback(getBooksPerPubYearDrawer(books.stats, "booksPerPubYearPlot"));
 
                 var bookList = document.getElementById("book-list");
                 var bookTotal = document.getElementById("bookTotal");
@@ -189,9 +315,12 @@
                 averagePageCount.textContent = books.stats.averagePageCount.toString();
                 pageCount.textContent = books.stats.pageCount.toString();
 
-                for (var i = 0; i < books.books.length; i++) {
-                    bookList.appendChild(buildBook(books.books[i]));
-                }
+                /*
+                 for (var i = 0; i < books.books.length; i++) {
+                 bookList.appendChild(buildBook(books.books[i]));
+                 }
+                 */
+                
             });
     </script>
 }

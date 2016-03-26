@@ -15,7 +15,8 @@ object BookStats {
       "averagePageCount" -> BSONInteger(averagePageCount(bookVec)),
       "booksPerAuthor" -> BSONArray(booksPerAuthor(bookVec).toVector.sortBy(p => -p._2).map(p => BSONArray(BSONString(p._1), BSONInteger(p._2)))),
       "pagesPerAuthor" -> BSONArray(pagesPerAuthor(bookVec).toVector.sortBy(p => -p._2).map(p => BSONArray(BSONString(p._1), BSONInteger(p._2)))),
-      "cumulativePages" -> BSONArray(cumulativePages(bookVec).map(p => BSONArray(BSONLong(p._1), BSONInteger(p._2))))
+      "cumulativePages" -> BSONArray(cumulativePages(bookVec).map(p => BSONArray(BSONLong(p._1), BSONInteger(p._2)))),
+      "booksPerPubYear" -> BSONArray(booksPerPubYear(bookVec).map(p => BSONArray(BSONInteger(p._1), BSONInteger(p._2))))
     )
   }
 
@@ -76,5 +77,9 @@ object BookStats {
       }
     })
 
+  }
+
+  def booksPerPubYear(bookVec: BookVector): Vector[(Int, Int)] = {
+    bookVec.books.filter(_.pubYear != 0).groupBy(_.pubYear).mapValues(_.length).toVector.sortBy(_._1)
   }
 }
