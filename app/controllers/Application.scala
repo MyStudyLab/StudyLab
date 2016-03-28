@@ -2,7 +2,7 @@ package controllers
 
 import java.time.{ZoneId, ZonedDateTime}
 
-import forms.{SessionStart, SessionStop, UpdateForm}
+import forms.{AddMovieForm, SessionStart, SessionStop, UpdateForm}
 import models.{Session, _}
 import reactivemongo.bson.{BSONBoolean, BSONDocument}
 
@@ -14,12 +14,13 @@ import play.api.libs.json._
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 import javax.inject.Inject
 
+import play.api.libs.ws.WSClient
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.play.json._
 import play.modules.reactivemongo.json.collection._
 
 
-class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: MessagesApi)
+class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: MessagesApi, ws: WSClient)
   extends Controller with MongoController with ReactiveMongoComponents with I18nSupport {
 
   def jsonUsersCollection: JSONCollection = db.collection[JSONCollection]("users")
@@ -344,6 +345,21 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
         })
       })
     }
+  }
+
+
+  // Use WebServices to get data from OMDb
+  def addMovie() = Action.async { implicit request =>
+
+    AddMovieForm.form.bindFromRequest.fold(badForm => Future(Ok("")), goodForm => {
+
+      val req = s"http://www.omdbapi.com/?i=${goodForm.imdbID}&plot=full&r=json"
+
+      ws.url(req)
+    })
+
+
+    ???
   }
 
 

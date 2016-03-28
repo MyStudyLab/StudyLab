@@ -99,6 +99,14 @@
     font-size: medium;
 }
 
+.footer-quote {
+    text-align: center;
+    font-size: medium;
+    border-top: 1px solid #d5d5d9;
+    padding: 15px 0;
+    color: #8f8f8f;
+}
+
 .smallLowerPadding {
     padding-bottom: 30px;
 }

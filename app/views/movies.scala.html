@@ -7,8 +7,9 @@
         <div class="row smallLowerPadding">
             <div class="col-md-10 col-md-offset-1 raised-element">
                 <div id="introMessage">
-                    I've watched <span id="movieTotal" class="introMessageValue"></span> films
-                    from <span id="directorTotal" class="introMessageValue"></span> directors.
+                    I've watched <span id="movieCount" class="introMessageValue"></span> films
+                    from <span id="directorCount" class="introMessageValue"></span> directors and
+                    <span id="actorCount" class="introMessageValue"></span> actors.
                 </div>
             </div>
         </div>
@@ -28,6 +29,18 @@
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
                 <div id="moviesPerReleaseYearPlot" class="googlePlotContainer"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                <div id="moviesPerGenrePlot" class="googlePlotContainer"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                <div id="moviesPerActorPlot" class="googlePlotContainer"></div>
             </div>
         </div>
 
@@ -109,6 +122,54 @@
                     table.addColumn("number", "Movies Watched");
 
                     table.addRows(movieData.moviesPerDirector.slice(0, 15));
+
+                    var chart = new google.charts.Bar(document.getElementById(elementId));
+
+                    var convertedOptions = google.charts.Bar.convertOptions(options);
+
+                    chart.draw(table, convertedOptions);
+                }
+
+                return tmp;
+            }
+
+            function getMoviesPerActorDrawer(movieData, elementId) {
+
+                var options = {
+                    chart: {
+                        title: "Movies per actor",
+                        subtitle: "top 15 most-watched actors"
+                    },
+                    titleTextStyle: {
+                        fontSize: titleFontSize,
+                        bold: titleIsBold
+                    },
+                    legend: {
+                        position: 'none'
+                    },
+                    hAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: hAxisFontSize
+                        }
+                    },
+                    vAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: 20
+                        }
+                    },
+                    bars: 'horizontal'
+                };
+
+
+                function tmp() {
+                    var table = new google.visualization.DataTable();
+
+                    table.addColumn("string", "Actor");
+                    table.addColumn("number", "Movies Watched");
+
+                    table.addRows(movieData.moviesPerActor.slice(0, 15));
 
                     var chart = new google.charts.Bar(document.getElementById(elementId));
 
@@ -216,6 +277,54 @@
                 return tmp;
             }
 
+            function getMoviesPerGenreDrawer(movieData, elementId) {
+
+                var options = {
+                    chart: {
+                        title: "Movies per genre",
+                        subtitle: "top 15 most-watched genres"
+                    },
+                    titleTextStyle: {
+                        fontSize: titleFontSize,
+                        bold: titleIsBold
+                    },
+                    legend: {
+                        position: 'none'
+                    },
+                    hAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: hAxisFontSize
+                        }
+                    },
+                    vAxis: {
+                        title: "",
+                        textStyle: {
+                            fontSize: 20
+                        }
+                    },
+                    bars: 'horizontal'
+                };
+
+
+                function tmp() {
+                    var table = new google.visualization.DataTable();
+
+                    table.addColumn("string", "Genre");
+                    table.addColumn("number", "Movies Watched");
+
+                    table.addRows(movieData.moviesPerGenre.slice(0, 15));
+
+                    var chart = new google.charts.Bar(document.getElementById(elementId));
+
+                    var convertedOptions = google.charts.Bar.convertOptions(options);
+
+                    chart.draw(table, convertedOptions);
+                }
+
+                return tmp;
+            }
+
             // Build an element for a single quote
             function buildMovie(movie) {
                 var row = document.createElement("div");
@@ -263,25 +372,37 @@
                 return row;
             }
 
+            function processMovieDataForGoogleCharts(movieData) {
+
+                convertDates(movieData.stats.cumulativeMovies, 0);
+
+            }
+
 
             loadJSON("/json/movies/1", function (movies) {
 
                 var movieList = document.getElementById("movie-list");
-                var movieTotal = document.getElementById("movieTotal");
-                var directorTotal = document.getElementById("directorTotal");
+                var movieCount = document.getElementById("movieCount");
+                var directorCount = document.getElementById("directorCount");
+                var actorCount = document.getElementById("actorCount");
 
-                movieTotal.textContent = movies.stats.movieCount.toString();
-                directorTotal.textContent = movies.stats.directorCount.toString();
+                movieCount.textContent = movies.stats.movieCount.toString();
+                directorCount.textContent = movies.stats.directorCount.toString();
+                actorCount.textContent = movies.stats.actorCount.toString();
 
-                convertDates(movies.stats.cumulativeMovies, 0);
+                processMovieDataForGoogleCharts(movies);
 
                 google.charts.setOnLoadCallback(getMoviesPerDirectorDrawer(movies.stats, "moviesPerDirectorPlot"));
                 google.charts.setOnLoadCallback(getCumulativeMoviesDrawer(movies.stats, "cumulativeMoviesPlot"));
                 google.charts.setOnLoadCallback(getMoviesPerReleaseYearDrawer(movies.stats, "moviesPerReleaseYearPlot"));
+                google.charts.setOnLoadCallback(getMoviesPerGenreDrawer(movies.stats, "moviesPerGenrePlot"));
+                google.charts.setOnLoadCallback(getMoviesPerActorDrawer(movies.stats, "moviesPerActorPlot"));
 
-                for (var i = 0; i < movies.movies.length; i++) {
-                    movieList.appendChild(buildMovie(movies.movies[i]));
-                }
+                /*
+                 for (var i = 0; i < movies.movies.length; i++) {
+                 movieList.appendChild(buildMovie(movies.movies[i]));
+                 }
+                 */
             });
     </script>
 }

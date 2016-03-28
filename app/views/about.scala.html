@@ -1,21 +1,21 @@
 @()(implicit messages: Messages)
 
-@siteTemplate("Jordan G. Dodson") {
+    @siteTemplate("Jordan G. Dodson") {
 
-    <div class="container">
-        <div class="row">
+        <div class="container-fluid">
+            <div class="row">
 
-            <div class="col-md-10 col-md-offset-1 text-justify" id="about-para">
-                Hi. I'm Jordan. My goal is to connect the physical with the digital, giving humanity greater knowledge of
-                and control over the world.
+                <div class="col-md-8 col-md-offset-2 raised-element text-justify" id="about-para">
+                    <div>
+                        Hi. I'm Jordan. My goal is to connect the physical with the digital, giving humanity greater knowledge of
+                        and control over the world.
+                    </div>
+
+                    <div class="col-md-4 col-md-offset-4">
+                        <img src="@routes.Assets.at("/images/headshot-books.jpg")" class="img-responsive img-rounded">
+                    </div>
+                </div>
+
             </div>
-
         </div>
-
-        <div class="row">
-            <div class="col-md-4 col-md-offset-4">
-                <img src="@routes.Assets.at("/images/headshot-books.jpg")" class="img-responsive img-rounded">
-            </div>
-        </div>
-    </div>
-}
+    }

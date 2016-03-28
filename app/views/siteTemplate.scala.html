@@ -24,6 +24,14 @@
             <!-- Static assets -->
         <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
 
+        <script>
+            console.log(
+                    "If you're reading this, I assume you to be a fellow developer. " +
+                    "Welcome! I claim not that this site is perfect, only that I had a blast making it. " +
+                    "If you see something that could be improved, I'd love the feedback :)"
+            );
+        </script>
+
             <!-- Google Analytics -->
         <script>
                 (function (i, s, o, g, r, a, m) {
@@ -71,7 +79,6 @@
                     </ul>
                 </div>
 
-
             </div>
         </nav>
 
@@ -79,12 +86,10 @@
 
         @content
 
+        <footer class="footer">
+            <div class="container-fluid footer-quote">
+                <span>The unexamined life is not worth living</span>
+            </div>
+        </footer>
     </body>
-    <script>
-            console.log(
-                    "If you're reading this, I assume you to be a fellow developer. " +
-                    "Welcome! I claim not that this site is perfect, only that I had a blast making it. " +
-                    "If you see something that could be improved, I'd love the feedback :)"
-            );
-    </script>
 </html>
