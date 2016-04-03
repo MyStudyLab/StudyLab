@@ -8,40 +8,24 @@ import reactivemongo.bson._
 
 import scala.collection.mutable
 
-// TODO: Make case class and Reader/Writer (Coast-to-Coast)
-case class SessionStats(lastUpdate: Long,
-                        introMessage: IntroMessage,
-                        cumulative: Vector[Double],
-                        // subjectCumulatives: Vector[(String, Vector[Double])],
-                        //subjectTotals: Map[String, Double],
-                        //sessionAverages: Map[String, Double],
-                        probability: Vector[Double],
-                        todaysSessions: Vector[Session])
-
 // How to organize? One object, or a class for each stat?
 // TODO: In normal use, will need to update stats given past values and a single session
 // TODO: Optimize and combine the update functions to reduce repeated computation
 // TODO: Idea: language for specifying partial results of a computation (every intermediate value should be accessible)
 object SessionStats {
 
-  // BSONDocumentReader for the Stats class
-  implicit val StatsReader = Macros.reader[SessionStats]
-
-  // BSONDocumentWriter for the Stats class
-  implicit val StatsWriter = Macros.writer[SessionStats]
-
-
   def stats(sessionVec: SessionVector): BSONDocument = {
 
     BSONDocument(
       "introMessage" -> introMessage(sessionVec.sessions),
-      "subjectTotalsGoogle" -> subjectTotalsGoogle(sessionVec.sessions),
-      "cumulativeGoogle" -> cumulativeGoogle(sessionVec.sessions),
-      "averageSessionGoogle" -> averageSessionGoogle(sessionVec.sessions),
-      "subjectCumulativeGoogle" -> subjectCumulativeGoogle(sessionVec.sessions),
-      "probabilityGoogle" -> probabilityGoogle(100)(sessionVec.sessions),
-      "todaysSessionsGoogle" -> todaysSessionsGoogle(sessionVec.sessions),
-      "slidingAverageGoogle" -> slidingAverageGoogle(15)(sessionVec.sessions)
+      "subjectTotals" -> subjectTotalsGoogle(sessionVec.sessions),
+      "cumulative" -> cumulativeGoogle(sessionVec.sessions),
+      "averageSession" -> averageSessionGoogle(sessionVec.sessions),
+      "subjectCumulative" -> subjectCumulativeGoogle(sessionVec.sessions),
+      "probability" -> probabilityGoogle(100)(sessionVec.sessions),
+      "todaysSessions" -> todaysSessionsGoogle(sessionVec.sessions),
+      "slidingAverage" -> slidingAverageGoogle(15)(sessionVec.sessions),
+      "lastUpdated" -> BSONLong(System.currentTimeMillis())
     )
   }
 

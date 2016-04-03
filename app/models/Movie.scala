@@ -19,7 +19,7 @@ object Movie {
     def splitOnComma(s: String): Vector[String] = {
       s.split(", ").toVector
     }
-    
+
 
     for {
       title <- (json \ "Title").asOpt[String]

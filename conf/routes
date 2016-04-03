@@ -9,13 +9,13 @@ GET         /                          controllers.Application.index
 GET         /about                     controllers.Application.about
 
 # Get stats as JSON for the user id
-GET         /json/stats/:id            controllers.Application.getStats(id: Int)
+GET         /json/stats/:id            controllers.Sessions.getStats(id: Int)
 
 # Get quotes as JSON for the user id
 GET         /json/quotes/:id           controllers.Application.getQuotes(id: Int)
 
 # Get movies as JSON for the user id
-GET         /json/movies/:id           controllers.Application.getMovies(id: Int)
+GET         /json/movies/:id           controllers.Movies.getMovies(id: Int)
 
 # Get books as JSON for the user id
 GET         /json/books/:id            controllers.Application.getBooks(id: Int)
@@ -30,19 +30,20 @@ GET         /books                     controllers.Application.books()
 GET         /movies                    controllers.Application.movies()
 
 # Start a study session
-POST        /start                     controllers.Application.start()
+POST        /start                     controllers.Sessions.startSession()
 
 # Stop a study session
-POST        /stop                      controllers.Application.stop()
+POST        /stop                      controllers.Sessions.stopSession()
 
 # Abort a study session
-POST        /abort                     controllers.Application.abort()
+POST        /abort                     controllers.Sessions.abortSession()
 
-# Ensure that the stats are updated
 POST        /update                    controllers.Application.updateStats()
 
 # Update the stats for the given collection
 POST        /update/:collection        controllers.Application.routeUpdate(collection: String)
+
+POST        /update/movies/:id         controllers.Movies.updateMovieStats(id: Int)
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file              controllers.Assets.at(path="/public", file)

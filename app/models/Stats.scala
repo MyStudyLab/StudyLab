@@ -6,8 +6,6 @@ object Stats {
 
   def stats(sessionVec: SessionVector): BSONDocument = SessionStats.stats(sessionVec)
 
-  def stats(movieVec: MovieVector): BSONDocument = MovieStats.stats(movieVec)
-
   def stats(bookVec: BookVector): BSONDocument = BookStats.stats(bookVec)
 
 }
