@@ -38,7 +38,7 @@ POST        /stop                      controllers.Sessions.stopSession()
 # Abort a study session
 POST        /abort                     controllers.Sessions.abortSession()
 
-POST        /update                    controllers.Application.updateStats()
+POST        /update                    controllers.Sessions.updateSessionStats()
 
 # Update the stats for the given collection
 POST        /update/:collection        controllers.Application.routeUpdate(collection: String)

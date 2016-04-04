@@ -86,11 +86,21 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
     )
   }
 
+  def update() = Action.async { implicit request =>
+
+    PasswordAndUserID.form.bindFromRequest()(request).fold(
+      badForm => Future(Ok("")),
+      goodForm => sessions.updateStats(goodForm.user_id).map(a => if (a) Ok("updated") else Ok("error"))
+    )
+  }
+
 
   def startSession() = checked(start)
 
   def stopSession() = checked(stop)
 
   def abortSession() = checked(abort)
+
+  def updateSessionStats() = checked(update)
 
 }

@@ -14,17 +14,17 @@ import scala.collection.mutable
 // TODO: Idea: language for specifying partial results of a computation (every intermediate value should be accessible)
 object SessionStats {
 
-  def stats(sessionVec: SessionVector): BSONDocument = {
+  def stats(sessions: Vector[Session]): BSONDocument = {
 
     BSONDocument(
-      "introMessage" -> introMessage(sessionVec.sessions),
-      "subjectTotals" -> subjectTotalsGoogle(sessionVec.sessions),
-      "cumulative" -> cumulativeGoogle(sessionVec.sessions),
-      "averageSession" -> averageSessionGoogle(sessionVec.sessions),
-      "subjectCumulative" -> subjectCumulativeGoogle(sessionVec.sessions),
-      "probability" -> probabilityGoogle(100)(sessionVec.sessions),
-      "todaysSessions" -> todaysSessionsGoogle(sessionVec.sessions),
-      "slidingAverage" -> slidingAverageGoogle(15)(sessionVec.sessions),
+      "introMessage" -> introMessage(sessions),
+      "subjectTotals" -> subjectTotalsGoogle(sessions),
+      "cumulative" -> cumulativeGoogle(sessions),
+      "averageSession" -> averageSessionGoogle(sessions),
+      "subjectCumulative" -> subjectCumulativeGoogle(sessions),
+      "probability" -> probabilityGoogle(100)(sessions),
+      "todaysSessions" -> todaysSessionsGoogle(sessions),
+      "slidingAverage" -> slidingAverageGoogle(15)(sessions),
       "lastUpdated" -> BSONLong(System.currentTimeMillis())
     )
   }

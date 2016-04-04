@@ -27,6 +27,8 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
   def bsonUsersCollection: BSONCollection = db.collection[BSONCollection]("users")
 
+  def bsonSessionsCollection: BSONCollection = db.collection[BSONCollection]("sessions")
+
   def jsonQuotesCollection: JSONCollection = db.collection[JSONCollection]("quotes")
 
   def bsonBooksCollection: BSONCollection = db.collection[BSONCollection]("books")
@@ -57,12 +59,12 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
             // Construct the modifier
             val modifier = BSONDocument(
               "$set" -> BSONDocument(
-                "stats" -> Stats.stats(SessionVector(user.sessions))
+                "stats" -> SessionStats.stats(user.sessions)
               )
             )
 
             // Update the stats
-            bsonUsersCollection.update(selector, modifier, multi = false).map(updateResult => {
+            bsonSessionsCollection.update(selector, modifier, multi = false).map(updateResult => {
               if (updateResult.ok) {
                 Ok("updated")
               } else {
