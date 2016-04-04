@@ -3,49 +3,51 @@
 # ~~~~
 
 # Home page
-GET         /                          controllers.Application.index
+GET         /                       controllers.Application.home
 
-# Go the the about page
-GET         /about                     controllers.Application.about
+# About page
+GET         /about                  controllers.Application.about
 
-# Get stats as JSON for the user id
-GET         /json/stats/:id            controllers.Sessions.getStats(id: Int)
+# Books page
+GET         /books                  controllers.Application.books
 
-# Get quotes as JSON for the user id
-GET         /json/quotes/:id           controllers.Application.getQuotes(id: Int)
-
-# Get movies as JSON for the user id
-GET         /json/movies/:id           controllers.Movies.getMovies(id: Int)
-
-# Get books as JSON for the user id
-GET         /json/books/:id            controllers.Application.getBooks(id: Int)
+# Movies page
+GET         /movies                 controllers.Application.movies
 
 # Go to the quotes page
-GET         /quotes                    controllers.Application.quotes()
+GET         /quotes                 controllers.Application.quotes
 
-# Go to the books page
-GET         /books                     controllers.Application.books()
+# Get stats as JSON for the user id
+GET         /json/stats/:id         controllers.Sessions.getStats(id: Int)
 
-# Go to the movies page
-GET         /movies                    controllers.Application.movies()
+# Get quotes as JSON for the user id
+GET         /json/quotes/:id        controllers.Application.getQuotes(id: Int)
+
+# Get movies as JSON for the user id
+GET         /json/movies/:id        controllers.Movies.getMovies(id: Int)
+
+# Get books as JSON for the user id
+GET         /json/books/:id         controllers.Books.getBooks(id: Int)
 
 # Start a study session
-POST        /start                     controllers.Sessions.startSession()
+POST        /study/start            controllers.Sessions.startSession()
 
 # Stop a study session
-POST        /stop                      controllers.Sessions.stopSession()
+POST        /study/stop             controllers.Sessions.stopSession()
 
 # Abort a study session
-POST        /abort                     controllers.Sessions.abortSession()
+POST        /study/abort            controllers.Sessions.abortSession()
 
-POST        /update                    controllers.Sessions.updateSessionStats()
+# Add a subject for study sessions
+POST        /study/add              controllers.Sessions.addSubject()
 
-# Update the stats for the given collection
-POST        /update/:collection        controllers.Application.routeUpdate(collection: String)
+# Update study stats
+POST        /study/update           controllers.Sessions.updateSessionStats()
 
-POST        /update/movies/:id         controllers.Movies.updateMovieStats(id: Int)
+# Update movie stats (remove this endpoint eventually)
+POST        /movies/update          controllers.Movies.updateMovieStats()
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file              controllers.Assets.at(path="/public", file)
+GET         /assets/*file           controllers.Assets.at(path="/public", file)
 
     

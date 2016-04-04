@@ -10,7 +10,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 /**
   *
-  * @param api Holds the reference to the db.
+  * @param api Holds the reference to the database.
   */
 class Users(val api: ReactiveMongoApi) {
 
@@ -19,6 +19,7 @@ class Users(val api: ReactiveMongoApi) {
     * @return
     */
   def bsonUsersCollection: BSONCollection = api.db.collection[BSONCollection]("users")
+
 
   /**
     * Check a string against a user's password

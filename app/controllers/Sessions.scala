@@ -8,7 +8,7 @@ import play.api.libs.ws.WSClient
 import play.api.mvc._
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import forms.{PasswordAndUserID, SessionStart, SessionStop}
+import forms.{AddSubjectForm, PasswordAndUserID, SessionStart, SessionStop}
 
 import scala.concurrent.Future
 
@@ -49,7 +49,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   }
 
 
-  def start() = Action.async { implicit request =>
+  def start = Action.async { implicit request =>
 
     SessionStart.startForm.bindFromRequest()(request).fold(
       badForm => Future(Ok("Invalid form")),
@@ -63,7 +63,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   }
 
 
-  def stop() = Action.async { implicit request =>
+  def stop = Action.async { implicit request =>
 
     SessionStop.stopForm.bindFromRequest()(request).fold(
       badForm => Future(Ok("Invalid form")),
@@ -72,7 +72,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   }
 
 
-  def abort() = Action.async { implicit request =>
+  def abort = Action.async { implicit request =>
 
     SessionStop.stopForm.bindFromRequest()(request).fold(
       badForm => Future(Ok("Invalid form")),
@@ -86,7 +86,21 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
     )
   }
 
-  def update() = Action.async { implicit request =>
+  def add = Action.async { implicit request =>
+
+    AddSubjectForm.form.bindFromRequest()(request).fold(
+      badForm => Future(Ok("Invalid form")),
+      goodForm => sessions.addSubject(goodForm.user_id, goodForm.subject).map(a => {
+        if (a) {
+          Ok(s"added ${goodForm.subject} to subject list")
+        } else {
+          Ok("error")
+        }
+      })
+    )
+  }
+
+  def update = Action.async { implicit request =>
 
     PasswordAndUserID.form.bindFromRequest()(request).fold(
       badForm => Future(Ok("")),
@@ -100,6 +114,8 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   def stopSession() = checked(stop)
 
   def abortSession() = checked(abort)
+
+  def addSubject() = checked(add)
 
   def updateSessionStats() = checked(update)
 

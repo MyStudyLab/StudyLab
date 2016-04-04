@@ -15,7 +15,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 /**
   *
-  * @param mongoApi Holds the reference to the db.
+  * @param mongoApi Holds the reference to the database.
   */
 class Sessions(val mongoApi: ReactiveMongoApi) {
 

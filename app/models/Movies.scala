@@ -61,7 +61,7 @@ class Movies(val api: ReactiveMongoApi) {
         // Construct the modifier
         val modifier = BSONDocument(
           "$set" -> BSONDocument(
-            "stats" -> stats(movieVec.movies)
+            "stats" -> Movies.stats(movieVec.movies)
           )
         )
 
@@ -82,12 +82,15 @@ class Movies(val api: ReactiveMongoApi) {
     // Get movies from db and add new movie
 
     // Now, write new stats to db
-    movieVec.map(_.map(a => stats(a)))
+    movieVec.map(_.map(a => Movies.stats(a)))
 
     ???
   }
 
 
+}
+
+object Movies {
   def stats(movieVec: Vector[Movie]): BSONDocument = {
 
     BSONDocument(
@@ -150,6 +153,5 @@ class Movies(val api: ReactiveMongoApi) {
     movieVec.flatMap(_.genres).groupBy(a => a).mapValues(_.length)
 
   }
-
 
 }
