@@ -4,16 +4,16 @@ import javax.inject.Inject
 
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.{JsBoolean, Json}
-import play.api.libs.ws.WSClient
 import play.api.mvc._
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import forms.{AddSubjectForm, PasswordAndUserID, SessionStart, SessionStop}
+import helpers.ResultInfo
 
 import scala.concurrent.Future
 
 
-class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: MessagesApi, ws: WSClient)
+class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: MessagesApi)
   extends Controller with MongoController with ReactiveMongoComponents with I18nSupport {
 
   val sessions = new models.Sessions(reactiveMongoApi)
@@ -49,43 +49,53 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   }
 
 
+  /**
+    * Invoke the model layer to start a new study session.
+    *
+    * @return
+    */
   def start = Action.async { implicit request =>
 
     SessionStart.startForm.bindFromRequest()(request).fold(
       badForm => Future(Ok("Invalid form")),
-      goodForm => sessions.startSession(goodForm.user_id, goodForm.subject).map(a => {
-        if (a) {
-          Ok(s"now studying ${goodForm.subject}")
-        } else {
-          Ok("error")
-        }
-      }))
+      goodForm => sessions.startSession(goodForm.user_id, goodForm.subject).map(resultInfo => Ok(resultInfo.message))
+    )
   }
 
 
+  /**
+    * Invoke the model layer to stop the current study session
+    *
+    * @return
+    */
   def stop = Action.async { implicit request =>
 
     SessionStop.stopForm.bindFromRequest()(request).fold(
       badForm => Future(Ok("Invalid form")),
-      goodForm => sessions.stopSession(goodForm.user_id).map(a => if (a) Ok("stopped") else Ok("error"))
+      goodForm => sessions.stopSession(goodForm.user_id).map(resultInfo => Ok(resultInfo.message))
     )
   }
 
 
+  /**
+    * Invoke the model layer to abort the current study session.
+    *
+    * @return
+    */
   def abort = Action.async { implicit request =>
 
     SessionStop.stopForm.bindFromRequest()(request).fold(
       badForm => Future(Ok("Invalid form")),
-      goodForm => sessions.abortSession(goodForm.user_id).map(a => {
-        if (a) {
-          Ok("aborted")
-        } else {
-          Ok("error")
-        }
-      })
+      goodForm => sessions.abortSession(goodForm.user_id).map(a => Ok(a.message))
     )
   }
 
+
+  /**
+    * Invoke the model layer to add a new study subject.
+    *
+    * @return
+    */
   def add = Action.async { implicit request =>
 
     AddSubjectForm.form.bindFromRequest()(request).fold(
@@ -100,14 +110,6 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
     )
   }
 
-  def update = Action.async { implicit request =>
-
-    PasswordAndUserID.form.bindFromRequest()(request).fold(
-      badForm => Future(Ok("")),
-      goodForm => sessions.updateStats(goodForm.user_id).map(a => if (a) Ok("updated") else Ok("error"))
-    )
-  }
-
 
   def startSession() = checked(start)
 
@@ -116,7 +118,5 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   def abortSession() = checked(abort)
 
   def addSubject() = checked(add)
-
-  def updateSessionStats() = checked(update)
 
 }

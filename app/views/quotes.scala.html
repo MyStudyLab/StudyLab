@@ -1,78 +1,78 @@
 @()(implicit messages: Messages)
 
-@siteTemplate("Jordan G. Dodson") {
+    @siteTemplate("Quotes") {
 
-    <div id="quote-list" class="container-fluid"></div>
+        <div id="quote-list" class="container-fluid"></div>
 
-    <script>
-            function loadJSONFile(path, callback) {
+        <script>
+                function loadJSONFile(path, callback) {
 
-                var httpRequest = new XMLHttpRequest();
+                    var httpRequest = new XMLHttpRequest();
 
-                httpRequest.onreadystatechange = function () {
-                    if (httpRequest.readyState === 4) {
-                        if (httpRequest.status === 200) {
+                    httpRequest.onreadystatechange = function () {
+                        if (httpRequest.readyState === 4) {
+                            if (httpRequest.status === 200) {
 
-                            // Parse the response text as JSON
-                            var data = JSON.parse(httpRequest.responseText);
+                                // Parse the response text as JSON
+                                var data = JSON.parse(httpRequest.responseText);
 
-                            if (callback) {
-                                callback(data);
+                                if (callback) {
+                                    callback(data);
+                                }
                             }
                         }
-                    }
-                };
-                httpRequest.open('GET', path);
-                httpRequest.send();
-            }
-
-
-            // Build an element for a single quote
-            function buildQuote(quote) {
-                var row = document.createElement("div");
-                var d1  = document.createElement("div");
-                var d2  = document.createTextNode(quote.text);
-                var d3  = document.createElement("div");
-
-
-                // The attribution string for the quote.
-                var attrib = null;
-
-                // Include as much information as possible in the attribution
-                if (quote.author !== "" && quote.source !== "") {
-                    attrib = quote.author + " - " + quote.source;
-                } else if (quote.author !== "") {
-                    attrib = quote.author;
-                } else if (quote.source !== "") {
-                    attrib = quote.source;
-                } else {
-                    attrib = "Unknown";
+                    };
+                    httpRequest.open('GET', path);
+                    httpRequest.send();
                 }
 
-                row.setAttribute("class", "row");
-                d1.setAttribute("class", "col-md-10 col-md-offset-1 quote raised-element");
-                d3.setAttribute("class", "quote-attrib");
 
-                d3.appendChild(document.createTextNode(attrib));
+                // Build an element for a single quote
+                function buildQuote(quote) {
+                    var row = document.createElement("div");
+                    var d1 = document.createElement("div");
+                    var d2 = document.createTextNode(quote.text);
+                    var d3 = document.createElement("div");
 
-                d1.appendChild(d2);
-                d1.appendChild(d3);
 
-                row.appendChild(d1);
+                    // The attribution string for the quote.
+                    var attribution;
 
-                return row;
-            }
-
-            loadJSONFile("/json/quotes/1", function (quotes) {
-
-                var quoteList = document.getElementById("quote-list");
-
-                for (var i = 0; i < quotes.length; i++) {
-
-                    if (Math.random() < 0.15) {
-                        quoteList.appendChild(buildQuote(quotes[i]))
+                    // Include as much information as possible in the attribution
+                    if (quote["author"] !== "" && quote["source"] !== "") {
+                        attribution = quote["author"] + " - " + quote["source"];
+                    } else if (quote["author"] !== "") {
+                        attribution = quote["author"];
+                    } else if (quote["source"] !== "") {
+                        attribution = quote["source"];
+                    } else {
+                        attribution = "Unknown";
                     }
+
+                    row.setAttribute("class", "row");
+                    d1.setAttribute("class", "col-md-10 col-md-offset-1 quote raised-element");
+                    d3.setAttribute("class", "quote-attribution");
+
+                    d3.appendChild(document.createTextNode(attribution));
+
+                    d1.appendChild(d2);
+                    d1.appendChild(d3);
+
+                    row.appendChild(d1);
+
+                    return row;
                 }
-            });
-    </script>
-}
+
+                loadJSONFile("/json/quotes/1", function (quotes) {
+
+                    var quoteList = document.getElementById("quote-list");
+
+                    for (var i = 0; i < quotes.length; i++) {
+
+                        if (Math.random() < 0.3) {
+                            quoteList.appendChild(buildQuote(quotes[i]))
+                        }
+                    }
+                });
+        </script>
+    }

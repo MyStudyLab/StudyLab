@@ -41,9 +41,6 @@ POST        /study/abort            controllers.Sessions.abortSession()
 # Add a subject for study sessions
 POST        /study/add              controllers.Sessions.addSubject()
 
-# Update study stats
-POST        /study/update           controllers.Sessions.updateSessionStats()
-
 # Update movie stats (remove this endpoint eventually)
 POST        /movies/update          controllers.Movies.updateMovieStats()
 

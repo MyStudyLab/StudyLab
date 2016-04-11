@@ -91,6 +91,7 @@ class Movies(val api: ReactiveMongoApi) {
 }
 
 object Movies {
+
   def stats(movieVec: Vector[Movie]): BSONDocument = {
 
     BSONDocument(
@@ -106,29 +107,35 @@ object Movies {
 
   }
 
+
   private def movieCount(movieVec: Vector[Movie]): Int = {
     movieVec.length
   }
+
 
   private def directorCount(movieVec: Vector[Movie]): Int = {
 
     movieVec.flatMap(_.directors).toSet.size
   }
 
+
   private def actorCount(movieVec: Vector[Movie]): Int = {
 
     movieVec.flatMap(_.actors).toSet.size
   }
+
 
   private def moviesPerDirector(movieVec: Vector[Movie]): Map[String, Int] = {
 
     movieVec.flatMap(_.directors).groupBy(a => a).mapValues(_.length)
   }
 
+
   private def moviesPerActor(movieVec: Vector[Movie]): Map[String, Int] = {
 
     movieVec.flatMap(_.actors).groupBy(a => a).mapValues(_.length)
   }
+
 
   private def cumulativeMovies(movieVec: Vector[Movie]): Vector[(Long, Int)] = {
 
@@ -144,9 +151,11 @@ object Movies {
 
   }
 
+
   private def moviesPerReleaseYear(movieVec: Vector[Movie]): Vector[(Int, Int)] = {
     movieVec.filter(_.releaseYear != 0).groupBy(_.releaseYear).mapValues(_.length).toVector.sortBy(_._1)
   }
+
 
   private def moviesPerGenre(movieVec: Vector[Movie]): Map[String, Int] = {
 
