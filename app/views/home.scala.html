@@ -143,7 +143,7 @@
                 return tmp;
             }
 
-            function getCumulativeGooglePlotDrawer(plotData, elementId) {
+            function getCumulativeGooglePlotDrawer(cumulativeData, elementId) {
 
                 var options = {
                     chart: {
@@ -174,9 +174,22 @@
                     curveType: 'function'
                 };
 
-                convertDates(plotData, 0);
+                convertDates(cumulativeData, 0);
 
-                return getGoogleMaterialPlotDrawer(plotData, options, "Line", elementId);
+                function tmp() {
+
+                    var columnLabels = [["Date", "Cumulative Hours Studied"]];
+
+                    var chart = new google.charts.Line(document.getElementById(elementId));
+
+                    var table = google.visualization.arrayToDataTable(columnLabels.concat(cumulativeData));
+
+                    chart.draw(table, google.charts.Line.convertOptions(options));
+
+
+                }
+
+                return tmp;
             }
 
             function getSlidingAverageGooglePlotDrawer(plotData, elementId) {
@@ -211,7 +224,7 @@
                     curveType: 'function'
                 };
 
-                convertDates(plotData, 0);
+                convertDatesWithRows(plotData, 0);
 
                 return getGoogleMaterialPlotDrawer(plotData, options, "Line", elementId);
             }
@@ -244,14 +257,14 @@
                     curveType: 'function'
                 };
 
-                convertDates(plotData, 0);
+                convertDatesWithRows(plotData, 0);
 
                 return getGoogleMaterialPlotDrawer(plotData, options, "Line", elementId);
             }
 
 
             // Returns a function that will draw the SubjectTotals plot
-            function getSubjectTotalsGooglePlotDrawer(plotData, elementId) {
+            function getSubjectTotalsGooglePlotDrawer(subjectTotals, elementId) {
 
                 var options = {
                     chart: {
@@ -279,7 +292,19 @@
                     colors: ['green']
                 };
 
-                return getGoogleMaterialPlotDrawer(plotData, options, "Bar", elementId);
+
+                function tmp() {
+
+                    var columnLabels = [["Subject", "Total"]];
+
+                    var chart = new google.charts.Bar(document.getElementById(elementId));
+
+                    var table = google.visualization.arrayToDataTable(columnLabels.concat(subjectTotals));
+
+                    chart.draw(table, google.charts.Bar.convertOptions(options));
+                }
+
+                return tmp;
             }
 
 
@@ -390,8 +415,14 @@
             }
 
             // Convert the values in the given columns to Date objects
-            function convertDates(plotData, column) {
+            function convertDatesWithRows(plotData, column) {
                 plotData.rows.forEach(function (elem, i, self) {
+                    elem[column] = new Date(elem[0]);
+                });
+            }
+
+            function convertDates(plotData, column) {
+                plotData.forEach(function (elem, i, self) {
                     elem[column] = new Date(elem[0]);
                 });
             }

@@ -3,7 +3,7 @@ package models
 import reactivemongo.bson.Macros
 
 
-case class SessionData(user_id: Int, subjects: List[String], status: UserStatus, sessions: Vector[Session])
+case class SessionData(user_id: Int, subjects: Vector[String], status: UserStatus, sessions: Vector[Session])
 
 object SessionData {
 

@@ -19,37 +19,53 @@ import scala.collection.mutable
 
 
 /**
+  * Model layer to manage study sessions.
   *
   * @param mongoApi Holds the reference to the database.
   */
 class Sessions(val mongoApi: ReactiveMongoApi) {
 
+  // An interface to the sessions collection as JSON
   def jsonSessionsCollection: JSONCollection = mongoApi.db.collection[JSONCollection]("sessions")
 
+  // An interface to the sessions collection as BSON
   def bsonSessionsCollection: BSONCollection = mongoApi.db.collection[BSONCollection]("sessions")
 
+  // A result indicating that the user was already studying.
   val alreadyStudying = ResultInfo(success = false, "Already studying")
 
+  // A result indcating that the user was not studying.
   val notStudying = ResultInfo(success = false, "Not studying")
 
+  // A result indicating that the given subject was invalid.
   val invalidSubject = ResultInfo(success = false, "Invalid subject")
 
-  def getStatsAsJSON(user_id: Int): Future[Option[JsObject]] = {
 
-    val zone = ZoneId.of("America/Chicago")
-
-    val nowMilli = ZonedDateTime.now(zone).toInstant.toEpochMilli
+  /**
+    * Get study stats as JSON.
+    *
+    * @param user_id The user ID for which to get study stats.
+    * @return
+    */
+  def getStatsAsJSON(user_id: Int): Future[JsObject] = {
 
     // Add the current epoch millisecond to the JSON response
     def addTime(js: JsObject): JsObject = {
-      js +("currentTime", JsNumber(nowMilli))
+      js + ("currentTime" -> JsNumber(System.currentTimeMillis()))
+    }
+
+    // Add the success of the request to the JSON response.
+    def addResponseStatus(js: JsObject, success: Boolean): JsObject = {
+      js + ("success" -> JsBoolean(success))
     }
 
     val selector = Json.obj("user_id" -> user_id)
 
     val projector = Json.obj("stats" -> 1, "status" -> 1, "_id" -> 0)
 
-    jsonSessionsCollection.find(selector, projector).one[JsObject].map(_.map(js => addTime(js)))
+    jsonSessionsCollection.find(selector, projector).one[JsObject].map(optJS =>
+      optJS.fold(Json.obj("success" -> false))(js => addResponseStatus(addTime(js), success = true))
+    )
   }
 
 
@@ -66,9 +82,9 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val projector = BSONDocument("sessions" -> 0, "stats" -> 0, "_id" -> 0)
 
-    bsonSessionsCollection.find(selector, projector).one[StatusData].flatMap(optStatus =>
+    bsonSessionsCollection.find(selector, projector).one[StatusData].flatMap(optStatusData =>
 
-      optStatus.fold(Future(ResultInfo.badUsernameOrPass))((data: StatusData) => {
+      optStatusData.fold(Future(ResultInfo.badUsernameOrPass))((data: StatusData) => {
 
         if (data.status.isStudying) Future(alreadyStudying)
         else if (!data.subjects.contains(subject)) Future(invalidSubject)
@@ -84,7 +100,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // Update the status
           bsonSessionsCollection.update(selector, modifier, multi = false).map(a =>
-            if (a.ok) ResultInfo(a.ok, s"Now studying $subject")
+            if (a.ok) ResultInfo(success = true, s"Now studying $subject")
             else ResultInfo.databaseError
           )
         }
@@ -177,7 +193,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     * @param subject The new subject.
     * @return
     */
-  def addSubject(user_id: Int, subject: String): Future[Boolean] = {
+  def addSubject(user_id: Int, subject: String): Future[ResultInfo] = {
 
     val selector = BSONDocument("user_id" -> user_id)
 
@@ -187,9 +203,9 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { optData =>
 
       // Check the success of the query
-      optData.fold(Future(false))(data => {
+      optData.fold(Future(ResultInfo.badUsernameOrPass))(data => {
 
-        if (data.subjects.contains(subject)) Future(true)
+        if (data.subjects.contains(subject)) Future(ResultInfo(success = true, "Subject already added."))
         else {
 
           // Construct the modifier
@@ -200,7 +216,9 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           )
 
           // Add the new subject
-          bsonSessionsCollection.update(selector, modifier, multi = false).map(_.ok)
+          bsonSessionsCollection.update(selector, modifier, multi = false).map(a =>
+            if (a.ok) ResultInfo(success = true, s"Successfully added $subject.")
+            else ResultInfo.databaseError)
         }
       })
     }
@@ -259,8 +277,8 @@ object Sessions {
       "dailyAverage" -> BSONDouble(dailyAverage),
       "currentStreak" -> BSONInteger(streaks._1),
       "longestStreak" -> BSONInteger(streaks._2),
-      "subjectTotals" -> subjectTotalsGoogle(sessions),
-      "cumulative" -> cumulativeGoogle(sessions),
+      "subjectTotals" -> subjectTotals(sessions).toVector.sortBy(p => -p._2).map(p => BSONArray(p._1, p._2)),
+      "cumulative" -> cumulative(sessions).map(p => BSONArray(BSONLong(p._1), BSONDouble(p._2))),
       "averageSession" -> averageSessionGoogle(sessions),
       "subjectCumulative" -> subjectCumulativeGoogle(sessions),
       "probability" -> probabilityGoogle(100)(sessions),
@@ -387,19 +405,6 @@ object Sessions {
   }
 
 
-  def subjectTotalsGoogle(sessions: Vector[Session]): BSONDocument = {
-
-    val sortedTotals = subjectTotals(sessions).toVector.sortBy(p => -p._2)
-
-    BSONDocument(
-      "columns" -> BSONArray(
-        BSONArray(BSONString("string"), BSONString("Subject")),
-        BSONArray(BSONString("number"), BSONString("Total Hours"))
-      ),
-      "rows" -> BSONArray(sortedTotals.map(p => BSONArray(p._1, p._2)))
-    )
-  }
-
   def cumulative(sessions: Vector[Session]): Vector[(Long, Double)] = {
 
     val boundsAndGroups = groupDays(ZoneId.of("America/Chicago"))(sessions)
@@ -417,18 +422,6 @@ object Sessions {
     cumulatives
   }
 
-  def cumulativeGoogle(sessions: Vector[Session]): BSONDocument = {
-
-    val cumulatives = cumulative(sessions)
-
-    BSONDocument(
-      "columns" -> BSONArray(
-        BSONArray(BSONString("date"), BSONString("Date")),
-        BSONArray(BSONString("number"), BSONString("Cumulative Hours"))
-      ),
-      "rows" -> BSONArray(cumulatives.map(p => BSONArray(BSONLong(p._1), BSONDouble(p._2))))
-    )
-  }
 
   def slidingAverage(radius: Int)(sessions: Vector[Session]): Vector[(Long, Double)] = {
 
@@ -604,6 +597,7 @@ object Sessions {
     )
 
   }
+
 
   def probabilityOfDailyTotal(zone: ZoneId)(sessions: Vector[Session]): Vector[(Int, Int)] = {
 
