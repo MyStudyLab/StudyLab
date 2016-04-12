@@ -34,7 +34,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   // A result indicating that the user was already studying.
   val alreadyStudying = ResultInfo(success = false, "Already studying")
 
-  // A result indcating that the user was not studying.
+  // A result indicating that the user was not studying.
   val notStudying = ResultInfo(success = false, "Not studying")
 
   // A result indicating that the given subject was invalid.
