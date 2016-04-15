@@ -2,7 +2,7 @@ package models
 
 import reactivemongo.bson.Macros
 
-case class User(user_id: Int, password: String, name: String)
+case class User(user_id: Int, password: String, name: String, joined: Long)
 
 object User {
 

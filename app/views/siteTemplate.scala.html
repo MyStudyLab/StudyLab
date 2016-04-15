@@ -1,10 +1,10 @@
-@(title: String)(content: Html)
+@(pageTitle: String)(content: Html)
 
 <!DOCTYPE html>
 
 <html lang="en-US">
     <head>
-        <title>Jordan G. Dodson - @title</title>
+        <title>Jordan G. Dodson - @pageTitle</title>
 
         <meta name="author" content="Jordan G. Dodson">
 
@@ -15,10 +15,10 @@
         <meta charset="UTF-8">
 
             <!-- Google charts loader -->
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script src="https://www.gstatic.com/charts/loader.js" type="text/javascript"></script>
 
             <!-- Favicon -->
-        <link rel="shortcut icon" href="@routes.Assets.at("images/favicon.ico")">
+        <link href="@routes.Assets.at("images/favicon.ico")" rel="icon" type="image/x-icon">
 
             <!-- Roboto font from Google -->
         <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet" type="text/css">
@@ -26,12 +26,13 @@
             <!-- Bootstrap -->
         <link href="@routes.Assets.at("stylesheets/bootstrap/3.3.6/css/bootstrap.min.css")" rel="stylesheet" type="text/css">
 
-            <!-- Font awesome glyphicons -->
+            <!-- Font awesome -->
         <link href="@routes.Assets.at("stylesheets/font-awesome/4.5.0/css/font-awesome.min.css")" rel="stylesheet" type="text/css">
 
             <!-- Static assets -->
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+        <link href="@routes.Assets.at("stylesheets/main.css")" rel="stylesheet" type="text/css">
 
+            <!-- A message to fellow developers-->
         <script>
                 console.log(
                         "If you're reading this, I assume you to be a fellow developer. " +
@@ -60,8 +61,8 @@
     </head>
     <body>
 
-            <!-- Navbar -->
-        <nav class="navbar navbar-inverse">
+            <!-- Navbar with links to other profiles-->
+        <nav class="navbar navbar-inverse navbar-margin-bottom">
 
             <div class="container-fluid">
 
@@ -70,6 +71,8 @@
                 </div>
 
                 <div class="collapse navbar-collapse">
+
+                        <!-- Links to other pages on the site-->
                     <ul class="nav navbar-nav">
                         <li>
                             <a href="@routes.Assets.at("pdfs/resume.pdf")">Resume</a>
@@ -92,33 +95,41 @@
                         </li>
                     </ul>
 
+                        <!-- Links to other profiles-->
                     <ul id="nav-social-glyph-links" class="nav navbar-nav navbar-right">
 
                             <!-- Link to my Github profile.-->
                         <li>
                             <a id="nav-github-link" href="https://www.github.com/pilgrimshadow">
-                                <span class="fa fa-lg fa-github"></span>
+                                <span class="fa fa-lg fa-github" aria-hidden="true"></span>
                             </a>
                         </li>
 
                             <!-- Link to my Twitter profile.-->
                         <li>
                             <a id="nav-twitter-link" href="https://www.twitter.com/jgdodson_">
-                                <span class="fa fa-lg fa-twitter"></span>
+                                <span class="fa fa-lg fa-twitter" aria-hidden="true"></span>
                             </a>
                         </li>
 
                             <!-- Link to my LinkedIn profile.-->
                         <li>
                             <a id="nav-linkedin-link" href="https://www.linkedin.com/in/jgdodson">
-                                <span class="fa fa-lg fa-linkedin"></span>
+                                <span class="fa fa-lg fa-linkedin" aria-hidden="true"></span>
                             </a>
                         </li>
 
                             <!-- Link to my Stack Exchange profile.-->
                         <li>
                             <a id="nav-stackexchange-link" href="http://www.stackexchange.com/users/3733943/pilgrimshadow">
-                                <span><img class="img-responsive" src="@routes.Assets.at("images/stack_exchange_icon.png")"></span>
+                                <span class="fa fa-lg fa-stack-exchange" aria-hidden="true"></span>
+                            </a>
+                        </li>
+
+                            <!-- Link to my Hackernews profile.-->
+                        <li>
+                            <a id="nav-hackernews-link" href="https://news.ycombinator.com/user?id=jgdodson">
+                                <span class="fa fa-lg fa-y-combinator-square" aria-hidden="true"></span>
                             </a>
                         </li>
 
@@ -139,8 +150,6 @@
                 </div>
             </div>
         </nav>
-
-        <div class="header-content-padding"></div>
 
         @content
 

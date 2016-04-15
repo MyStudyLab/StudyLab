@@ -2,10 +2,9 @@
 
 @siteTemplate("Homepage") {
 
-    <!-- The body of the page. Contains all charts. -->
     <div class="container-fluid">
 
-        <div class="row smallLowerPadding">
+        <div class="row small-margin-bottom">
             <div class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="introMessage">
                     Since <span id="startDate" class="introMessageValue"></span>
@@ -15,53 +14,66 @@
                     Today, I've programmed for <span id="todaysTotal" class="introMessageValue"></span> hours.
                     My longest programming streak is <span id="longestStreak" class="introMessageValue"></span>
                     days, and I'm currently on a <span id="currentStreak" class="introMessageValue"></span>
-                    day streak. Scroll down for more detailed statistics.
+                    day streak.
 
                 </div>
             </div>
         </div>
 
-
-        <div class="row smallLowerPadding">
+        <div class="row small-margin-bottom">
             <div class="col-sm-offset-1 col-sm-10 raised-element">
-                <div id="todaysSessionsGooglePlot" class=""></div>
+                <div id="todaysSessionsPlot" class="loading-icon">
+                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                </div>
             </div>
         </div>
 
 
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="cumulativeGooglePlot" class="googlePlotContainer"></div>
+                <div id="cumulativePlot" class="googlePlotContainer loading-icon">
+                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                </div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="subjectTotalsGooglePlot" class="googlePlotContainer"></div>
+                <div id="subjectTotalsPlot" class="googlePlotContainer loading-icon">
+                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                </div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="subjectCumulativeGooglePlot" class="googlePlotContainer"></div>
+                <div id="subjectCumulativePlot" class="googlePlotContainer loading-icon">
+                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                </div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="averageSessionGooglePlot" class="googlePlotContainer"></div>
+                <div id="averageSessionPlot" class="googlePlotContainer loading-icon">
+                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                </div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="probabilityGooglePlot" class="googlePlotContainer"></div>
+                <div id="probabilityPlot" class="googlePlotContainer loading-icon">
+                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                </div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="slidingAverageGooglePlot" class="googlePlotContainer"></div>
+                <div id="slidingAveragePlot" class="googlePlotContainer loading-icon">
+                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                </div>
             </div>
         </div>
 
@@ -378,9 +390,6 @@
                     vAxis: {
                         textStyle: {
                             fontSize: 20
-                        },
-                        viewWindow: {
-                            max: max + 0.05
                         }
                     },
                     colors: ['green']
@@ -441,6 +450,12 @@
                 // TODO: Remove this when done debugging
                 console.log(data);
 
+                var languages = data["subjects"].filter(function (elem, i, arr) {
+                    return elem["isLanguage"];
+                });
+
+                console.log(languages.length);
+
 
                 // Incorporate data for current session where applicable
                 if (data.status.isStudying) {
@@ -465,15 +480,17 @@
 
                 // Only show the current day's overview if the user has studied today.
                 if (data.stats.introMessage.todaysSessionsGoogle.rows.length > 0) {
-                    google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(data.stats.introMessage.todaysSessionsGoogle, "todaysSessionsGooglePlot"));
+                    google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(data.stats.introMessage.todaysSessionsGoogle, "todaysSessionsPlot"));
+                } else {
+                    document.getElementById("todaysSessionsPlot").style.display = "none";
                 }
 
-                google.charts.setOnLoadCallback(getSlidingAverageGooglePlotDrawer(data.stats.slidingAverage, "slidingAverageGooglePlot"));
-                google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(data.stats.cumulative, "cumulativeGooglePlot"));
-                google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(data.stats.subjectCumulative, "subjectCumulativeGooglePlot"));
-                google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(data.stats.subjectTotals, "subjectTotalsGooglePlot"));
-                google.charts.setOnLoadCallback(getAverageSessionGooglePlotDrawer(data.stats.averageSession, "averageSessionGooglePlot"));
-                google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(data.stats.probability, "probabilityGooglePlot"));
+                google.charts.setOnLoadCallback(getSlidingAverageGooglePlotDrawer(data.stats.slidingAverage, "slidingAveragePlot"));
+                google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(data.stats.cumulative, "cumulativePlot"));
+                google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(data.stats.subjectCumulative, "subjectCumulativePlot"));
+                google.charts.setOnLoadCallback(getSubjectTotalsGooglePlotDrawer(data.stats.subjectTotals, "subjectTotalsPlot"));
+                google.charts.setOnLoadCallback(getAverageSessionGooglePlotDrawer(data.stats.averageSession, "averageSessionPlot"));
+                google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(data.stats.probability, "probabilityPlot"));
 
             })
     </script>

@@ -3,7 +3,14 @@ package models
 import reactivemongo.bson._
 
 
-case class Session(startTime: Long, endTime: Long, subject: String) {
+/**
+  * Represents a study session.
+  *
+  * @param subject   The subject being studied.
+  * @param startTime The time in milliseconds that the session began.
+  * @param endTime   The time in milliseconds that the session ended.
+  */
+case class Session(subject: String, startTime: Long, endTime: Long) {
 
   def durationHours(): Double = {
     (endTime - startTime).toDouble / (3600 * 1000)
@@ -14,6 +21,7 @@ case class Session(startTime: Long, endTime: Long, subject: String) {
   }
 
 }
+
 
 object Session {
 

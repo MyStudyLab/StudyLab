@@ -20,7 +20,6 @@
 }
 
 #todaysOverview {
-    font-family: Roboto, serif;
     font-size: xx-large;
     font-weight: bold;
     color: #757575;
@@ -30,8 +29,8 @@
     font-size: xx-large;
 }
 
-.header-content-padding {
-    height: 15px;
+.navbar-margin-bottom {
+    margin-bottom: 30px;
 }
 
 .navbar {
@@ -67,6 +66,14 @@
 
 #nav-linkedin-link {
     color: #0077b5;
+}
+
+#nav-stackexchange-link {
+    color: #46A2D9;
+}
+
+#nav-hackernews-link {
+    color: #e95b00;
 }
 
 .raised-element {
@@ -107,11 +114,19 @@
     color: #8f8f8f;
 }
 
-.smallLowerPadding {
-    padding-bottom: 30px;
+.small-margin-bottom {
+    margin-bottom: 30px;
+}
+
+.about-para {
+    margin-bottom: 80px;
+}
+
+.loading-icon {
+    text-align: center;
 }
 
 body {
-    font-family: Roboto, serif;
+    font-family: Roboto, "Open Sans", Helvetica, Arial, sans-serif;
     background-color: #f9f9fd;
 }

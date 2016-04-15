@@ -1,15 +1,13 @@
 package controllers
 
 import javax.inject.Inject
-
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.json.{JsBoolean, Json}
-import play.api.mvc._
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
+import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import forms.{AddSubjectForm, PasswordAndUserID, SessionStart, SessionStop}
-
 import scala.concurrent.Future
+import forms._
+
 
 /**
   * Controller to manage study sessions.
@@ -25,6 +23,9 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
 
   // User model
   val users = new models.Users(reactiveMongoApi)
+
+  // Response indicating the request form was invalid.
+  val invalidForm = Future(Ok("Invalid form."))
 
 
   def getStats(user_id: Int) = Action.async { implicit request =>
@@ -44,7 +45,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   def checked[A](action: Action[A]) = Action.async(action.parser) { implicit request =>
 
     PasswordAndUserID.form.bindFromRequest()(request).fold(
-      badForm => Future(Ok("Invalid Form.")),
+      badForm => invalidForm,
       goodForm => {
 
         users.checkPassword(goodForm.user_id, goodForm.password).flatMap(matched => {
@@ -68,7 +69,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   def start = Action.async { implicit request =>
 
     SessionStart.startForm.bindFromRequest()(request).fold(
-      badForm => Future(Ok("Invalid form.")),
+      badForm => invalidForm,
       goodForm => sessions.startSession(goodForm.user_id, goodForm.subject).map(resultInfo => Ok(resultInfo.message))
     )
   }
@@ -82,7 +83,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   def stop = Action.async { implicit request =>
 
     SessionStop.stopForm.bindFromRequest()(request).fold(
-      badForm => Future(Ok("Invalid form.")),
+      badForm => invalidForm,
       goodForm => sessions.stopSession(goodForm.user_id).map(resultInfo => Ok(resultInfo.message))
     )
   }
@@ -96,7 +97,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   def abort = Action.async { implicit request =>
 
     SessionStop.stopForm.bindFromRequest()(request).fold(
-      badForm => Future(Ok("Invalid form.")),
+      badForm => invalidForm,
       goodForm => sessions.abortSession(goodForm.user_id).map(a => Ok(a.message))
     )
   }
@@ -109,10 +110,34 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
     */
   def add = Action.async { implicit request =>
 
-    AddSubjectForm.form.bindFromRequest()(request).fold(
-      badForm => Future(Ok("Invalid form.")),
+    AddOrRemoveSubjectForm.form.bindFromRequest()(request).fold(
+      badForm => invalidForm,
       goodForm => sessions.addSubject(goodForm.user_id, goodForm.subject).map(a => Ok(a.message))
     )
+  }
+
+
+  def remove = Action.async { implicit request =>
+
+    AddOrRemoveSubjectForm.form.bindFromRequest()(request).fold(
+      badForm => invalidForm,
+      goodForm => sessions.removeSubject(goodForm.user_id, goodForm.subject).map(a => Ok(a.message))
+    )
+  }
+
+
+  /**
+    * Invoke the model layer to rename a study subject.
+    *
+    * @return
+    */
+  def rename = Action.async { implicit request =>
+
+    RenameSubjectForm.form.bindFromRequest()(request).fold(
+      badForm => invalidForm,
+      goodForm => sessions.renameSubject(goodForm.user_id, goodForm.oldName, goodForm.newName).map(a => Ok(a.message))
+    )
+
   }
 
 
@@ -123,5 +148,9 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   def abortSession() = checked(abort)
 
   def addSubject() = checked(add)
+
+  def removeSubject() = checked(remove)
+
+  def renameSubject() = checked(rename)
 
 }

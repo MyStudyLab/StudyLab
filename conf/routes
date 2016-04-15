@@ -38,8 +38,14 @@ POST        /study/stop             controllers.Sessions.stopSession()
 # Abort a study session
 POST        /study/abort            controllers.Sessions.abortSession()
 
-# Add a subject for study sessions
+# Add a study subject
 POST        /study/add              controllers.Sessions.addSubject()
+
+# Remove a study subject
+POST        /study/remove           controllers.Sessions.removeSubject()
+
+# Rename a study subject
+POST        /study/rename           controllers.Sessions.renameSubject()
 
 # Update movie stats (remove this endpoint eventually)
 POST        /movies/update          controllers.Movies.updateMovieStats()

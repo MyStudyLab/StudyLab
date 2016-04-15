@@ -9,7 +9,7 @@ import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
 import play.modules.reactivemongo.json.collection.JSONCollection
 import reactivemongo.api.collections.bson.BSONCollection
-import reactivemongo.bson.{BSONArray, BSONBoolean, BSONDocument, BSONDouble, BSONInteger, BSONLong, BSONString}
+import reactivemongo.bson.{BSONArray, BSONDocument, BSONDouble, BSONInteger, BSONLong, BSONString}
 import reactivemongo.play.json._
 
 import scala.concurrent.Future
@@ -61,7 +61,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = Json.obj("user_id" -> user_id)
 
-    val projector = Json.obj("stats" -> 1, "status" -> 1, "_id" -> 0)
+    val projector = Json.obj("stats" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
     jsonSessionsCollection.find(selector, projector).one[JsObject].map(optJS =>
       optJS.fold(Json.obj("success" -> false))(js => addResponseStatus(addTime(js), success = true))
@@ -80,16 +80,17 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("sessions" -> 0, "stats" -> 0, "_id" -> 0)
+    val projector = BSONDocument("status" -> 1, "subjects" -> 1, "user_id" -> 1, "_id" -> 0)
 
-    bsonSessionsCollection.find(selector, projector).one[StatusData].flatMap(optStatusData =>
+    bsonSessionsCollection.find(selector, projector).one[StatusAndSubjects].flatMap(opt =>
 
-      optStatusData.fold(Future(ResultInfo.badUsernameOrPass))((data: StatusData) => {
+      opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
-        if (data.status.isStudying) Future(alreadyStudying)
-        else if (!data.subjects.contains(subject)) Future(invalidSubject)
+        if (statsAndSubs.status.isStudying) Future(alreadyStudying)
+        else if (!statsAndSubs.subjects.map(_.name).contains(subject)) Future(invalidSubject)
         else {
 
+          // The modifier needed to start a session
           val modifier = BSONDocument(
             "$set" -> BSONDocument(
               "status.isStudying" -> true,
@@ -99,8 +100,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           )
 
           // Update the status
-          bsonSessionsCollection.update(selector, modifier, multi = false).map(a =>
-            if (a.ok) ResultInfo(success = true, s"Now studying $subject")
+          bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
+            if (result.ok) ResultInfo(success = true, s"Now studying $subject")
             else ResultInfo.databaseError
           )
         }
@@ -121,20 +122,20 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val projector = BSONDocument("_id" -> 0)
 
-    bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { optData =>
+    bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
 
-      optData.fold(Future(ResultInfo.badUsernameOrPass))((user: SessionData) => {
+      opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
 
-        if (!user.status.isStudying) Future(notStudying)
+        if (!sessionData.status.isStudying) Future(notStudying)
         else {
 
-          val newSession = Session(user.status.start, System.currentTimeMillis(), user.status.subject)
+          val newSession = Session(sessionData.status.subject, sessionData.status.start, System.currentTimeMillis())
 
-          // Construct the modifier
+          // The modifier needed to stop a session
           val modifier = BSONDocument(
             "$set" -> BSONDocument(
-              "stats" -> Sessions.stats(user.sessions :+ newSession),
-              "status.isStudying" -> BSONBoolean(false)
+              "stats" -> Sessions.stats(sessionData.sessions :+ newSession),
+              "status.isStudying" -> false
             ),
             "$push" -> BSONDocument(
               "sessions" -> newSession
@@ -142,8 +143,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           )
 
           // Add the new session and updated stats
-          bsonSessionsCollection.update(selector, modifier, multi = false).map(a =>
-            if (a.ok) ResultInfo(a.ok, "Finished studying")
+          bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
+            if (result.ok) ResultInfo(success = true, "Finished studying")
             else ResultInfo.databaseError)
         }
       })
@@ -161,15 +162,16 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("sessions" -> 0, "stats" -> 0, "_id" -> 0)
+    val projector = BSONDocument("status" -> 1, "subjects" -> 1, "_id" -> 0)
 
-    bsonSessionsCollection.find(selector, projector).one[StatusData].flatMap { optUser =>
+    bsonSessionsCollection.find(selector, projector).one[StatusAndSubjects].flatMap { opt =>
 
-      optUser.fold(Future(ResultInfo.badUsernameOrPass))((user: StatusData) => {
+      opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
-        if (!user.status.isStudying) Future(notStudying)
+        if (!statsAndSubs.status.isStudying) Future(notStudying)
         else {
 
+          // The modifier needed to abort a session
           val modifier = BSONDocument(
             "$set" -> BSONDocument(
               "status.isStudying" -> false
@@ -177,8 +179,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           )
 
           // Update the status
-          bsonSessionsCollection.update(selector, modifier, multi = false).map(a =>
-            if (a.ok) ResultInfo(success = true, "Study session aborted")
+          bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
+            if (result.ok) ResultInfo(success = true, "Study session aborted")
             else ResultInfo.databaseError)
         }
       })
@@ -197,29 +199,140 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("_id" -> 0)
+    val projector = BSONDocument("status" -> 1, "subjects" -> 1, "_id" -> 0)
 
     // Get the user's session data
-    bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { optData =>
+    bsonSessionsCollection.find(selector, projector).one[StatusAndSubjects].flatMap { opt =>
 
       // Check the success of the query
-      optData.fold(Future(ResultInfo.badUsernameOrPass))(data => {
+      opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
-        if (data.subjects.contains(subject)) Future(ResultInfo(success = true, "Subject already added."))
+        if (statsAndSubs.subjects.map(_.name).contains(subject)) Future(ResultInfo(success = true, "Subject already added."))
         else {
 
-          // Construct the modifier
+
+          // The modifier needed to add a subject
           val modifier = BSONDocument(
             "$push" -> BSONDocument(
-              "subjects" -> subject
+              "subjects" -> Subject(subject, System.currentTimeMillis(), isLanguage = false, "")
             )
           )
 
           // Add the new subject
-          bsonSessionsCollection.update(selector, modifier, multi = false).map(a =>
-            if (a.ok) ResultInfo(success = true, s"Successfully added $subject.")
+          bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
+            if (result.ok) ResultInfo(success = true, s"Successfully added $subject.")
             else ResultInfo.databaseError)
         }
+      })
+    }
+  }
+
+
+  /**
+    * Removes the given subject from the user's subject list.
+    *
+    * TODO: Under construction
+    *
+    * @param user_id The user ID for which to remove the subject.
+    * @param subject The subject to remove.
+    * @return
+    */
+  def removeSubject(user_id: Int, subject: String): Future[ResultInfo] = {
+
+    val selector = BSONDocument("user_id" -> user_id)
+
+    val projector = BSONDocument("sessions" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
+
+    // Get the user's session data
+    bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
+
+      // Check the success of the query
+      opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
+
+        if (!sessionData.subjects.map(_.name).contains(subject)) {
+          Future(ResultInfo(success = true, "Invalid subject."))
+        } else if (sessionData.sessions.map(_.subject).toSet.contains(subject)) {
+          Future(ResultInfo(success = false, s"Can't remove $subject. It has been studied."))
+        } else {
+
+          val newSubjects = sessionData.subjects.filterNot(_.name == subject)
+
+          // The modifier needed to add a subject
+          val modifier = BSONDocument(
+            "$set" -> BSONDocument(
+              "subjects" -> newSubjects
+            )
+          )
+
+          // Remove the subject
+          bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
+            if (result.ok) ResultInfo(success = true, s"Successfully added $subject.")
+            else ResultInfo.databaseError)
+        }
+      })
+    }
+
+  }
+
+
+  /**
+    * Rename an existing subject.
+    *
+    * @param user_id The user ID for which to rename the given subject.
+    * @param oldName The subject to rename.
+    * @param newName The new name.
+    * @return
+    */
+  def renameSubject(user_id: Int, oldName: String, newName: String): Future[ResultInfo] = {
+
+    val selector = BSONDocument("user_id" -> user_id)
+
+    val projector = BSONDocument("stats" -> 0, "_id" -> 0)
+
+    // Get the user's session data
+    bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
+
+      // Check the success of the query
+      opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
+
+        sessionData.subjects.find(_.name == oldName).fold(
+          Future(ResultInfo(success = false, s"$oldName is an invalid subject."))
+        )(oldSub => {
+
+          // Check if the new subject name is already in use
+          if (sessionData.subjects.map(_.name).contains(newName)) {
+            Future(ResultInfo(success = false, s"Can't rename to $newName. It is an existing subject."))
+          } else {
+
+            val newSub = Subject(newName, oldSub.added, oldSub.isLanguage, oldSub.description)
+
+            // Updated subject list using the new subject name
+            val newSubjects = sessionData.subjects.filterNot(_.name == oldName) :+ newSub
+
+            // Updated session data using the new subject name
+            val newSessions = sessionData.sessions.map(session => {
+              if (session.subject == oldName) Session(newName, session.startTime, session.endTime)
+              else session
+            })
+
+            // Updated stats using the new subject name
+            val newStats = Sessions.stats(newSessions)
+
+            // The modifier needed to rename a subject
+            val modifier = BSONDocument(
+              "$set" -> BSONDocument(
+                "subjects" -> newSubjects,
+                "sessions" -> newSessions,
+                "stats" -> newStats
+              )
+            )
+
+            // Add the new subject
+            bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
+              if (result.ok) ResultInfo(success = true, s"Successfully renamed $oldName to $newName.")
+              else ResultInfo.databaseError)
+          }
+        })
       })
     }
   }
@@ -238,15 +351,15 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     val projector = BSONDocument("_id" -> 0)
 
     // Query for the given user's session data
-    bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { optData =>
+    bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
 
       // Check the success of the query
-      optData.fold(Future(false))(data => {
+      opt.fold(Future(false))(sessionData => {
 
-        // Construct the modifier
+        // The modifier needed to update the study stats
         val modifier = BSONDocument(
           "$set" -> BSONDocument(
-            "stats" -> Sessions.stats(data.sessions)
+            "stats" -> Sessions.stats(sessionData.sessions)
           )
         )
 
@@ -257,6 +370,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   }
 
 }
+
 
 object Sessions {
 
@@ -523,7 +637,7 @@ object Sessions {
 
       val rem = sp._2.headOption.fold((None: Option[Session], None: Option[Session]))(sess => {
         if (sess.startTime < next) {
-          (Some(Session(sess.startTime, next, sess.subject)), Some(Session(next, sess.endTime, sess.subject)))
+          (Some(Session(sess.subject, sess.startTime, next)), Some(Session(sess.subject, next, sess.endTime)))
         } else {
           (None, Some(sess))
         }
@@ -678,7 +792,7 @@ object Sessions {
     val unsplitSessions = sessions.reverseIterator.takeWhile(s => s.endTime > since).toVector
 
     // Handle the case where a session spans midnight
-    val first = unsplitSessions.lastOption.map(s => Session(math.max(s.startTime, since), s.endTime, s.subject))
+    val first = unsplitSessions.lastOption.map(s => Session(s.subject, math.max(s.startTime, since), s.endTime))
 
     first.toVector ++ unsplitSessions.dropRight(1).reverse
   }
