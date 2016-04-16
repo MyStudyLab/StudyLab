@@ -231,8 +231,6 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   /**
     * Removes the given subject from the user's subject list.
     *
-    * TODO: Under construction
-    *
     * @param user_id The user ID for which to remove the subject.
     * @param subject The subject to remove.
     * @return
@@ -250,11 +248,12 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
       opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
 
         if (!sessionData.subjects.map(_.name).contains(subject)) {
-          Future(ResultInfo(success = true, "Invalid subject."))
+          Future(ResultInfo(success = false, "Invalid subject."))
         } else if (sessionData.sessions.map(_.subject).toSet.contains(subject)) {
           Future(ResultInfo(success = false, s"Can't remove $subject. It has been studied."))
         } else {
 
+          // New subject vector without the subject.
           val newSubjects = sessionData.subjects.filterNot(_.name == subject)
 
           // The modifier needed to add a subject
@@ -266,12 +265,11 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // Remove the subject
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
-            if (result.ok) ResultInfo(success = true, s"Successfully added $subject.")
+            if (result.ok) ResultInfo(success = true, s"Successfully removed $subject.")
             else ResultInfo.databaseError)
         }
       })
     }
-
   }
 
 
@@ -339,6 +337,67 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
 
   /**
+    * Merge two subjects, combining their sessions.
+    *
+    * TODO: Needs testing
+    *
+    * @param user_id   The user ID for which to merge the subjects.
+    * @param absorbed  The subject that will be absorbed.
+    * @param absorbing The subject that will absorb the other.
+    * @return
+    */
+  def mergeSubjects(user_id: Int, absorbed: String, absorbing: String): Future[ResultInfo] = {
+
+    val selector = BSONDocument("user_id" -> user_id)
+
+    val projector = BSONDocument("status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
+
+    // Get the user's session data
+    bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
+
+      // Check the success of the query
+      opt.fold(Future(ResultInfo.badUsernameOrPass))(data => {
+
+        val subjectNames = data.subjects.map(_.name)
+
+        if (!subjectNames.contains(absorbed)) {
+          Future(ResultInfo(success = true, s"Can't merge. $absorbed is an invalid subject."))
+        } else if (!subjectNames.contains(absorbing)) {
+          Future(ResultInfo(success = true, s"Can't merge. $absorbing is an invalid subject."))
+        } else {
+
+          // Updated subject vector without the absorbed subject name
+          val newSubjects = data.subjects.filterNot(_.name == absorbed)
+
+          // Updated session vector without the absorbed subject name
+          val newSessions = data.sessions.map(session => {
+            if (session.subject == absorbed) Session(absorbing, session.startTime, session.endTime)
+            else session
+          })
+
+          // Updated stats document computed from the new session vector
+          val newStats = Sessions.stats(newSessions)
+
+          // The modifier needed to merge the subjects
+          val modifier = BSONDocument(
+            "$set" -> BSONDocument(
+              "subjects" -> newSubjects,
+              "sessions" -> newSessions,
+              "stats" -> newStats
+            )
+          )
+
+          // Merge the subjects
+          bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
+            if (result.ok) ResultInfo(success = true, s"Successfully merged $absorbed into $absorbing.")
+            else ResultInfo.databaseError)
+        }
+      })
+    }
+  }
+
+
+  /**
     * Updates the study stats.
     *
     * @param user_id The user ID for which to update the study stats.
@@ -393,12 +452,12 @@ object Sessions {
       "longestStreak" -> BSONInteger(streaks._2),
       "subjectTotals" -> subjectTotals(sessions).toVector.sortBy(p => -p._2).map(p => BSONArray(p._1, p._2)),
       "cumulative" -> cumulative(sessions).map(p => BSONArray(BSONLong(p._1), BSONDouble(p._2))),
-      "averageSession" -> averageSessionGoogle(sessions),
+      "averageSession" -> averageSession(sessions).toVector.sortBy(p => -p._2).map(p => BSONArray(p._1, p._2)),
       "subjectCumulative" -> subjectCumulativeGoogle(sessions),
-      "probability" -> probabilityGoogle(100)(sessions),
+      "probability" -> probability(100)(sessions).map(p => BSONArray(BSONArray(p._1.getHour, p._1.getMinute, p._1.getSecond), BSONDouble(p._2))),
       "todaysSessions" -> todaysSessionsGoogle(sessions),
-      "slidingAverage" -> slidingAverageGoogle(15)(sessions),
-      "lastUpdated" -> BSONLong(System.currentTimeMillis())
+      "slidingAverage" -> slidingAverage(15)(sessions).map(p => BSONArray(p._1, p._2)),
+      "lastUpdated" -> System.currentTimeMillis()
     )
   }
 
@@ -442,7 +501,7 @@ object Sessions {
     BSONDocument(
       "start" -> BSONArray(BSONInteger(startZDT.getMonthValue), BSONInteger(startZDT.getDayOfMonth), BSONInteger(startZDT.getYear)),
       "daysSinceStart" -> BSONInteger(daysSinceStart(zone)(sessions).toInt),
-      "todaysTotal" -> BSONDouble(todaysTotal),
+      "todaysTotal" -> todaysTotal,
       "todaysSessionsGoogle" -> BSONDocument(
         "columns" -> BSONArray(
           BSONArray(BSONString("string"), BSONString("Row Label")),
@@ -551,20 +610,6 @@ object Sessions {
   }
 
 
-  def slidingAverageGoogle(radius: Int)(sessions: Vector[Session]): BSONDocument = {
-
-    val averages = slidingAverage(radius)(sessions)
-
-    BSONDocument(
-      "columns" -> BSONArray(
-        BSONArray(BSONString("date"), BSONString("Date")),
-        BSONArray(BSONString("number"), BSONString("Daily Total"))
-      ),
-      "rows" -> BSONArray(averages.map(p => BSONArray(BSONLong(p._1), BSONDouble(p._2))))
-    )
-  }
-
-
   def averageSession(sessions: Seq[Session]): Map[String, Double] = {
 
     val subTotals = mutable.Map[String, (Long, Long)]()
@@ -577,20 +622,6 @@ object Sessions {
     }
 
     subTotals.mapValues(pair => pair._1.toDouble / (pair._2 * 3600 * 1000)).toMap
-  }
-
-
-  def averageSessionGoogle(sessions: Seq[Session]): BSONDocument = {
-
-    val subTotals = averageSession(sessions).toVector.sortBy(pair => -pair._2)
-
-    BSONDocument(
-      "columns" -> BSONArray(
-        BSONArray(BSONString("string"), BSONString("Subject")),
-        BSONArray(BSONString("number"), BSONString("Average Session Length"))
-      ),
-      "rows" -> BSONArray(subTotals.map(p => BSONArray(BSONString(p._1), BSONDouble(p._2))))
-    )
   }
 
 
@@ -851,31 +882,5 @@ object Sessions {
     // Rearrange so that google charts displays them correctly
     (back ++ front).toVector
   }
-
-
-  def probabilityGoogle(numBins: Int)(sessions: Vector[Session]): BSONDocument = {
-
-    val probs = probability(numBins)(sessions)
-
-
-    BSONDocument(
-      "columns" -> BSONArray(
-        BSONArray(BSONString("timeofday"), BSONString("Time of Day")),
-        BSONArray(BSONString("number"), BSONString("Probability"))
-      ),
-      "rows" -> BSONArray(probs.map(p => BSONArray(BSONArray(p._1.getHour, p._1.getMinute, p._1.getSecond), BSONDouble(p._2)))),
-      "options" -> BSONDocument(
-        "chart" -> BSONDocument(
-          "title" -> "Probability That I'm Programming"
-        ),
-        "legend" -> BSONDocument(
-          "position" -> "none"
-        ),
-        "colors" -> BSONArray("green"),
-        "dataOpacity" -> 0.25
-      )
-    )
-  }
-
 
 }

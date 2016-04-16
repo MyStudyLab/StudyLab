@@ -3,10 +3,6 @@
     color: green;
 }
 
-.introMessageValue:hover {
-    color: #ff4730;
-}
-
 #introMessage {
     font-size: xx-large;
 }
@@ -17,12 +13,6 @@
 
 .spaced-plot {
     margin-bottom: 80px;
-}
-
-#todaysOverview {
-    font-size: xx-large;
-    font-weight: bold;
-    color: #757575;
 }
 
 #about-para {
@@ -36,7 +26,7 @@
 .navbar {
     border-radius: 0;
     font-size: medium;
-    box-shadow: 0 5px 3px #3d4643;
+    box-shadow: 0 2px 3px #3d4643;
 }
 
 #nav-social-glyph-links {
