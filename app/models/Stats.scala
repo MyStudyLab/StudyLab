@@ -35,7 +35,7 @@ object Stats {
         "todaysTotal" -> stats.todaysTotal,
         "todaysSessions" -> stats.todaysSessions,
         "cumulative" -> stats.cumulative.map(p => BSONArray(p._1, p._2)),
-        "subjectTotals" -> stats.subjectTotals.toVector.map(p => BSONArray(p._1, p._2)),
+        "subjectTotals" -> stats.subjectTotals.toVector.sortBy(p => -p._2).map(p => BSONArray(p._1, p._2)),
         "probability" -> stats.probability,
         "movingAverage" -> stats.movingAverage.map(p => BSONArray(p._1, p._2)),
         "averageSession" -> stats.averageSession.toVector.sortBy(p => -p._2).map(p => BSONArray(p._1, p._2))
@@ -44,7 +44,7 @@ object Stats {
 
   }
 
-  implicit object StatsWritable extends Writes[Stats] {
+  implicit object StatsWrites extends Writes[Stats] {
 
     def writes(stats: Stats): JsValue = {
 
@@ -58,7 +58,11 @@ object Stats {
         "dailyAverage" -> stats.dailyAverage,
         "todaysTotal" -> stats.todaysTotal,
         "todaysSessions" -> stats.todaysSessions,
-        "cumulative" -> stats.cumulative.map(p => JsArray(Seq(JsNumber(p._1), JsNumber(p._2))))
+        "cumulative" -> stats.cumulative.map(p => JsArray(Seq(JsNumber(p._1), JsNumber(p._2)))),
+        "subjectTotals" -> stats.subjectTotals.toVector.sortBy(p => -p._2).map(p => JsArray(Seq(JsString(p._1), JsNumber(p._2)))),
+        "probability" -> stats.probability,
+        "movingAverage" -> stats.movingAverage.map(p => JsArray(Seq(JsNumber(p._1), JsNumber(p._2)))),
+        "averageSession" -> stats.averageSession.toVector.sortBy(p => -p._2).map(p => JsArray(Seq(JsString(p._1), JsNumber(p._2))))
       )
     }
 
@@ -103,7 +107,7 @@ object Stats {
 
     Stats((startZDT.getMonthValue, startZDT.getDayOfMonth, startZDT.getYear), daysSinceStart(zone)(sessions), totalHours, currentStreak, longestStreak,
       System.currentTimeMillis(), dailyAverage, todaysTotal, todaysSessionsVec, cumulative(sessions), subjectTotals(sessions),
-      probability(288)(sessions), movingAverage(15)(sessions), averageSession(sessions)
+      probability(144)(sessions), movingAverage(15)(sessions), averageSession(sessions)
     )
   }
 
@@ -444,21 +448,6 @@ object Stats {
     val first = unsplitSessions.lastOption.map(s => Session(s.subject, math.max(s.startTime, since), s.endTime))
 
     first.toVector ++ unsplitSessions.dropRight(1).reverse
-  }
-
-
-  private def todaysSessionsGoogle(sessions: Vector[Session]): BSONDocument = {
-
-    BSONDocument(
-      "columns" -> BSONArray(
-        BSONArray(BSONString("string"), BSONString("Row Label")),
-        BSONArray(BSONString("string"), BSONString("Bar Label")),
-        BSONArray(BSONString("number"), BSONString("Start")),
-        BSONArray(BSONString("number"), BSONString("Finish"))
-      ),
-      "rows" -> BSONArray(todaysSessions(ZoneId.of("America/Chicago"))(sessions).map(s => BSONArray(BSONString("What I've Done Today"), BSONString(s.subject), BSONLong(s.startTime), BSONLong(s.endTime))))
-    )
-
   }
 
 

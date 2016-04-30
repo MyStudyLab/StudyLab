@@ -36,7 +36,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
 
     // Return the result with the current time in the users timezone
     sessions.getStats(user_id).map(optStats => optStats.fold(Ok(Json.obj("success" -> false)))(stats =>
-      Ok(Stats.StatsWritable.writes(stats))))
+      Ok(Stats.StatsWrites.writes(stats))))
   }
 
 

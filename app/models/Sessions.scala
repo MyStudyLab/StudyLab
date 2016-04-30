@@ -1,9 +1,7 @@
 package models
 
 import helpers.ResultInfo
-import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
-import play.modules.reactivemongo.json.collection.JSONCollection
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json._
