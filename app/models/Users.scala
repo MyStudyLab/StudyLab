@@ -14,12 +14,46 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
   */
 class Users(val api: ReactiveMongoApi) {
 
+
+  def bsonUsersCollection: BSONCollection = api.db.collection[BSONCollection]("users")
+
+
   /**
+    * Get a new and unique user ID.
     *
     * @return
     */
-  def bsonUsersCollection: BSONCollection = api.db.collection[BSONCollection]("users")
+  def getNewUserID(): Future[Long] = {
 
+    val trial: Long = (math.random * 1000000000L).toLong
+
+    val selector = BSONDocument("user_id" -> trial)
+
+    val projector = BSONDocument("_id" -> 0)
+
+    bsonUsersCollection.find(selector, projector).one[User].flatMap(_.fold(Future(trial))(user => getNewUserID()))
+  }
+
+
+  /**
+    *
+    * @param firstName The first name of the new user.
+    * @param lastName  The last name of the new user.
+    * @param email
+    * @param password
+    * @return
+    */
+  def addNewUser(firstName: String, lastName: String, email: String, password: String): Future[Boolean] = {
+
+    getNewUserID().flatMap(newUserID => {
+
+      val newUser = User(0, firstName, lastName, email, password, System.currentTimeMillis())
+
+      bsonUsersCollection.insert(newUser).map(result => {
+        result.ok
+      })
+    })
+  }
 
   /**
     * Check a string against a user's password
@@ -32,7 +66,7 @@ class Users(val api: ReactiveMongoApi) {
 
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("sessions" -> 0, "_id" -> 0)
+    val projector = BSONDocument("_id" -> 0)
 
     bsonUsersCollection.find(selector, projector).one[User].map(optUser =>
 

@@ -1,5 +1,6 @@
 package models
 
+import play.api.libs.json._
 import reactivemongo.bson._
 
 
@@ -28,5 +29,7 @@ object Session {
   implicit val sessionReader = Macros.reader[Session]
 
   implicit val sessionWriter = Macros.writer[Session]
+
+  implicit val sessionWrites = Json.writes[Session]
 
 }

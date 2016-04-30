@@ -54,7 +54,7 @@
 
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="slidingAveragePlot" class="googlePlotContainer loading-icon">
+                <div id="movingAveragePlot" class="googlePlotContainer loading-icon">
                     <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
                 </div>
             </div>
@@ -100,6 +100,12 @@
             }
 
 
+            function subjectTotals(sessions) {
+
+
+            }
+
+
             // Global plot properties
             var titleIsBold = true;
             var titleFontSize = 32;
@@ -114,13 +120,13 @@
 
                 var introElem = document.getElementById(elementId);
 
-                introElem.querySelector("#startDate").textContent = stats.introMessage.start[0].toString() + "/" + stats.introMessage.start[1].toString() + "/" + stats.introMessage.start[2].toString();
+                introElem.querySelector("#startDate").textContent = stats.start[0].toString() + "/" + stats.start[1].toString() + "/" + stats.start[2].toString();
                 introElem.querySelector("#total").textContent = Math.round(stats.total).toString();
                 introElem.querySelector("#dailyAverage").textContent = stats.dailyAverage.toFixed(2).toString();
-                introElem.querySelector("#daysSinceStart").textContent = stats.introMessage.daysSinceStart.toString();
+                introElem.querySelector("#daysSinceStart").textContent = stats.daysSinceStart.toString();
                 introElem.querySelector("#longestStreak").textContent = stats.longestStreak.toString();
                 introElem.querySelector("#currentStreak").textContent = stats.currentStreak.toString();
-                introElem.querySelector("#todaysTotal").textContent = stats.introMessage.todaysTotal.toFixed(2).toString();
+                introElem.querySelector("#todaysTotal").textContent = stats.todaysTotal.toFixed(2).toString();
             }
 
 
@@ -409,9 +415,13 @@
 
                     var columnLabels = [["Time", "Probability"]];
 
+                    var dataArray = probabilities.map(function (elem, i, self) {
+                        return [(i / self.length) * 86400, elem];
+                    });
+
                     var chart = new google.charts.Line(document.getElementById(elementId));
 
-                    var table = google.visualization.arrayToDataTable(columnLabels.concat(probabilities));
+                    var table = google.visualization.arrayToDataTable(columnLabels.concat(dataArray));
 
                     chart.draw(table, google.charts.Line.convertOptions(options));
                 }
@@ -471,47 +481,33 @@
                 // TODO: Remove this when done debugging
                 console.log(data);
 
-                var languages = data["subjects"].filter(function (elem, i, arr) {
-                    return elem["isLanguage"];
-                });
-
-                console.log(languages.length);
-
-
-                // Incorporate data for current session where applicable
-                if (data.status.isStudying) {
-
-                    // Add duration of current session to today's total
-                    data.stats.introMessage.todaysTotal += hoursSinceMilli(data.status.start);
-
-                    // Add duration of current session to global total.
-                    data.stats.total += hoursSinceMilli(data.status.start);
-
-                    // TODO: Do I really need the current time from the server?
-                    data.stats.introMessage.todaysSessionsGoogle.rows.push(
-                            ["What I've Done Today", data.status.subject, data.status.start, data.currentTime]
-                    );
-
-                }
-
                 // Fill in the values in the intro message.
-                writeIntroMessage(data.stats, "introMessage");
+                writeIntroMessage(data, "introMessage");
 
                 // - - - Set up call-backs to draw the plots - - - - - - - - - -
 
-                // Only show the current day's overview if the user has studied today.
-                if (data.stats.introMessage.todaysSessionsGoogle.rows.length > 0) {
-                    google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(data.stats.introMessage.todaysSessionsGoogle, "todaysSessionsPlot"));
-                } else {
-                    document.getElementById("todaysSessionsPlot").style.display = "none";
-                }
 
-                google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(data.stats.slidingAverage, "slidingAveragePlot"));
-                google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(data.stats.cumulative, "cumulativePlot"));
-                google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(data.stats.subjectCumulative, "subjectCumulativePlot"));
-                google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(data.stats.subjectTotals, "subjectTotalsPlot"));
-                google.charts.setOnLoadCallback(getAverageSessionPlotDrawer(data.stats.averageSession, "averageSessionPlot"));
-                google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(data.stats.probability, "probabilityPlot"));
+                // Only show the current day's overview if the user has studied today.
+                /*
+                 if (data.todaysSessions.length > 0) {
+                 google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(data.todaysSessions, "todaysSessionsPlot"));
+                 } else {
+                 document.getElementById("todaysSessionsPlot").style.display = "none";
+                 }
+                 */
+
+                /*
+                 google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(data.movingAverage, "movingAveragePlot"));
+                 */
+
+                google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(data.cumulative, "cumulativePlot"));
+
+                /*
+                 google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(data.subjectCumulative, "subjectCumulativePlot"));
+                 google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(data.subjectTotals, "subjectTotalsPlot"));
+                 google.charts.setOnLoadCallback(getAverageSessionPlotDrawer(data.averageSession, "averageSessionPlot"));
+                 google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(data.probability, "probabilityPlot"));
+                 */
 
             })
     </script>

@@ -8,7 +8,7 @@ import reactivemongo.bson.Macros
   * @param subjects
   * @param status
   */
-case class StatusAndSubjects(user_id: Int, subjects: Vector[Subject], status: UserStatus)
+case class StatusAndSubjects(user_id: Int, subjects: Vector[Subject], status: Status)
 
 object StatusAndSubjects {
 

@@ -1,12 +1,16 @@
 package controllers
 
 import javax.inject.Inject
+
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
 import scala.concurrent.Future
 import forms._
+import models.Stats
+import play.api.libs.json.Json
 
 
 /**
@@ -31,7 +35,8 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   def getStats(user_id: Int) = Action.async { implicit request =>
 
     // Return the result with the current time in the users timezone
-    sessions.getStatsAsJSON(user_id).map(js => Ok(js))
+    sessions.getStats(user_id).map(optStats => optStats.fold(Ok(Json.obj("success" -> false)))(stats =>
+      Ok(Stats.StatsWritable.writes(stats))))
   }
 
 
