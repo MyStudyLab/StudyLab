@@ -11,7 +11,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 
 /**
-  * Model layer to manage study sessions.
+  * Model layer to manage study sessions and subjects.
   *
   * @param mongoApi Holds the reference to the database.
   */
@@ -60,7 +60,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     // Find the document with the given user id
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("status" -> 1, "subjects" -> 1, "_id" -> 0)
+    val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
     bsonSessionsCollection.find(selector, projector).one[StatusAndSubjects].flatMap(opt =>
 
@@ -91,16 +91,17 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
 
   /**
-    * Stops the current study session and updates study stats.
+    * Stops the current study session.
     *
     * @param user_id The user ID for which to stop the current session.
+    * @param message The commit message for the study session.
     * @return
     */
-  def stopSession(user_id: Int): Future[ResultInfo] = {
+  def stopSession(user_id: Int, message: String): Future[ResultInfo] = {
 
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("_id" -> 0)
+    val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
     bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
 
@@ -109,7 +110,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
         if (!sessionData.status.isStudying) Future(notStudying)
         else {
 
-          val newSession = Session(sessionData.status.subject, sessionData.status.start, System.currentTimeMillis())
+          val newSession = Session(sessionData.status.subject, sessionData.status.start, System.currentTimeMillis(), message)
 
           // The modifier needed to stop a session
           val modifier = BSONDocument(
@@ -141,7 +142,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("status" -> 1, "subjects" -> 1, "_id" -> 0)
+    val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
     bsonSessionsCollection.find(selector, projector).one[StatusAndSubjects].flatMap { opt =>
 
@@ -178,7 +179,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("status" -> 1, "subjects" -> 1, "_id" -> 0)
+    val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
     // Get the user's session data
     bsonSessionsCollection.find(selector, projector).one[StatusAndSubjects].flatMap { opt =>
@@ -218,7 +219,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("sessions" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
+    val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
     // Get the user's session data
     bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
@@ -264,7 +265,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("stats" -> 0, "_id" -> 0)
+    val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
     // Get the user's session data
     bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
@@ -288,7 +289,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
             // Updated session data using the new subject name
             val newSessions = sessionData.sessions.map(session => {
-              if (session.subject == oldName) Session(newName, session.startTime, session.endTime)
+              if (session.subject == oldName) Session(newName, session.startTime, session.endTime, session.message)
               else session
             })
 
@@ -325,7 +326,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
     // Get the user's session data
     bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
@@ -346,7 +347,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // Updated session vector without the absorbed subject name
           val newSessions = data.sessions.map(session => {
-            if (session.subject == absorbed) Session(absorbing, session.startTime, session.endTime)
+            if (session.subject == absorbed) Session(absorbing, session.startTime, session.endTime, session.message)
             else session
           })
 

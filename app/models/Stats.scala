@@ -11,9 +11,9 @@ import scala.collection.mutable
 
 
 case class Stats(start: (Int, Int, Int), daysSinceStart: Long, total: Double, currentStreak: Int, longestStreak: Int,
-                 lastUpdated: Long, dailyAverage: Double, todaysTotal: Double, todaysSessions: Vector[Session],
-                 cumulative: Vector[(Long, Double)], subjectTotals: Map[String, Double], probability: Vector[Double],
-                 movingAverage: Vector[(Long, Double)], averageSession: Map[String, Double]) {
+                 dailyAverage: Double, todaysTotal: Double, todaysSessions: Vector[Session], cumulative: Vector[(Long, Double)],
+                 subjectTotals: Map[String, Double], probability: Vector[Double], movingAverage: Vector[(Long, Double)],
+                 averageSession: Map[String, Double]) {
 
 
 }
@@ -30,7 +30,6 @@ object Stats {
         "total" -> stats.total,
         "currentStreak" -> stats.currentStreak,
         "longestStreak" -> stats.longestStreak,
-        "lastUpdated" -> stats.lastUpdated,
         "dailyAverage" -> stats.dailyAverage,
         "todaysTotal" -> stats.todaysTotal,
         "todaysSessions" -> stats.todaysSessions,
@@ -54,7 +53,6 @@ object Stats {
         "total" -> stats.total,
         "currentStreak" -> stats.currentStreak,
         "longestStreak" -> stats.longestStreak,
-        "lastUpdated" -> stats.lastUpdated,
         "dailyAverage" -> stats.dailyAverage,
         "todaysTotal" -> stats.todaysTotal,
         "todaysSessions" -> stats.todaysSessions,
@@ -90,7 +88,7 @@ object Stats {
     val (currentStreak, longestStreak) = currentAndLongestStreaks(sessions)
 
     val todaysSessionsVec = if (status.isStudying) {
-      todaysSessions(zone)(sessions) :+ Session(status.subject, status.start, currTimeMillis)
+      todaysSessions(zone)(sessions) :+ Session(status.subject, status.start, currTimeMillis, "")
     } else {
       todaysSessions(zone)(sessions)
     }
@@ -105,9 +103,9 @@ object Stats {
       "subjectCumulative" -> subjectCumulativeGoogle(sessions)
     )
 
-    Stats((startZDT.getMonthValue, startZDT.getDayOfMonth, startZDT.getYear), daysSinceStart(zone)(sessions), totalHours, currentStreak, longestStreak,
-      System.currentTimeMillis(), dailyAverage, todaysTotal, todaysSessionsVec, cumulative(sessions), subjectTotals(sessions),
-      probability(144)(sessions), movingAverage(15)(sessions), averageSession(sessions)
+    Stats((startZDT.getMonthValue, startZDT.getDayOfMonth, startZDT.getYear), daysSinceStart(zone)(sessions),
+      totalHours, currentStreak, longestStreak, dailyAverage, todaysTotal, todaysSessionsVec, cumulative(sessions),
+      subjectTotals(sessions), probability(144)(sessions), movingAverage(15)(sessions), averageSession(sessions)
     )
   }
 
@@ -290,7 +288,7 @@ object Stats {
 
       val rem = sp._2.headOption.fold((None: Option[Session], None: Option[Session]))(sess => {
         if (sess.startTime < next) {
-          (Some(Session(sess.subject, sess.startTime, next)), Some(Session(sess.subject, next, sess.endTime)))
+          (Some(Session(sess.subject, sess.startTime, next, sess.message)), Some(Session(sess.subject, next, sess.endTime, sess.message)))
         } else {
           (None, Some(sess))
         }
@@ -445,7 +443,7 @@ object Stats {
     val unsplitSessions = sessions.reverseIterator.takeWhile(s => s.endTime > since).toVector
 
     // Handle the case where a session spans midnight
-    val first = unsplitSessions.lastOption.map(s => Session(s.subject, math.max(s.startTime, since), s.endTime))
+    val first = unsplitSessions.lastOption.map(s => Session(s.subject, math.max(s.startTime, since), s.endTime, s.message))
 
     first.toVector ++ unsplitSessions.dropRight(1).reverse
   }

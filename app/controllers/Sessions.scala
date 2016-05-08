@@ -89,7 +89,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
 
     SessionStop.stopForm.bindFromRequest()(request).fold(
       badForm => invalidForm,
-      goodForm => sessions.stopSession(goodForm.user_id).map(resultInfo => Ok(resultInfo.message))
+      goodForm => sessions.stopSession(goodForm.user_id, goodForm.message).map(resultInfo => Ok(resultInfo.message))
     )
   }
 

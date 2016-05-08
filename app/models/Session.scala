@@ -11,7 +11,7 @@ import reactivemongo.bson._
   * @param startTime The time in milliseconds that the session began.
   * @param endTime   The time in milliseconds that the session ended.
   */
-case class Session(subject: String, startTime: Long, endTime: Long) {
+case class Session(subject: String, startTime: Long, endTime: Long, message: String) {
 
   def durationHours(): Double = {
     (endTime - startTime).toDouble / (3600 * 1000)
