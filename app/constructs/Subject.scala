@@ -1,4 +1,4 @@
-package models
+package constructs
 
 import reactivemongo.bson.Macros
 
@@ -14,8 +14,8 @@ case class Subject(name: String, added: Long, isLanguage: Boolean, description: 
 
 object Subject {
 
-  implicit val SubjectReader = Macros.reader[Subject]
+  // Implicitly converts to/from BSON
+  implicit val SubjectHandler = Macros.handler[Subject]
 
-  implicit val SubjectWriter = Macros.writer[Subject]
 
 }

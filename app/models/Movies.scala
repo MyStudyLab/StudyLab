@@ -1,5 +1,6 @@
 package models
 
+import constructs.Movie
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
 import play.modules.reactivemongo.json.collection.JSONCollection

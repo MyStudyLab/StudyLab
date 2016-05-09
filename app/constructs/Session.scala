@@ -1,4 +1,4 @@
-package models
+package constructs
 
 import play.api.libs.json._
 import reactivemongo.bson._
@@ -10,11 +10,12 @@ import reactivemongo.bson._
   * @param subject   The subject being studied.
   * @param startTime The time in milliseconds that the session began.
   * @param endTime   The time in milliseconds that the session ended.
+  * @param message   The commit message for the session.
   */
 case class Session(subject: String, startTime: Long, endTime: Long, message: String) {
 
   def durationHours(): Double = {
-    (endTime - startTime).toDouble / (3600 * 1000)
+    (endTime - startTime).toDouble / 3600000
   }
 
   def durationMillis(): Long = {
@@ -26,10 +27,11 @@ case class Session(subject: String, startTime: Long, endTime: Long, message: Str
 
 object Session {
 
-  implicit val sessionReader = Macros.reader[Session]
+  // Implicitly converts to/from BSON
+  implicit val sessionHandler = Macros.handler[Session]
 
-  implicit val sessionWriter = Macros.writer[Session]
 
+  // Implicitly converts to JSON
   implicit val sessionWrites = Json.writes[Session]
 
 }

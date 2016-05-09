@@ -4,6 +4,7 @@ import java.time
 import java.time.temporal.ChronoUnit
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
+import constructs.{Session, Status}
 import play.api.libs.json._
 import reactivemongo.bson._
 
@@ -20,6 +21,7 @@ case class Stats(start: (Int, Int, Int), daysSinceStart: Long, total: Double, cu
 
 object Stats {
 
+  // Implicitly converts to BSON
   implicit object StatsWriter extends BSONDocumentWriter[Stats] {
 
     def write(stats: Stats): BSONDocument = {
@@ -43,6 +45,7 @@ object Stats {
 
   }
 
+  // Implicitly converts to JSON
   implicit object StatsWrites extends Writes[Stats] {
 
     def writes(stats: Stats): JsValue = {

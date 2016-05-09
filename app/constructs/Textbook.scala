@@ -1,8 +1,5 @@
-package models
+package constructs
 
-
-import play.api.data.Form
-import play.api.data.Forms._
 import reactivemongo.bson.Macros
 
 
@@ -19,8 +16,7 @@ object Textbook {
     ???
   }
 
-  implicit val textbookReader = Macros.reader[Textbook]
-
-  implicit val textbookWriter = Macros.writer[Textbook]
+  // Implicitly converts to/from BSON
+  implicit val textbookHandler = Macros.handler[Textbook]
 
 }

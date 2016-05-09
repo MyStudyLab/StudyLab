@@ -1,5 +1,6 @@
 package models
 
+import constructs.User
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.BSONDocument

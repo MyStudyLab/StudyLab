@@ -1,5 +1,6 @@
 package models
 
+import constructs.{Status, Subject}
 import reactivemongo.bson.Macros
 
 /**
@@ -9,12 +10,13 @@ import reactivemongo.bson.Macros
   * @param status   The status of the user.
   * @param subjects The valid subjects for the user
   */
-case class StatusAndSubjects(user_id: Int, status: Status, subjects: Vector[Subject])
+case class StatusSubjects(user_id: Int, status: Status, subjects: Vector[Subject])
 
-object StatusAndSubjects {
 
-  implicit val StatusDataWriter = Macros.writer[StatusAndSubjects]
+object StatusSubjects {
 
-  implicit val StatusDataReader = Macros.reader[StatusAndSubjects]
+  // Implicitly converts to/from BSON
+  implicit val StatusDataHandler = Macros.handler[StatusSubjects]
+
 
 }

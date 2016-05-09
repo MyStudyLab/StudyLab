@@ -1,4 +1,4 @@
-package models
+package constructs
 
 import play.api.libs.json.JsObject
 import reactivemongo.bson.Macros
@@ -10,9 +10,9 @@ case class Movie(title: String, directors: Vector[String],
 
 object Movie {
 
-  implicit val MovieReader = Macros.reader[Movie]
+  // Implicitly converts to/from BSON
+  implicit val MovieHandler = Macros.handler[Movie]
 
-  implicit val MovieWriter = Macros.writer[Movie]
 
   def fromOMDB(json: JsObject, watched: Long, userRating: Int): Option[Movie] = {
 

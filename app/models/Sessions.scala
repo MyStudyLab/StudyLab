@@ -1,5 +1,6 @@
 package models
 
+import constructs.{Session, Subject}
 import helpers.ResultInfo
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
@@ -42,7 +43,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
-    bsonSessionsCollection.find(selector, projector).one[SessionData].map(optData =>
+    bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].map(optData =>
       optData.map(sessionData => Stats.compute(sessionData.sessions, sessionData.status))
     )
   }
@@ -62,15 +63,15 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
-    bsonSessionsCollection.find(selector, projector).one[StatusAndSubjects].flatMap(opt =>
+    bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(optStatsAndSubs =>
 
-      opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
+      optStatsAndSubs.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
         if (statsAndSubs.status.isStudying) Future(alreadyStudying)
         else if (!statsAndSubs.subjects.map(_.name).contains(subject)) Future(invalidSubject)
         else {
 
-          // The modifier needed to start a session
+          // The modifier to start a session
           val modifier = BSONDocument(
             "$set" -> BSONDocument(
               "status.isStudying" -> true,
@@ -103,16 +104,17 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
-    bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
+    bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
 
       opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
 
         if (!sessionData.status.isStudying) Future(notStudying)
         else {
 
+          // The newly completed study session
           val newSession = Session(sessionData.status.subject, sessionData.status.start, System.currentTimeMillis(), message)
 
-          // The modifier needed to stop a session
+          // The modifier to stop a session
           val modifier = BSONDocument(
             "$set" -> BSONDocument(
               "status.isStudying" -> false
@@ -128,7 +130,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
             else ResultInfo.databaseError)
         }
       })
-    }
+    )
   }
 
 
@@ -144,7 +146,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
-    bsonSessionsCollection.find(selector, projector).one[StatusAndSubjects].flatMap { opt =>
+    bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(opt =>
 
       opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
@@ -164,7 +166,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
             else ResultInfo.databaseError)
         }
       })
-    }
+    )
   }
 
 
@@ -182,7 +184,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
     // Get the user's session data
-    bsonSessionsCollection.find(selector, projector).one[StatusAndSubjects].flatMap { opt =>
+    bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
@@ -204,7 +206,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
             else ResultInfo.databaseError)
         }
       })
-    }
+    )
   }
 
 
@@ -222,7 +224,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
     // Get the user's session data
-    bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
+    bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
@@ -249,7 +251,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
             else ResultInfo.databaseError)
         }
       })
-    }
+    )
   }
 
 
@@ -268,12 +270,15 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
     // Get the user's session data
-    bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
+    bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
 
-        sessionData.subjects.find(_.name == oldName).fold(
+
+        if (sessionData.status.isStudying) {
+          Future(ResultInfo(success = false, "Can't rename subjects while studying."))
+        } else sessionData.subjects.find(_.name == oldName).fold(
           Future(ResultInfo(success = false, s"$oldName is an invalid subject."))
         )(oldSub => {
 
@@ -288,10 +293,10 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
             val newSubjects = sessionData.subjects.filterNot(_.name == oldName) :+ newSub
 
             // Updated session data using the new subject name
-            val newSessions = sessionData.sessions.map(session => {
+            val newSessions = sessionData.sessions.map(session =>
               if (session.subject == oldName) Session(newName, session.startTime, session.endTime, session.message)
               else session
-            })
+            )
 
             // The modifier needed to rename a subject
             val modifier = BSONDocument(
@@ -308,7 +313,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           }
         })
       })
-    }
+    )
   }
 
 
@@ -329,27 +334,29 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
     // Get the user's session data
-    bsonSessionsCollection.find(selector, projector).one[SessionData].flatMap { opt =>
+    bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(data => {
 
         val subjectNames = data.subjects.map(_.name)
 
-        if (!subjectNames.contains(absorbed)) {
-          Future(ResultInfo(success = true, s"Can't merge. $absorbed is an invalid subject."))
+        if (data.status.isStudying) {
+          Future(ResultInfo(success = false, "Can't merge while studying."))
+        } else if (!subjectNames.contains(absorbed)) {
+          Future(ResultInfo(success = false, s"Can't merge. $absorbed is an invalid subject."))
         } else if (!subjectNames.contains(absorbing)) {
-          Future(ResultInfo(success = true, s"Can't merge. $absorbing is an invalid subject."))
+          Future(ResultInfo(success = false, s"Can't merge. $absorbing is an invalid subject."))
         } else {
 
           // Updated subject vector without the absorbed subject name
           val newSubjects = data.subjects.filterNot(_.name == absorbed)
 
           // Updated session vector without the absorbed subject name
-          val newSessions = data.sessions.map(session => {
+          val newSessions = data.sessions.map(session =>
             if (session.subject == absorbed) Session(absorbing, session.startTime, session.endTime, session.message)
             else session
-          })
+          )
 
           // The modifier needed to merge the subjects
           val modifier = BSONDocument(
@@ -365,7 +372,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
             else ResultInfo.databaseError)
         }
       })
-    }
+    )
   }
 
 

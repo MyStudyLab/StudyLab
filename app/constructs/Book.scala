@@ -1,4 +1,4 @@
-package models
+package constructs
 
 import reactivemongo.bson.Macros
 
@@ -9,8 +9,7 @@ case class Book(title: String, authors: Vector[String], userRating: Int, finishe
 
 object Book {
 
-  implicit val BookReader = Macros.reader[Book]
-
-  implicit val BookWriter = Macros.writer[Book]
+  // Implicitly converts to/from BSON
+  implicit val BookHandler = Macros.handler[Book]
 
 }
