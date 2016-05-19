@@ -1,6 +1,6 @@
 package models
 
-import constructs.Book
+import constructs.{Book, BookVector}
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
 import play.modules.reactivemongo.json.collection.JSONCollection
@@ -62,12 +62,6 @@ class Books(val api: ReactiveMongoApi) {
       })
     }
   }
-
-
-  def addBook(user_id: Int, book: Book): Future[Boolean] = {
-    ???
-  }
-
 
 }
 

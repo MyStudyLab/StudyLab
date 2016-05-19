@@ -350,23 +350,6 @@ object Stats {
   }
 
 
-  private def dailyTotalCountsGoogle(sessions: Vector[Session]): BSONDocument = {
-
-    val zone = ZoneId.of("America/Chicago")
-
-    val dailyTotalGroups = dailyTotalCounts(zone)(sessions)
-
-    BSONDocument(
-      "columns" -> BSONArray(
-        BSONArray(BSONString("number"), BSONString("Duration")),
-        BSONArray(BSONString("number"), BSONString("Sessions Less Than"))
-      ),
-      "rows" -> BSONArray(dailyTotalGroups.map(p => BSONArray(p._1, p._2)))
-    )
-
-  }
-
-
   private def probabilityOfDailyTotal(zone: ZoneId)(sessions: Vector[Session]): Vector[(Int, Int)] = {
 
     dailyTotals(zone)(sessions).map(dailyTotal => (100 * dailyTotal / 24).toInt).groupBy(a => a).mapValues(_.length).toVector

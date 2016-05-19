@@ -1,14 +1,16 @@
 package constructs
 
 import play.api.libs.json.JsObject
-import reactivemongo.bson.Macros
 
 
 case class Movie(title: String, directors: Vector[String],
                  actors: Vector[String], genres: Vector[String],
                  releaseYear: Int, watched: Long, runtime: Int, userRating: Int)
 
+
 object Movie {
+
+  import reactivemongo.bson.Macros
 
   // Implicitly converts to/from BSON
   implicit val MovieHandler = Macros.handler[Movie]

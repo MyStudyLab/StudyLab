@@ -1,7 +1,6 @@
 package constructs
 
 import play.api.libs.json._
-import reactivemongo.bson._
 
 
 /**
@@ -26,6 +25,8 @@ case class Session(subject: String, startTime: Long, endTime: Long, message: Str
 
 
 object Session {
+
+  import reactivemongo.bson.Macros
 
   // Implicitly converts to/from BSON
   implicit val sessionHandler = Macros.handler[Session]

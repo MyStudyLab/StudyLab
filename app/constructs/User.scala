@@ -1,6 +1,5 @@
 package constructs
 
-import reactivemongo.bson.Macros
 
 /**
   * Represents a user of the app.
@@ -14,12 +13,12 @@ import reactivemongo.bson.Macros
   */
 case class User(user_id: Int, firstName: String, lastName: String, email: String, password: String, joined: Long)
 
+
 object User {
 
-  // Implicitly converts from BSON
-  implicit val UserReader = Macros.reader[User]
+  import reactivemongo.bson.Macros
 
-  // Implicitly converts to BSON
-  implicit val UserWriter = Macros.writer[User]
+  // Implicitly converts to/from BSON
+  implicit val UserHandler = Macros.handler[User]
 
 }

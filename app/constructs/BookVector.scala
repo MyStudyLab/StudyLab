@@ -1,6 +1,5 @@
-package models
+package constructs
 
-import constructs.Book
 import reactivemongo.bson.Macros
 
 case class BookVector(books: Vector[Book])

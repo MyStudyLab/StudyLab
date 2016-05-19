@@ -47,6 +47,9 @@ POST        /study/remove           controllers.Sessions.removeSubject()
 # Rename a study subject
 POST        /study/rename           controllers.Sessions.renameSubject()
 
+# Merge one subject into another
+POST        /study/merge            controllers.Sessions.mergeSubjects()
+
 # Update movie stats (remove this endpoint eventually)
 POST        /movies/update          controllers.Movies.updateMovieStats()
 

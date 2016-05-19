@@ -3,7 +3,6 @@ package controllers
 import javax.inject.Inject
 
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
-import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
@@ -16,11 +15,10 @@ import play.api.libs.json.Json
 /**
   * Controller to manage study sessions.
   *
-  * @param reactiveMongoApi Holds the reference to the database.
-  * @param messagesApi
+  * @param reactiveMongoApi Holds a reference to the database.
   */
-class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: MessagesApi)
-  extends Controller with MongoController with ReactiveMongoComponents with I18nSupport {
+class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
+  extends Controller with MongoController with ReactiveMongoComponents {
 
   // Sessions model
   val sessions = new models.Sessions(reactiveMongoApi)
@@ -30,14 +28,6 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
 
   // Response indicating the request form was invalid.
   val invalidForm = Future(Ok("Invalid form."))
-
-
-  def getStats(user_id: Int) = Action.async { implicit request =>
-
-    // Return the result with the current time in the users timezone
-    sessions.getStats(user_id).map(optStats => optStats.fold(Ok(Json.obj("success" -> false)))(stats =>
-      Ok(Stats.StatsWrites.writes(stats))))
-  }
 
 
   /**
@@ -51,17 +41,11 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
 
     PasswordAndUserID.form.bindFromRequest()(request).fold(
       badForm => invalidForm,
-      goodForm => {
-
-        users.checkPassword(goodForm.user_id, goodForm.password).flatMap(matched => {
-          if (matched) {
-            action(request)
-          } else {
-            Future(Ok("Bad username or password."))
-          }
-        })
-
-      }
+      goodForm =>
+        users.checkPassword(goodForm.user_id, goodForm.password).flatMap(matched =>
+          if (matched) action(request)
+          else Future(Ok("Bad username or password."))
+        )
     )
   }
 
@@ -73,7 +57,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
     */
   def start = Action.async { implicit request =>
 
-    SessionStart.startForm.bindFromRequest()(request).fold(
+    SessionStartForm.startForm.bindFromRequest()(request).fold(
       badForm => invalidForm,
       goodForm => sessions.startSession(goodForm.user_id, goodForm.subject).map(resultInfo => Ok(resultInfo.message))
     )
@@ -87,7 +71,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
     */
   def stop = Action.async { implicit request =>
 
-    SessionStop.stopForm.bindFromRequest()(request).fold(
+    SessionStopForm.stopForm.bindFromRequest()(request).fold(
       badForm => invalidForm,
       goodForm => sessions.stopSession(goodForm.user_id, goodForm.message).map(resultInfo => Ok(resultInfo.message))
     )
@@ -101,7 +85,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
     */
   def abort = Action.async { implicit request =>
 
-    SessionStop.stopForm.bindFromRequest()(request).fold(
+    SessionStopForm.stopForm.bindFromRequest()(request).fold(
       badForm => invalidForm,
       goodForm => sessions.abortSession(goodForm.user_id).map(a => Ok(a.message))
     )
@@ -145,6 +129,26 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
 
   }
 
+  /**
+    * Invoke the model layer to merge subjects.
+    *
+    * @return
+    */
+  def merge = Action.async { implicit request =>
+
+    MergeSubjectsForm.form.bindFromRequest()(request).fold(
+      badForm => invalidForm,
+      goodForm => sessions.mergeSubjects(goodForm.user_id, goodForm.absorbed, goodForm.absorbing).map(a => Ok(a.message))
+    )
+  }
+
+
+  def getStats(user_id: Int) = Action.async { implicit request =>
+
+    // Return the result with the current time in the users timezone
+    sessions.getStats(user_id).map(optStats => optStats.fold(Ok(Json.obj("success" -> false)))(stats =>
+      Ok(Stats.StatsWrites.writes(stats))))
+  }
 
   def startSession() = checked(start)
 
@@ -157,5 +161,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi
   def removeSubject() = checked(remove)
 
   def renameSubject() = checked(rename)
+
+  def mergeSubjects() = checked(merge)
 
 }

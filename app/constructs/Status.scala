@@ -1,6 +1,5 @@
 package constructs
 
-import reactivemongo.bson.Macros
 
 /**
   * Represents the study status of a user.
@@ -13,6 +12,8 @@ case class Status(isStudying: Boolean, subject: String, start: Long)
 
 
 object Status {
+
+  import reactivemongo.bson.Macros
 
   // Implicitly converts to/from BSON
   implicit val StatusHandler = Macros.handler[Status]

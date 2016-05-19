@@ -1,6 +1,6 @@
 package models
 
-import constructs.Movie
+import constructs.{Movie, MovieVector}
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
 import play.modules.reactivemongo.json.collection.JSONCollection
@@ -72,22 +72,6 @@ class Movies(val api: ReactiveMongoApi) {
     }
 
   }
-
-
-  def addMovie(user_id: Int, imdbID: String): Future[Boolean] = {
-
-    val movieVec = getAll(user_id)
-
-    // Find movie on OMDb
-
-    // Get movies from db and add new movie
-
-    // Now, write new stats to db
-    movieVec.map(_.map(a => Movies.stats(a)))
-
-    ???
-  }
-
 
 }
 

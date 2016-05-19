@@ -1,6 +1,6 @@
 package models
 
-import constructs.{Session, Subject}
+import constructs.{Session, StatusSubjects, StatusSubjectsSessions, Subject}
 import helpers.ResultInfo
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
@@ -318,9 +318,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
 
   /**
-    * Merge two subjects, combining their sessions.
-    *
-    * TODO: Needs testing
+    * Merge one subject into another, combining their sessions.
     *
     * @param user_id   The user ID for which to merge the subjects.
     * @param absorbed  The subject that will be absorbed.
@@ -339,38 +337,43 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(data => {
 
-        val subjectNames = data.subjects.map(_.name)
-
+        // Refactor this if-else sequence using find to get references to the two subjects
         if (data.status.isStudying) {
           Future(ResultInfo(success = false, "Can't merge while studying."))
-        } else if (!subjectNames.contains(absorbed)) {
+        } else data.subjects.find(_.name == absorbed).fold(
           Future(ResultInfo(success = false, s"Can't merge. $absorbed is an invalid subject."))
-        } else if (!subjectNames.contains(absorbing)) {
-          Future(ResultInfo(success = false, s"Can't merge. $absorbing is an invalid subject."))
-        } else {
+        )(absorbedSub => {
+          data.subjects.find(_.name == absorbing).fold(
+            Future(ResultInfo(success = false, s"Can't merge. $absorbing is an invalid subject."))
+          )(absorbingSub => {
 
-          // Updated subject vector without the absorbed subject name
-          val newSubjects = data.subjects.filterNot(_.name == absorbed)
+            val minAdded = math.min(absorbedSub.added, absorbingSub.added)
 
-          // Updated session vector without the absorbed subject name
-          val newSessions = data.sessions.map(session =>
-            if (session.subject == absorbed) Session(absorbing, session.startTime, session.endTime, session.message)
-            else session
-          )
+            val newSubject = Subject(absorbingSub.name, minAdded, absorbingSub.isLanguage, absorbingSub.description)
 
-          // The modifier needed to merge the subjects
-          val modifier = BSONDocument(
-            "$set" -> BSONDocument(
-              "subjects" -> newSubjects,
-              "sessions" -> newSessions
+            // Updated subject vector without the absorbed subject name
+            val newSubjects = data.subjects.filterNot(s => s.name == absorbed || s.name == absorbing) :+ newSubject
+
+            // Updated session vector without the absorbed subject name
+            val newSessions = data.sessions.map(session =>
+              if (session.subject == absorbed) Session(absorbing, session.startTime, session.endTime, session.message)
+              else session
             )
-          )
 
-          // Merge the subjects
-          bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
-            if (result.ok) ResultInfo(success = true, s"Successfully merged $absorbed into $absorbing.")
-            else ResultInfo.databaseError)
-        }
+            // The modifier needed to merge the subjects
+            val modifier = BSONDocument(
+              "$set" -> BSONDocument(
+                "subjects" -> newSubjects,
+                "sessions" -> newSessions
+              )
+            )
+
+            // Merge the subjects
+            bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
+              if (result.ok) ResultInfo(success = true, s"Successfully merged $absorbed into $absorbing.")
+              else ResultInfo.databaseError)
+          })
+        })
       })
     )
   }

@@ -1,6 +1,5 @@
-package models
+package constructs
 
-import constructs.Movie
 import reactivemongo.bson.Macros
 
 case class MovieVector(movies: Vector[Movie])
