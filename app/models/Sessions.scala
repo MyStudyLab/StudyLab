@@ -102,17 +102,17 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "_id" -> 0)
 
-    bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
+    bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(opt =>
 
-      opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
+      opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
-        if (!sessionData.status.isStudying) Future(notStudying)
+        if (!statsAndSubs.status.isStudying) Future(notStudying)
         else {
 
           // The newly completed study session
-          val newSession = Session(sessionData.status.subject, sessionData.status.start, System.currentTimeMillis(), message)
+          val newSession = Session(statsAndSubs.status.subject, statsAndSubs.status.start, System.currentTimeMillis(), message)
 
           // The modifier to stop a session
           val modifier = BSONDocument(
@@ -260,7 +260,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     *
     * @param user_id The user ID for which to rename the given subject.
     * @param oldName The subject to rename.
-    * @param newName The new name.
+    * @param newName The new subject name.
     * @return
     */
   def renameSubject(user_id: Int, oldName: String, newName: String): Future[ResultInfo] = {
