@@ -197,7 +197,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           // The modifier to add a subject
           val modifier = BSONDocument(
             "$push" -> BSONDocument(
-              "subjects" -> Subject(subject, System.currentTimeMillis(), isLanguage = false, description)
+              "subjects" -> Subject(subject, System.currentTimeMillis(), description)
             )
           )
 
@@ -288,7 +288,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
             Future(ResultInfo(success = false, s"Can't rename to $newName. It is an existing subject."))
           } else {
 
-            val newSub = Subject(newName, oldSub.added, oldSub.isLanguage, oldSub.description)
+            val newSub = Subject(newName, oldSub.added, oldSub.description)
 
             // Updated subject list using the new subject name
             val newSubjects = sessionData.subjects.filterNot(_.name == oldName) :+ newSub
@@ -350,7 +350,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
             val minAdded = math.min(absorbedSub.added, absorbingSub.added)
 
-            val newSubject = Subject(absorbingSub.name, minAdded, absorbingSub.isLanguage, absorbingSub.description)
+            val newSubject = Subject(absorbingSub.name, minAdded, absorbingSub.description)
 
             // Updated subject vector without the absorbed subject name
             val newSubjects = data.subjects.filterNot(s => s.name == absorbed || s.name == absorbing) :+ newSubject

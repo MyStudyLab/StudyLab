@@ -8,10 +8,9 @@ package constructs
   *
   * @param name        The name of the subject.
   * @param added       The time when the subject was added.
-  * @param isLanguage  Whether this subject a programming language.
   * @param description A description of this subject.
   */
-case class Subject(name: String, added: Long, isLanguage: Boolean, description: String)
+case class Subject(name: String, added: Long, description: String)
 
 object Subject {
 
