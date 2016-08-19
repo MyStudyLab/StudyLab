@@ -1,7 +1,6 @@
 package models
 
-import constructs.{Session, StatusSubjects, StatusSubjectsSessions, Subject}
-import helpers.ResultInfo
+import constructs._
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.BSONDocument
@@ -12,7 +11,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 
 /**
-  * Model layer to manage study sessions and subjects.
+  * Model layer to manage study sessions.
   *
   * @param mongoApi Holds the reference to the database.
   */
@@ -41,7 +40,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = BSONDocument("user_id" -> user_id)
 
-    val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
 
     bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].map(optData =>
       optData.map(sessionData => Stats.compute(sessionData.sessions, sessionData.status))
@@ -63,9 +62,9 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
-    bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(optStatsAndSubs =>
+    bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(optStatsSubs =>
 
-      optStatsAndSubs.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
+      optStatsSubs.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
         if (statsAndSubs.status.isStudying) Future(alreadyStudying)
         else if (!statsAndSubs.subjects.map(_.name).contains(subject)) Future(invalidSubject)
@@ -177,7 +176,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     * @param subject The new subject.
     * @return
     */
-  def addSubject(user_id: Int, subject: String): Future[ResultInfo] = {
+  def addSubject(user_id: Int, subject: String, description: String): Future[ResultInfo] = {
 
     val selector = BSONDocument("user_id" -> user_id)
 
@@ -189,14 +188,16 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
-        if (statsAndSubs.subjects.map(_.name).contains(subject)) Future(ResultInfo(success = true, "Subject already added."))
-        else {
+        if (statsAndSubs.subjects.map(_.name).contains(subject)) {
+
+          Future(ResultInfo(success = true, "Subject already exists."))
+        } else {
 
 
-          // The modifier needed to add a subject
+          // The modifier to add a subject
           val modifier = BSONDocument(
             "$push" -> BSONDocument(
-              "subjects" -> Subject(subject, System.currentTimeMillis(), isLanguage = false, "")
+              "subjects" -> Subject(subject, System.currentTimeMillis(), isLanguage = false, description)
             )
           )
 

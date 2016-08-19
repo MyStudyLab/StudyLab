@@ -11,7 +11,10 @@ import reactivemongo.play.json._
 import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-
+/**
+  *
+  * @param api
+  */
 class Movies(val api: ReactiveMongoApi) {
 
 
@@ -70,11 +73,12 @@ class Movies(val api: ReactiveMongoApi) {
         movieCollection.update(selector, modifier, multi = false).map(_.ok)
       })
     }
-
   }
-
 }
 
+/**
+  *
+  */
 object Movies {
 
   def stats(movieVec: Vector[Movie]): BSONDocument = {

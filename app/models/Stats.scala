@@ -21,7 +21,7 @@ case class Stats(start: (Int, Int, Int), daysSinceStart: Long, total: Double, cu
 
 object Stats {
 
-  // Implicitly converts to BSON
+  // Implicitly convert to BSON
   implicit object StatsWriter extends BSONDocumentWriter[Stats] {
 
     def write(stats: Stats): BSONDocument = {
@@ -45,7 +45,7 @@ object Stats {
 
   }
 
-  // Implicitly converts to JSON
+  // Implicitly convert to JSON
   implicit object StatsWrites extends Writes[Stats] {
 
     def writes(stats: Stats): JsValue = {

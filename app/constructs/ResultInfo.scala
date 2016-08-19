@@ -1,4 +1,4 @@
-package helpers
+package constructs
 
 case class ResultInfo(success: Boolean, message: String)
 

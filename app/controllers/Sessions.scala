@@ -93,7 +93,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
 
   /**
-    * Invoke the model layer to add a new study subject.
+    * Invoke the model layer to add a subject.
     *
     * @return
     */
@@ -101,11 +101,16 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     AddOrRemoveSubjectForm.form.bindFromRequest()(request).fold(
       badForm => invalidForm,
-      goodForm => sessions.addSubject(goodForm.user_id, goodForm.subject).map(a => Ok(a.message))
+      goodForm => sessions.addSubject(goodForm.user_id, goodForm.subject, goodForm.description).map(a => Ok(a.message))
     )
   }
 
 
+  /**
+    * Invoke the model layer to remove a subject.
+    *
+    * @return
+    */
   def remove = Action.async { implicit request =>
 
     AddOrRemoveSubjectForm.form.bindFromRequest()(request).fold(
@@ -116,7 +121,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
 
   /**
-    * Invoke the model layer to rename a study subject.
+    * Invoke the model layer to rename a subject.
     *
     * @return
     */
@@ -126,8 +131,8 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
       badForm => invalidForm,
       goodForm => sessions.renameSubject(goodForm.user_id, goodForm.oldName, goodForm.newName).map(a => Ok(a.message))
     )
-
   }
+
 
   /**
     * Invoke the model layer to merge subjects.

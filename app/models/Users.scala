@@ -9,6 +9,7 @@ import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 /**
+  * User model class.
   *
   * @param api Holds the reference to the database.
   */
@@ -36,14 +37,15 @@ class Users(val api: ReactiveMongoApi) {
 
 
   /**
+    * Add a new user.
     *
     * @param firstName The first name of the new user.
     * @param lastName  The last name of the new user.
-    * @param email
-    * @param password
+    * @param email The email address of the new user.
+    * @param password The account password of the new user.
     * @return
     */
-  def addNewUser(firstName: String, lastName: String, email: String, password: String): Future[Boolean] = {
+  def addNewUser(username: String, firstName: String, lastName: String, email: String, password: String): Future[Boolean] = {
 
     getNewUserID().flatMap(newUserID => {
 

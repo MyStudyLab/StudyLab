@@ -4,7 +4,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 
 
-case class AddOrRemoveSubjectForm(user_id: Int, password: String, subject: String)
+case class AddOrRemoveSubjectForm(user_id: Int, password: String, subject: String, description: String)
 
 object AddOrRemoveSubjectForm {
 
@@ -12,7 +12,8 @@ object AddOrRemoveSubjectForm {
     mapping(
       "user_id" -> number,
       "password" -> nonEmptyText,
-      "subject" -> nonEmptyText
+      "subject" -> nonEmptyText,
+      "description" -> nonEmptyText
     )(AddOrRemoveSubjectForm.apply)(AddOrRemoveSubjectForm.unapply)
   )
 }
