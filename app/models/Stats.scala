@@ -8,16 +8,10 @@ import constructs.{Session, Status}
 import play.api.libs.json._
 import reactivemongo.bson._
 
-import scala.collection.mutable
-
 
 case class Stats(start: (Int, Int, Int), daysSinceStart: Long, total: Double, currentStreak: Int, longestStreak: Int,
-                 dailyAverage: Double, todaysTotal: Double, todaysSessions: Vector[Session], cumulative: Vector[(Long, Double)],
-                 subjectTotals: Map[String, Double], probability: Vector[Double], movingAverage: Vector[(Long, Double)],
-                 averageSession: Map[String, Double]) {
-
-
-}
+                 dailyAverage: Double, todaysTotal: Double, todaysSessions: Vector[Session], probability: Vector[Double],
+                 movingAverage: Vector[(Long, Double)])
 
 object Stats {
 
@@ -35,14 +29,10 @@ object Stats {
         "dailyAverage" -> stats.dailyAverage,
         "todaysTotal" -> stats.todaysTotal,
         "todaysSessions" -> stats.todaysSessions,
-        "cumulative" -> stats.cumulative.map(p => BSONArray(p._1, p._2)),
-        "subjectTotals" -> stats.subjectTotals.toVector.sortBy(p => -p._2).map(p => BSONArray(p._1, p._2)),
         "probability" -> stats.probability,
-        "movingAverage" -> stats.movingAverage.map(p => BSONArray(p._1, p._2)),
-        "averageSession" -> stats.averageSession.toVector.sortBy(p => -p._2).map(p => BSONArray(p._1, p._2))
+        "movingAverage" -> stats.movingAverage.map(p => BSONArray(p._1, p._2))
       )
     }
-
   }
 
   // Implicitly convert to JSON
@@ -59,14 +49,10 @@ object Stats {
         "dailyAverage" -> stats.dailyAverage,
         "todaysTotal" -> stats.todaysTotal,
         "todaysSessions" -> stats.todaysSessions,
-        "cumulative" -> stats.cumulative.map(p => JsArray(Seq(JsNumber(p._1), JsNumber(p._2)))),
-        "subjectTotals" -> stats.subjectTotals.toVector.sortBy(p => -p._2).map(p => JsArray(Seq(JsString(p._1), JsNumber(p._2)))),
         "probability" -> stats.probability,
-        "movingAverage" -> stats.movingAverage.map(p => JsArray(Seq(JsNumber(p._1), JsNumber(p._2)))),
-        "averageSession" -> stats.averageSession.toVector.sortBy(p => -p._2).map(p => JsArray(Seq(JsString(p._1), JsNumber(p._2))))
+        "movingAverage" -> stats.movingAverage.map(p => JsArray(Seq(JsNumber(p._1), JsNumber(p._2))))
       )
     }
-
   }
 
   /**
@@ -107,8 +93,8 @@ object Stats {
     )
 
     Stats((startZDT.getMonthValue, startZDT.getDayOfMonth, startZDT.getYear), daysSinceStart(zone)(sessions),
-      totalHours, currentStreak, longestStreak, dailyAverage, todaysTotal, todaysSessionsVec, cumulative(sessions),
-      subjectTotals(sessions), probability(144)(sessions), movingAverage(15)(sessions), averageSession(sessions)
+      totalHours, currentStreak, longestStreak, dailyAverage, todaysTotal, todaysSessionsVec, probability(144)(sessions),
+      movingAverage(15)(sessions)
     )
   }
 
@@ -138,36 +124,6 @@ object Stats {
     }).toDouble / (3600 * 1000 * sessions.length)
   }
 
-
-  private def subjectTotals(sessions: Vector[Session]): Map[String, Double] = {
-
-    val kv = sessions.foldLeft(Map[String, Long]())((totals, session) => {
-
-      val previous = totals.getOrElse(session.subject, 0L)
-
-      totals.updated(session.subject, previous + session.durationMillis())
-    }).mapValues(total => total.toDouble / (3600 * 1000))
-
-    kv
-  }
-
-
-  private def cumulative(sessions: Vector[Session]): Vector[(Long, Double)] = {
-
-    val boundsAndGroups = groupDays(ZoneId.of("America/Chicago"))(sessions)
-
-    val cumulatives = boundsAndGroups.map({
-
-      var s: Double = 0.0
-
-      bg => (bg._1._2, {
-        s += total(bg._2)
-        s
-      })
-    })
-
-    cumulatives
-  }
 
   /**
     * The length of the user's longest programming streak and their current streak
@@ -230,21 +186,6 @@ object Stats {
     for (i <- Vector.range(startIndex, endIndex)) yield {
       (dailyTotals(i)._1, dailyTotals.slice(i - radius, i + radius).map(_._2).sum / windowSize)
     }
-  }
-
-
-  private def averageSession(sessions: Seq[Session]): Map[String, Double] = {
-
-    val subTotals = mutable.Map[String, (Long, Long)]()
-
-    for (session <- sessions) {
-
-      val prev = subTotals.getOrElse(session.subject, (0L, 0L))
-
-      subTotals(session.subject) = (prev._1 + session.durationMillis(), prev._2 + 1)
-    }
-
-    subTotals.mapValues(pair => pair._1.toDouble / (pair._2 * 3600 * 1000)).toMap
   }
 
 
@@ -332,7 +273,7 @@ object Stats {
       startDayZDT.plusDays(i).toInstant.toEpochMilli
       )).toVector
 
-    (bounds :+(endDayZDT.toInstant.toEpochMilli, endInstant.toEpochMilli)).zip(groupSessions(sessions, dayMarks))
+    (bounds :+ (endDayZDT.toInstant.toEpochMilli, endInstant.toEpochMilli)).zip(groupSessions(sessions, dayMarks))
   }
 
 

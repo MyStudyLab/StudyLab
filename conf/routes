@@ -20,6 +20,9 @@ GET         /quotes                 controllers.Application.quotes
 # Get stats as JSON for the user id
 GET         /json/stats/:id         controllers.Sessions.getStats(id: Int)
 
+# Get sessions as JSON for the user id
+GET         /json/sessions/:id      controllers.Sessions.getUserSessionData(id: Int)
+
 # Get quotes as JSON for the user id
 GET         /json/quotes/:id        controllers.Application.getQuotes(id: Int)
 

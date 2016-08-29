@@ -1,5 +1,7 @@
 package constructs
 
+import play.api.libs.json.Json
+
 /**
   * Used when a user's status, subject vector, and session vector are needed.
   *
@@ -18,4 +20,6 @@ object StatusSubjectsSessions {
   // Implicitly converts to/from BSON
   implicit val SessionDataHandler = Macros.handler[StatusSubjectsSessions]
 
+  // Implicitly converts to JSON
+  implicit val SessionDataWrites = Json.writes[StatusSubjectsSessions]
 }

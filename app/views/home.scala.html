@@ -1,555 +1,632 @@
 @()(implicit messages: Messages)
 
-@siteTemplate("Homepage") {
+    @siteTemplate("Homepage") {
 
-    <div class="container-fluid">
+        <div class="container-fluid">
 
-        <div class="row small-margin-bottom">
-            <div class="col-sm-offset-1 col-sm-10 raised-element">
-                <div id="introMessage">
-                    Since <span id="startDate" class="introMessageValue"></span>
-                    I've spent <span id="total" class="introMessageValue"></span> hours programming!
-                    That's an average of <span id="dailyAverage" class="introMessageValue"></span>
-                    hours per day for <span id="daysSinceStart" class="introMessageValue"></span> days.
-                    Today, I've programmed for <span id="todaysTotal" class="introMessageValue"></span> hours.
-                    My longest programming streak is <span id="longestStreak" class="introMessageValue"></span>
-                    days, and I'm currently on a <span id="currentStreak" class="introMessageValue"></span>
-                    day streak.
+            <div class="row small-margin-bottom">
+                <div class="col-sm-offset-1 col-sm-10 raised-element">
+                    <div id="introMessage">
+                        Since <span id="startDate" class="introMessageValue"></span>
+                        I've spent <span id="total" class="introMessageValue"></span> hours programming!
+                        That's an average of <span id="dailyAverage" class="introMessageValue"></span>
+                        hours per day for <span id="daysSinceStart" class="introMessageValue"></span> days.
+                        Today, I've programmed for <span id="todaysTotal" class="introMessageValue"></span> hours.
+                        My longest programming streak is <span id="longestStreak" class="introMessageValue"></span>
+                        days, and I'm currently on a <span id="currentStreak" class="introMessageValue"></span>
+                        day streak.
+                    </div>
+                </div>
+            </div>
+
+            <div class="row small-margin-bottom">
+                <div class="col-sm-offset-1 col-sm-10 raised-element">
+                    <div id="todaysSessionsPlot" class="loading-icon">
+                        <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                    <div id="cumulativePlot" class="googlePlotContainer loading-icon">
+                        <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                    <div id="subjectTotalsPlot" class="googlePlotContainer loading-icon">
+                        <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                    <div id="probabilityPlot" class="googlePlotContainer loading-icon">
+                        <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                    <div id="movingAveragePlot" class="googlePlotContainer loading-icon">
+                        <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+                    <div id="averageSessionPlot" class="googlePlotContainer loading-icon">
+                        <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="row small-margin-bottom">
-            <div class="col-sm-offset-1 col-sm-10 raised-element">
-                <div id="todaysSessionsPlot" class="loading-icon">
-                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
-                </div>
-            </div>
-        </div>
+        <script>
+                function loadJSONFile(path, callback) {
 
+                    var httpRequest = new XMLHttpRequest();
 
-        <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="cumulativePlot" class="googlePlotContainer loading-icon">
-                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
-                </div>
-            </div>
-        </div>
+                    httpRequest.onreadystatechange = function () {
+                        if (httpRequest.readyState === 4) {
+                            if (httpRequest.status === 200) {
 
-        <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="subjectTotalsPlot" class="googlePlotContainer loading-icon">
-                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
-                </div>
-            </div>
-        </div>
+                                // Parse the response text as JSON
+                                var data = JSON.parse(httpRequest.responseText);
 
-        <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="probabilityPlot" class="googlePlotContainer loading-icon">
-                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="movingAveragePlot" class="googlePlotContainer loading-icon">
-                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
-                </div>
-            </div>
-        </div>
-
-            <!--
-        <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="subjectCumulativePlot" class="googlePlotContainer loading-icon">
-                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
-                </div>
-            </div>
-        </div>
-        -->
-
-        <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
-                <div id="averageSessionPlot" class="googlePlotContainer loading-icon">
-                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-            function loadJSONFile(path, callback) {
-
-                var httpRequest = new XMLHttpRequest();
-
-                httpRequest.onreadystatechange = function () {
-                    if (httpRequest.readyState === 4) {
-                        if (httpRequest.status === 200) {
-
-                            // Parse the response text as JSON
-                            var data = JSON.parse(httpRequest.responseText);
-
-                            if (callback) {
-                                callback(data);
+                                if (callback) {
+                                    callback(data);
+                                }
                             }
                         }
+                    };
+                    httpRequest.open('GET', path);
+                    httpRequest.send();
+                }
+
+
+                function adaptiveCumulative(sessions, numLevels) {
+
+                    var diff;
+                    var cumul = 0;
+
+                    var total = sessions.reduce(function(prev, curr, arr) {
+                        return prev + ((curr.endTime - curr.startTime) / (3600 * 1000));
+                    }, 0);
+
+
+                    var levelSize = Math.ceil(total / numLevels);
+
+                    var level = 1;
+                    var res = [[sessions[0].startTime, 0]];
+
+                    for (var i = 0; i<sessions.length; i++) {
+                        diff = (sessions[i].endTime - sessions[i].startTime) / (3600 * 1000);
+
+                        cumul += diff;
+
+                        if (cumul >= level*levelSize) {
+                            res.push([sessions[i].endTime, cumul]);
+                            level += 1;
+                        }
                     }
-                };
-                httpRequest.open('GET', path);
-                httpRequest.send();
-            }
 
-            function hms(sec) {
-                var h = Math.floor(sec / 3600);
+                    // Last item in cums
+                    if (res.length < numLevels + 1) {
+                        res.push([sessions[sessions.length-1].endTime, cumul]);
+                    }
 
-                sec = sec - 3600 * h;
-
-                var m = Math.floor(sec / 60)
-
-                sec = sec - 60 * m;
-
-                return [h, m, sec];
-            }
+                    return res;
+                }
 
 
-            // Global plot properties
-            var titleIsBold = true;
-            var titleFontSize = 32;
-            var hAxisFontSize = 20;
-            var vAxisFontSize = 16;
+                function subjectTotalsAndSessionAverages(sessions, numCumulativeBins) {
 
-            // Load the  charts
-            google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
+                    var diff = 0;
+                    var cumulativeGap;
+                    var total = 0;
+                    var count = 0;
+                    var subTotals = new Map();
+                    var counts = new Map();
+                    var diffs = [];
+
+                    sessions.forEach(function (curr, i, arr) {
+
+                        diff = (curr.endTime - curr.startTime) / (3600 * 1000);
+
+                        if (subTotals.has(curr.subject)) {
+                            counts.set(curr.subject, counts.get(curr.subject) + 1);
+                            subTotals.set(curr.subject, subTotals.get(curr.subject) + diff);
+                        } else {
+                            counts.set(curr.subject, 1);
+                            subTotals.set(curr.subject, diff);
+                        }
+
+                        count += 1;
+                        total += diff;
+                        diffs.push(diff);
+                    });
 
 
-            function writeIntroMessage(stats, elementId) {
-
-                var introElem = document.getElementById(elementId);
-
-                introElem.querySelector("#startDate").textContent = stats.start[0].toString() + "/" + stats.start[1].toString() + "/" + stats.start[2].toString();
-                introElem.querySelector("#total").textContent = Math.round(stats.total).toString();
-                introElem.querySelector("#dailyAverage").textContent = stats.dailyAverage.toFixed(2).toString();
-                introElem.querySelector("#daysSinceStart").textContent = stats.daysSinceStart.toString();
-                introElem.querySelector("#longestStreak").textContent = stats.longestStreak.toString();
-                introElem.querySelector("#currentStreak").textContent = stats.currentStreak.toString();
-                introElem.querySelector("#todaysTotal").textContent = stats.todaysTotal.toFixed(2).toString();
-            }
+                    cumulativeGap = Math.ceil(total / numCumulativeBins);
 
 
-            function getTodaysSessionsGooglePlotDrawer(sessions, elementId) {
+                    function cmp(sub1, sub2) {
+                        if (sub1[1] < sub2[1]) {
+                            return 1;
+                        }
 
-                function tmp() {
+                        if (sub1[1] > sub2[1]) {
+                            return -1;
+                        }
+
+                        return 0;
+                    }
+
+                    // TODO: Scale values to proper units, sort (descending), convert to proper format for return
+                    var a = Array.from(subTotals.entries());
+
+                    var b = a.map(function (curr, i, arr) {
+                        return [curr[0], curr[1] / counts.get(curr[0])];
+                    });
+
+                    return [a.sort(cmp), b.sort(cmp)];
+                }
+
+
+                function hms(sec) {
+                    var h = Math.floor(sec / 3600);
+
+                    sec = sec - 3600 * h;
+
+                    var m = Math.floor(sec / 60);
+
+                    sec = sec - 60 * m;
+
+                    return [h, m, sec];
+                }
+
+
+                // Global plot properties
+                var titleIsBold = true;
+                var titleFontSize = 32;
+                var hAxisFontSize = 20;
+                var vAxisFontSize = 16;
+
+                // Load the  charts
+                google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
+
+
+                function writeIntroMessage(stats, elementId) {
+
+                    var introElem = document.getElementById(elementId);
+
+                    introElem.querySelector("#startDate").textContent = stats.start[0].toString() + "/" + stats.start[1].toString() + "/" + stats.start[2].toString();
+                    introElem.querySelector("#total").textContent = Math.round(stats.total).toString();
+                    introElem.querySelector("#dailyAverage").textContent = stats.dailyAverage.toFixed(2).toString();
+                    introElem.querySelector("#daysSinceStart").textContent = stats.daysSinceStart.toString();
+                    introElem.querySelector("#longestStreak").textContent = stats.longestStreak.toString();
+                    introElem.querySelector("#currentStreak").textContent = stats.currentStreak.toString();
+                    introElem.querySelector("#todaysTotal").textContent = stats.todaysTotal.toFixed(2).toString();
+                }
+
+
+                function getTodaysSessionsGooglePlotDrawer(sessions, elementId) {
+
+                    function tmp() {
+
+                        var options = {
+                            height: 110,
+                            hAxis: {
+                                title: "",
+                                fontSize: 0
+                            },
+                            groupByRowLabel: false
+                        };
+
+                        var table = new google.visualization.DataTable();
+
+                        table.addColumn({type: "string", id: "Role"});
+                        table.addColumn({type: "string", id: "Subject"});
+                        table.addColumn({type: "number", id: "Start"});
+                        table.addColumn({type: "number", id: "End"});
+
+
+                        var rows = sessions.map(function (elem, i, self) {
+                            return ["What I've Done Today", elem.subject, elem.startTime, elem.endTime];
+                        });
+
+                        table.addRows(rows);
+
+                        var chart = new google.visualization.Timeline(document.getElementById(elementId));
+
+                        chart.draw(table, options);
+                    }
+
+                    return tmp;
+                }
+
+
+                function getCumulativeGooglePlotDrawer(cumulativeData, elementId) {
 
                     var options = {
-                        height: 110,
+                        chart: {
+                            title: "Cumulative Hours Studied"
+                        },
+                        legend: {
+                            position: 'none'
+                        },
+                        colors: ['green'],
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
                         hAxis: {
                             title: "",
-                            fontSize: 0
+                            textStyle: {
+                                fontSize: hAxisFontSize
+                            }
                         },
-                        groupByRowLabel: false
+                        vAxis: {
+                            textStyle: {
+                                fontSize: 20
+                            }
+                        },
+                        // Not working
+                        lineWidth: 10,
+                        // Not working
+                        curveType: 'function'
                     };
 
-                    var table = new google.visualization.DataTable();
+                    convertDates(cumulativeData, 0);
 
-                    table.addColumn({type: "string", id: "Role"});
-                    table.addColumn({type: "string", id: "Subject"});
-                    table.addColumn({type: "number", id: "Start"});
-                    table.addColumn({type: "number", id: "End"});
+                    function tmp() {
 
+                        var columnLabels = [["Date", "Cumulative Hours Studied"]];
 
-                    var rows = sessions.map(function (elem, i, self) {
-                        return ["What I've Done Today", elem.subject, elem.startTime, elem.endTime];
-                    });
+                        var chart = new google.charts.Line(document.getElementById(elementId));
 
-                    table.addRows(rows);
+                        var table = google.visualization.arrayToDataTable(columnLabels.concat(cumulativeData));
 
-                    var chart = new google.visualization.Timeline(document.getElementById(elementId));
+                        chart.draw(table, google.charts.Line.convertOptions(options));
+                    }
 
-                    chart.draw(table, options);
+                    return tmp;
                 }
 
-                return tmp;
-            }
+                function getSlidingAveragePlotDrawer(slidingAverageData, elementId) {
 
-
-            function getCumulativeGooglePlotDrawer(cumulativeData, elementId) {
-
-                var options = {
-                    chart: {
-                        title: "Cumulative Hours Studied"
-                    },
-                    legend: {
-                        position: 'none'
-                    },
-                    colors: ['green'],
-                    titleTextStyle: {
-                        fontSize: titleFontSize,
-                        bold: titleIsBold
-                    },
-                    hAxis: {
-                        title: "",
-                        textStyle: {
-                            fontSize: hAxisFontSize
-                        }
-                    },
-                    vAxis: {
-                        textStyle: {
-                            fontSize: 20
-                        }
-                    },
-                    // Not working
-                    lineWidth: 10,
-                    // Not working
-                    curveType: 'function'
-                };
-
-                convertDates(cumulativeData, 0);
-
-                function tmp() {
-
-                    var columnLabels = [["Date", "Cumulative Hours Studied"]];
-
-                    var chart = new google.charts.Line(document.getElementById(elementId));
-
-                    var table = google.visualization.arrayToDataTable(columnLabels.concat(cumulativeData));
-
-                    chart.draw(table, google.charts.Line.convertOptions(options));
-                }
-
-                return tmp;
-            }
-
-            function getSlidingAveragePlotDrawer(slidingAverageData, elementId) {
-
-                var options = {
-                    chart: {
-                        title: "Hours Studied Per Day",
-                        subtitle: "Sliding average - 31 day window"
-                    },
-                    legend: {
-                        position: 'none'
-                    },
-                    colors: ['green'],
-                    titleTextStyle: {
-                        fontSize: titleFontSize,
-                        bold: titleIsBold
-                    },
-                    hAxis: {
-                        title: "",
-                        textStyle: {
-                            fontSize: hAxisFontSize
-                        }
-                    },
-                    vAxis: {
-                        textStyle: {
-                            fontSize: 20
-                        }
-                    },
-                    // Not working
-                    lineWidth: 10,
-                    // Not working
-                    curveType: 'function'
-                };
-
-                convertDates(slidingAverageData, 0);
-
-                function tmp() {
-
-                    var columnLabels = [["Date", "Average Hours Studied"]];
-
-                    var chart = new google.charts.Line(document.getElementById(elementId));
-
-                    var table = google.visualization.arrayToDataTable(columnLabels.concat(slidingAverageData));
-
-                    chart.draw(table, google.charts.Line.convertOptions(options));
-                }
-
-                return tmp;
-            }
-
-            function getSubjectCumulativeGooglePlotDrawer(plotData, elementId) {
-
-                var options = {
-                    chart: {
-                        title: "Cumulative Hours Studied Per Subject"
-                    },
-                    titleTextStyle: {
-                        fontSize: titleFontSize,
-                        bold: titleIsBold
-                    },
-                    legend: {
-                        position: 'none'
-                    },
-                    hAxis: {
-                        title: "",
-                        textStyle: {
-                            fontSize: hAxisFontSize
-                        }
-                    },
-                    vAxis: {
-                        textStyle: {
-                            fontSize: 20
-                        }
-                    },
-                    // Not working
-                    curveType: 'function'
-                };
-
-                convertDatesWithRows(plotData, 0);
-
-                return getGoogleMaterialPlotDrawer(plotData, options, "Line", elementId);
-            }
-
-
-            // Returns a function that will draw the SubjectTotals plot
-            function getSubjectTotalsPlotDrawer(subjectTotals, elementId) {
-
-                var options = {
-                    chart: {
-                        title: "Total Hours Studied Per Subject"
-                    },
-                    titleTextStyle: {
-                        fontSize: titleFontSize,
-                        bold: titleIsBold
-                    },
-                    legend: {
-                        position: 'none'
-                    },
-                    hAxis: {
-                        title: "",
-                        textStyle: {
-                            fontSize: hAxisFontSize
-                        }
-                    },
-                    vAxis: {
-                        textStyle: {
-                            fontSize: 20
-                        }
-                    },
-                    bars: 'vertical',
-                    colors: ['green']
-                };
-
-
-                function tmp() {
-
-                    var columnLabels = [["Subject", "Total"]];
-
-                    var chart = new google.charts.Bar(document.getElementById(elementId));
-
-                    var table = google.visualization.arrayToDataTable(columnLabels.concat(subjectTotals));
-
-                    chart.draw(table, google.charts.Bar.convertOptions(options));
-                }
-
-                return tmp;
-            }
-
-
-            // Returns a function that will draw the AverageSession plot
-            function getAverageSessionPlotDrawer(sessionAverages, elementId) {
-
-                var options = {
-                    chart: {
-                        title: "Average Study Session Length Per Subject",
-                        subtitle: "in hours"
-                    },
-                    titleTextStyle: {
-                        fontSize: titleFontSize,
-                        bold: titleIsBold
-                    },
-                    legend: {
-                        position: 'none'
-                    },
-                    hAxis: {
-                        title: "",
-                        textStyle: {
-                            fontSize: hAxisFontSize
+                    var options = {
+                        chart: {
+                            title: "Hours Studied Per Day",
+                            subtitle: "Sliding average - 31 day window"
                         },
-                        // This is not working
-                        slantedText: true
-                        // - - - - - - - - - -
-                    },
-                    vAxis: {
-                        textStyle: {
-                            fontSize: 20
-                        }
-                    },
-                    bars: 'vertical'
-                };
-
-
-                function tmp() {
-
-                    var columnLabels = [["Subject", "Average Session Duration"]];
-
-                    var chart = new google.charts.Bar(document.getElementById(elementId));
-
-                    var table = google.visualization.arrayToDataTable(columnLabels.concat(sessionAverages));
-
-                    chart.draw(table, google.charts.Bar.convertOptions(options));
-                }
-
-                return tmp;
-            }
-
-
-            function getProbabilityGooglePlotDrawer(probabilities, elementId) {
-
-                var options = {
-                    chart: {
-                        title: "Probability That I'm Programming",
-                        subtitle: "at a particular time on any given day"
-                    },
-                    titleTextStyle: {
-                        fontSize: titleFontSize,
-                        bold: titleIsBold
-                    },
-                    legend: {
-                        position: 'none'
-                    },
-                    hAxis: {
-                        title: "",
-                        textStyle: {
-                            fontSize: hAxisFontSize
+                        legend: {
+                            position: 'none'
                         },
-                        // The format string is based on ICU pattern set
-                        format: "h a"
-                    },
-                    vAxis: {
-                        textStyle: {
-                            fontSize: 20
-                        }
-                    },
-                    colors: ['green']
-                };
+                        colors: ['green'],
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        hAxis: {
+                            title: "",
+                            textStyle: {
+                                fontSize: hAxisFontSize
+                            }
+                        },
+                        vAxis: {
+                            textStyle: {
+                                fontSize: 20
+                            }
+                        },
+                        // Not working
+                        lineWidth: 10,
+                        // Not working
+                        curveType: 'function'
+                    };
 
-                function tmp() {
+                    convertDates(slidingAverageData, 0);
 
-                    var columnLabels = [["Time", "Probability"]];
+                    function tmp() {
 
-                    var dataArray = probabilities.map(function (elem, i, self) {
-                        return [hms((i / self.length) * 86400), elem];
-                    });
+                        var columnLabels = [["Date", "Average Hours Studied"]];
 
-                    dataArray.forEach(function (elem, i, self) {
-                        elem[0][0] += 6;
-                        elem[0][0] %= 24;
-                    });
+                        var chart = new google.charts.Line(document.getElementById(elementId));
 
-                    dataArray.sort(function (a, b) {
+                        var table = google.visualization.arrayToDataTable(columnLabels.concat(slidingAverageData));
 
-                        if (a[0][0] < b [0][0]) {
-                            return -1;
-                        } else if (a[0][0] > b[0][0]) {
-                            return 1;
-                        } else if (a[0][1] < b[0][1]) {
-                            return -1;
-                        } else if (a[0][1] > b[0][1]) {
-                            return 1;
-                        } else if (a[0][2] < b[0][2]) {
-                            return -1;
-                        } else if (a[0][2] > b[0][2]) {
-                            return 1;
-                        } else {
-                            return 0;
-                        }
+                        chart.draw(table, google.charts.Line.convertOptions(options));
+                    }
 
-                    });
-
-                    var chart = new google.charts.Line(document.getElementById(elementId));
-
-                    var table = google.visualization.arrayToDataTable(columnLabels.concat(dataArray));
-
-                    chart.draw(table, google.charts.Line.convertOptions(options));
+                    return tmp;
                 }
 
-                return tmp;
-            }
+                function getSubjectCumulativeGooglePlotDrawer(plotData, elementId) {
 
+                    var options = {
+                        chart: {
+                            title: "Cumulative Hours Studied Per Subject"
+                        },
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        legend: {
+                            position: 'none'
+                        },
+                        hAxis: {
+                            title: "",
+                            textStyle: {
+                                fontSize: hAxisFontSize
+                            }
+                        },
+                        vAxis: {
+                            textStyle: {
+                                fontSize: 20
+                            }
+                        },
+                        // Not working
+                        curveType: 'function'
+                    };
 
-            // Get a function that will draw a material-style google chart.
-            function getGoogleMaterialPlotDrawer(plotData, plotOptions, plotType, elementId) {
+                    convertDatesWithRows(plotData, 0);
 
-                function tmp() {
-                    var table = new google.visualization.DataTable();
-
-                    // Add columns to the data table
-                    plotData.columns.forEach(function (curr, i, self) {
-                        table.addColumn(curr[0], curr[1]);
-                    });
-
-                    // Add the rows of data to the data table
-                    table.addRows(plotData.rows);
-
-                    var chart = new google.charts[plotType](document.getElementById(elementId));
-
-                    var convertedOptions = google.charts[plotType].convertOptions(plotOptions);
-
-                    chart.draw(table, convertedOptions);
+                    return getGoogleMaterialPlotDrawer(plotData, options, "Line", elementId);
                 }
 
-                return tmp;
-            }
 
-            // Convert the values in the given columns to Date objects
-            function convertDatesWithRows(plotData, column) {
-                plotData.rows.forEach(function (elem, i, self) {
-                    elem[column] = new Date(elem[0]);
+                // Returns a function that will draw the SubjectTotals plot
+                function getSubjectTotalsPlotDrawer(subjectTotals, elementId) {
+
+                    var options = {
+                        chart: {
+                            title: "Total Hours Studied Per Subject"
+                        },
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        legend: {
+                            position: 'none'
+                        },
+                        hAxis: {
+                            title: "",
+                            textStyle: {
+                                fontSize: hAxisFontSize
+                            }
+                        },
+                        vAxis: {
+                            textStyle: {
+                                fontSize: 20
+                            }
+                        },
+                        bars: 'vertical',
+                        colors: ['green']
+                    };
+
+
+                    function tmp() {
+
+                        var columnLabels = [["Subject", "Total"]];
+
+                        var chart = new google.charts.Bar(document.getElementById(elementId));
+
+                        var table = google.visualization.arrayToDataTable(columnLabels.concat(subjectTotals));
+
+                        chart.draw(table, google.charts.Bar.convertOptions(options));
+                    }
+
+                    return tmp;
+                }
+
+
+                // Returns a function that will draw the AverageSession plot
+                function getAverageSessionPlotDrawer(sessionAverages, elementId) {
+
+                    var options = {
+                        chart: {
+                            title: "Average Study Session Length Per Subject",
+                            subtitle: "in hours"
+                        },
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        legend: {
+                            position: 'none'
+                        },
+                        hAxis: {
+                            title: "",
+                            textStyle: {
+                                fontSize: hAxisFontSize
+                            },
+                            // This is not working
+                            slantedText: true
+                            // - - - - - - - - - -
+                        },
+                        vAxis: {
+                            textStyle: {
+                                fontSize: 20
+                            }
+                        },
+                        bars: 'vertical'
+                    };
+
+
+                    function tmp() {
+
+                        var columnLabels = [["Subject", "Average Session Duration"]];
+
+                        var chart = new google.charts.Bar(document.getElementById(elementId));
+
+                        var table = google.visualization.arrayToDataTable(columnLabels.concat(sessionAverages));
+
+                        chart.draw(table, google.charts.Bar.convertOptions(options));
+                    }
+
+                    return tmp;
+                }
+
+
+                function getProbabilityGooglePlotDrawer(probabilities, elementId) {
+
+                    var options = {
+                        chart: {
+                            title: "Probability That I'm Programming",
+                            subtitle: "at a particular time on any given day"
+                        },
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        legend: {
+                            position: 'none'
+                        },
+                        hAxis: {
+                            title: "",
+                            textStyle: {
+                                fontSize: hAxisFontSize
+                            },
+                            // The format string is based on ICU pattern set
+                            format: "h a"
+                        },
+                        vAxis: {
+                            textStyle: {
+                                fontSize: 20
+                            }
+                        },
+                        colors: ['green']
+                    };
+
+                    function tmp() {
+
+                        var columnLabels = [["Time", "Probability"]];
+
+                        var dataArray = probabilities.map(function (elem, i, self) {
+                            return [hms((i / self.length) * 86400), elem];
+                        });
+
+                        dataArray.forEach(function (elem, i, self) {
+                            elem[0][0] += 6;
+                            elem[0][0] %= 24;
+                        });
+
+                        dataArray.sort(function (a, b) {
+
+                            if (a[0][0] < b [0][0]) {
+                                return -1;
+                            } else if (a[0][0] > b[0][0]) {
+                                return 1;
+                            } else if (a[0][1] < b[0][1]) {
+                                return -1;
+                            } else if (a[0][1] > b[0][1]) {
+                                return 1;
+                            } else if (a[0][2] < b[0][2]) {
+                                return -1;
+                            } else if (a[0][2] > b[0][2]) {
+                                return 1;
+                            } else {
+                                return 0;
+                            }
+
+                        });
+
+                        var chart = new google.charts.Line(document.getElementById(elementId));
+
+                        var table = google.visualization.arrayToDataTable(columnLabels.concat(dataArray));
+
+                        chart.draw(table, google.charts.Line.convertOptions(options));
+                    }
+
+                    return tmp;
+                }
+
+
+                // Get a function that will draw a material-style google chart.
+                function getGoogleMaterialPlotDrawer(plotData, plotOptions, plotType, elementId) {
+
+                    function tmp() {
+                        var table = new google.visualization.DataTable();
+
+                        // Add columns to the data table
+                        plotData.columns.forEach(function (curr, i, self) {
+                            table.addColumn(curr[0], curr[1]);
+                        });
+
+                        // Add the rows of data to the data table
+                        table.addRows(plotData.rows);
+
+                        var chart = new google.charts[plotType](document.getElementById(elementId));
+
+                        var convertedOptions = google.charts[plotType].convertOptions(plotOptions);
+
+                        chart.draw(table, convertedOptions);
+                    }
+
+                    return tmp;
+                }
+
+                // Convert the values in the given columns to Date objects
+                function convertDatesWithRows(plotData, column) {
+                    plotData.rows.forEach(function (elem, i, self) {
+                        elem[column] = new Date(elem[0]);
+                    });
+                }
+
+                function convertDates(plotData, column) {
+                    plotData.forEach(function (elem, i, self) {
+                        elem[column] = new Date(elem[0]);
+                    });
+                }
+
+                // Return the number hours since the given epoch millisecond
+                function hoursSinceMilli(startMillis) {
+
+                    var currMillis = new Date().getTime();
+
+                    return (currMillis - startMillis) / (3600 * 1000);
+                }
+
+
+                // Moving stat computation to JS
+                loadJSONFile("/json/sessions/1", function (data) {
+
+                    //console.log(data);
+
+                    var totsAvgs = subjectTotalsAndSessionAverages(data.sessions);
+
+                    google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(adaptiveCumulative(data.sessions, 100), "cumulativePlot"));
+                    google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(totsAvgs[0], "subjectTotalsPlot"));
+                    google.charts.setOnLoadCallback(getAverageSessionPlotDrawer(totsAvgs[1], "averageSessionPlot"));
+
                 });
-            }
 
-            function convertDates(plotData, column) {
-                plotData.forEach(function (elem, i, self) {
-                    elem[column] = new Date(elem[0]);
-                });
-            }
+                // Load the chart data and setup callbacks to draw plots when we have it.
+                loadJSONFile("/json/stats/1", function (data) {
 
-            // Return the number hours since the given epoch millisecond
-            function hoursSinceMilli(startMillis) {
+                    // Fill in the values in the intro message.
+                    writeIntroMessage(data, "introMessage");
 
-                var currMillis = new Date().getTime();
+                    // - - - Set up call-backs to draw the plots - - - - - - - - - -
 
-                return (currMillis - startMillis) / (3600 * 1000);
-            }
+                    // Only show the current day's overview if the user has studied today.
+                    if (data.todaysSessions.length > 0) {
+                        google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(data.todaysSessions, "todaysSessionsPlot"));
+                    } else {
+                        document.getElementById("todaysSessionsPlot").style.display = "none";
+                    }
 
-            // Load the chart data and setup callbacks to draw plots when we have it.
-            loadJSONFile("/json/stats/1", function (data) {
+                    google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(data.movingAverage, "movingAveragePlot"));
+                    google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(data.probability, "probabilityPlot"));
+                })
+        </script>
 
-                // TODO: Remove this when done debugging
-                console.log(data);
-
-                // Fill in the values in the intro message.
-                writeIntroMessage(data, "introMessage");
-
-                // - - - Set up call-backs to draw the plots - - - - - - - - - -
-
-
-                // Only show the current day's overview if the user has studied today.
-
-                if (data.todaysSessions.length > 0) {
-                    google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(data.todaysSessions, "todaysSessionsPlot"));
-                } else {
-                    document.getElementById("todaysSessionsPlot").style.display = "none";
-                }
-
-
-                google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(data.movingAverage, "movingAveragePlot"));
-                google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(data.cumulative, "cumulativePlot"));
-
-
-                //google.charts.setOnLoadCallback(getSubjectCumulativeGooglePlotDrawer(data.subjectCumulative, "subjectCumulativePlot"));
-
-
-                google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(data.subjectTotals, "subjectTotalsPlot"));
-
-                google.charts.setOnLoadCallback(getAverageSessionPlotDrawer(data.averageSession, "averageSessionPlot"));
-                google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(data.probability, "probabilityPlot"));
-
-
-            })
-    </script>
-
-}
+    }

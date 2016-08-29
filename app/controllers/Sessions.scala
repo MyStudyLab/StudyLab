@@ -152,8 +152,15 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     // Return the result with the current time in the users timezone
     sessions.getStats(user_id).map(optStats => optStats.fold(Ok(Json.obj("success" -> false)))(stats =>
-      Ok(Stats.StatsWrites.writes(stats))))
+      Ok(Json.toJson(stats))))
   }
+
+
+  def getUserSessionData(user_id: Int) = Action.async { implicit request =>
+
+    sessions.getUserSessionData(user_id).map(optData => optData.fold(Ok(Json.obj("success" -> false)))(data => Ok(Json.toJson(data))))
+  }
+
 
   def startSession() = checked(start)
 

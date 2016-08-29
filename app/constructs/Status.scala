@@ -1,5 +1,7 @@
 package constructs
 
+import play.api.libs.json.Json
+
 
 /**
   * Represents the study status of a user.
@@ -17,5 +19,8 @@ object Status {
 
   // Implicitly converts to/from BSON
   implicit val StatusHandler = Macros.handler[Status]
+
+  // Implicitly converts to JSON
+  implicit val statusWrites = Json.writes[Status]
 
 }

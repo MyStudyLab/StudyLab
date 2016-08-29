@@ -48,6 +48,16 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   }
 
 
+  def getUserSessionData(user_id: Int): Future[Option[StatusSubjectsSessions]] = {
+
+    val selector = BSONDocument("user_id" -> user_id)
+
+    val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
+
+    bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions]
+  }
+
+
   /**
     * Starts a study session for the given user and subject.
     *

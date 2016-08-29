@@ -1,5 +1,7 @@
 package constructs
 
+import play.api.libs.json.Json
+
 
 /**
   * Represents a subject that can be studied.
@@ -19,5 +21,6 @@ object Subject {
   // Implicitly converts to/from BSON
   implicit val SubjectHandler = Macros.handler[Subject]
 
-
+  // Implicitly converts to JSON
+  implicit val subjectWrites = Json.writes[Subject]
 }
