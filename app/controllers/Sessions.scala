@@ -8,7 +8,6 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 import scala.concurrent.Future
 import forms._
-import models.Stats
 import play.api.libs.json.Json
 
 

@@ -7,12 +7,27 @@
     font-size: xx-large;
 }
 
+.test-3 {
+    font-size: xx-large;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.test-title {
+    font-size: large;
+    color: #757575;
+}
+
 .googlePlotContainer {
     height: 500px;
 }
 
 .spaced-plot {
     margin-bottom: 80px;
+}
+
+#widt {
+    padding: 10px 15px 0 15px;
 }
 
 #about-para {
@@ -118,5 +133,5 @@
 
 body {
     font-family: Roboto, "Open Sans", Helvetica, Arial, sans-serif;
-    background-color: #f9f9fd;
+    background-color: #fff;
 }

@@ -2,57 +2,31 @@ package models
 
 import java.time
 import java.time.temporal.ChronoUnit
-import java.time.{Instant, ZoneId, ZonedDateTime}
+import java.time.{ZoneId, ZonedDateTime}
 
 import constructs.{Session, Status}
 import play.api.libs.json._
-import reactivemongo.bson._
 
 
-case class Stats(start: (Int, Int, Int), daysSinceStart: Long, total: Double, currentStreak: Int, longestStreak: Int,
-                 dailyAverage: Double, todaysTotal: Double, todaysSessions: Vector[Session], probability: Vector[Double],
-                 movingAverage: Vector[(Long, Double)])
+case class Stats(daysSinceStart: Long, currentStreak: Int, longestStreak: Int, dailyAverage: Double, todaysTotal: Double,
+                 todaysSessions: Vector[Session], probability: Vector[Double], movingAverage: Vector[(Long, Double)])
 
 object Stats {
-
-  // Implicitly convert to BSON
-  implicit object StatsWriter extends BSONDocumentWriter[Stats] {
-
-    def write(stats: Stats): BSONDocument = {
-
-      BSONDocument(
-        "start" -> BSONArray(stats.start._1, stats.start._2, stats.start._3),
-        "daysSinceStart" -> stats.daysSinceStart,
-        "total" -> stats.total,
-        "currentStreak" -> stats.currentStreak,
-        "longestStreak" -> stats.longestStreak,
-        "dailyAverage" -> stats.dailyAverage,
-        "todaysTotal" -> stats.todaysTotal,
-        "todaysSessions" -> stats.todaysSessions,
-        "probability" -> stats.probability,
-        "movingAverage" -> stats.movingAverage.map(p => BSONArray(p._1, p._2))
-      )
-    }
-  }
 
   // Implicitly convert to JSON
   implicit object StatsWrites extends Writes[Stats] {
 
-    def writes(stats: Stats): JsValue = {
+    def writes(stats: Stats): JsValue = Json.obj(
+      "daysSinceStart" -> stats.daysSinceStart,
+      "currentStreak" -> stats.currentStreak,
+      "longestStreak" -> stats.longestStreak,
+      "dailyAverage" -> stats.dailyAverage,
+      "todaysTotal" -> stats.todaysTotal,
+      "todaysSessions" -> stats.todaysSessions,
+      "probability" -> stats.probability,
+      "movingAverage" -> stats.movingAverage.map(p => JsArray(Seq(JsNumber(p._1), JsNumber(p._2))))
+    )
 
-      Json.obj(
-        "start" -> JsArray(Seq(JsNumber(stats.start._1), JsNumber(stats.start._2), JsNumber(stats.start._3))),
-        "daysSinceStart" -> stats.daysSinceStart,
-        "total" -> stats.total,
-        "currentStreak" -> stats.currentStreak,
-        "longestStreak" -> stats.longestStreak,
-        "dailyAverage" -> stats.dailyAverage,
-        "todaysTotal" -> stats.todaysTotal,
-        "todaysSessions" -> stats.todaysSessions,
-        "probability" -> stats.probability,
-        "movingAverage" -> stats.movingAverage.map(p => JsArray(Seq(JsNumber(p._1), JsNumber(p._2))))
-      )
-    }
   }
 
   /**
@@ -84,17 +58,8 @@ object Stats {
 
     val todaysTotal = total(todaysSessionsVec)
 
-    val startZDT = startDate(zone)(sessions)
-
-
-
-    BSONDocument(
-      "subjectCumulative" -> subjectCumulativeGoogle(sessions)
-    )
-
-    Stats((startZDT.getMonthValue, startZDT.getDayOfMonth, startZDT.getYear), daysSinceStart(zone)(sessions),
-      totalHours, currentStreak, longestStreak, dailyAverage, todaysTotal, todaysSessionsVec, probability(144)(sessions),
-      movingAverage(15)(sessions)
+    Stats(daysSinceStart(zone)(sessions), currentStreak, longestStreak, dailyAverage, todaysTotal, todaysSessionsVec,
+      probability(144)(sessions), movingAverage(15)(sessions)
     )
   }
 
@@ -109,19 +74,6 @@ object Stats {
     sessions.foldLeft(0L)((total: Long, session: Session) => {
       total + session.durationMillis()
     }).toDouble / (3600 * 1000)
-  }
-
-
-  /**
-    * Average duration of a session.
-    *
-    * @param sessions The vector of sessions to average.
-    * @return
-    */
-  private def average(sessions: Vector[Session]): Double = {
-    sessions.foldLeft(0L)((total: Long, session: Session) => {
-      total + session.durationMillis()
-    }).toDouble / (3600 * 1000 * sessions.length)
   }
 
 
@@ -189,40 +141,6 @@ object Stats {
   }
 
 
-  private def subjectCumulative(sessions: Vector[Session]): (Vector[Long], Map[String, Vector[Double]]) = {
-
-    val marks = monthMarksSince(ZoneId.of("America/Chicago"))(sessions.head.startTime)
-
-    val step1: Map[String, Vector[Session]] = sessions.groupBy(_.subject)
-
-    val step2: Map[String, Vector[Vector[Session]]] = step1.mapValues(subSessions => groupSessions(subSessions, marks))
-
-    val step3: Map[String, Vector[Double]] = step2.mapValues(groups => groups.map(sessionGroup => total(sessionGroup)))
-
-    // Cumulate the values. We drop the first (zero) element due to the way scanLeft works
-    val step4: Map[String, Vector[Double]] = step3.mapValues(_.scanLeft(0.0)(_ + _).drop(1))
-
-    (marks :+ System.currentTimeMillis(), step4)
-  }
-
-
-  private def subjectCumulativeGoogle(sessions: Vector[Session]): BSONDocument = {
-
-    val subjectCumulatives = subjectCumulative(sessions)
-
-    val dates: Seq[Long] = subjectCumulatives._1
-
-    val subjects = subjectCumulatives._2.keys.toSeq
-
-    BSONDocument(
-      "columns" -> BSONArray(
-        BSONArray(BSONString("date"), BSONString("Date")) +: subjects.map(sub => BSONArray(BSONString("number"), BSONString(sub)))
-      ),
-      "rows" -> dates.indices.map(i => BSONArray(BSONLong(dates(i)) +: subjects.map(sub => BSONDouble(subjectCumulatives._2(sub)(i)))))
-    )
-  }
-
-
   // Split up a sessions list using a list of dates.
   private def groupSessions(sessions: Vector[Session], marks: Iterable[Long]): Vector[Vector[Session]] = {
 
@@ -283,21 +201,6 @@ object Stats {
   }
 
 
-  private def dailyTotalCounts(zone: ZoneId)(sessions: Vector[Session]): Vector[(Int, Int)] = {
-
-    val days = dailyTotals(zone)(sessions)
-
-    days.groupBy(dailyTotal => math.ceil(dailyTotal).toInt).mapValues(_.length).toVector
-  }
-
-
-  private def probabilityOfDailyTotal(zone: ZoneId)(sessions: Vector[Session]): Vector[(Int, Int)] = {
-
-    dailyTotals(zone)(sessions).map(dailyTotal => (100 * dailyTotal / 24).toInt).groupBy(a => a).mapValues(_.length).toVector
-
-  }
-
-
   private def startDate(zone: ZoneId)(sessions: Vector[Session]): ZonedDateTime = {
 
     // TODO: check for empty lists
@@ -306,44 +209,6 @@ object Stats {
     val startZDT = time.ZonedDateTime.ofInstant(startInstant, zone).truncatedTo(ChronoUnit.DAYS)
 
     startZDT
-  }
-
-
-  private def startOfDay(zone: ZoneId)(epochMilli: Long): Long = {
-
-    ZonedDateTime.ofInstant(Instant.ofEpochMilli(epochMilli), zone).truncatedTo(ChronoUnit.DAYS).toInstant.toEpochMilli
-  }
-
-
-  private def dayMarksSince(zone: ZoneId)(start: Long): Vector[Long] = {
-
-    val startInstant = time.Instant.ofEpochMilli(start)
-
-    val endInstant = time.Instant.now()
-
-    val startDayZDT = ZonedDateTime.ofInstant(startInstant, zone).truncatedTo(ChronoUnit.DAYS)
-
-    val diff = startDayZDT.until(ZonedDateTime.ofInstant(endInstant, zone), ChronoUnit.DAYS)
-
-    val dayMarks = (for (i <- 0L to diff) yield startDayZDT.plusDays(i).toInstant.toEpochMilli).toVector
-
-    dayMarks
-  }
-
-
-  private def monthMarksSince(zone: ZoneId)(start: Long): Vector[Long] = {
-
-    val startInstant = time.Instant.ofEpochMilli(start)
-
-    val endInstant = time.Instant.now()
-
-    val startDayZDT = ZonedDateTime.ofInstant(startInstant, zone).truncatedTo(ChronoUnit.DAYS).withDayOfMonth(1)
-
-    val diff = startDayZDT.until(ZonedDateTime.ofInstant(endInstant, zone), ChronoUnit.MONTHS)
-
-    val monthMarks = (for (i <- 0L to diff) yield startDayZDT.plusMonths(i).toInstant.toEpochMilli).toVector
-
-    monthMarks
   }
 
 

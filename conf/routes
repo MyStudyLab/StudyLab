@@ -3,57 +3,57 @@
 # ~~~~
 
 # Home page
-GET         /                       controllers.Application.home
+GET         /                         controllers.Application.home
 
 # About page
-GET         /about                  controllers.Application.about
+GET         /about                    controllers.Application.about
 
 # Books page
-GET         /books                  controllers.Application.books
+# GET         /books                    controllers.Application.books
 
 # Movies page
-GET         /movies                 controllers.Application.movies
+GET         /movies                   controllers.Application.movies
 
 # Go to the quotes page
-GET         /quotes                 controllers.Application.quotes
+GET         /quotes                   controllers.Application.quotes
 
 # Get stats as JSON for the user id
-GET         /json/stats/:id         controllers.Sessions.getStats(id: Int)
+GET         /json/stats/:id           controllers.Sessions.getStats(id: Int)
 
 # Get sessions as JSON for the user id
-GET         /json/sessions/:id      controllers.Sessions.getUserSessionData(id: Int)
+GET         /json/sessions/:id        controllers.Sessions.getUserSessionData(id: Int)
 
 # Get quotes as JSON for the user id
-GET         /json/quotes/:id        controllers.Application.getQuotes(id: Int)
+GET         /json/quotes/:id          controllers.Application.getQuotes(id: Int)
 
 # Get movies as JSON for the user id
-GET         /json/movies/:id        controllers.Movies.getMovies(id: Int)
+GET         /json/movies/:id          controllers.Movies.getMovies(id: Int)
 
 # Get books as JSON for the user id
-GET         /json/books/:id         controllers.Books.getBooks(id: Int)
+# GET         /json/books/:id         controllers.Books.getBooks(id: Int)
 
 # Start a study session
-POST        /study/start            controllers.Sessions.startSession()
+POST        /study/start              controllers.Sessions.startSession()
 
 # Stop a study session
-POST        /study/stop             controllers.Sessions.stopSession()
+POST        /study/stop               controllers.Sessions.stopSession()
 
 # Abort a study session
-POST        /study/abort            controllers.Sessions.abortSession()
+POST        /study/abort              controllers.Sessions.abortSession()
 
 # Add a study subject
-POST        /study/add              controllers.Sessions.addSubject()
+POST        /study/add                controllers.Sessions.addSubject()
 
 # Remove a study subject
-POST        /study/remove           controllers.Sessions.removeSubject()
+POST        /study/remove             controllers.Sessions.removeSubject()
 
 # Rename a study subject
-POST        /study/rename           controllers.Sessions.renameSubject()
+POST        /study/rename             controllers.Sessions.renameSubject()
 
 # Merge one subject into another
-POST        /study/merge            controllers.Sessions.mergeSubjects()
+POST        /study/merge              controllers.Sessions.mergeSubjects()
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file           controllers.Assets.at(path="/public", file)
+GET         /assets/*file             controllers.Assets.at(path="/public", file)
 
     
