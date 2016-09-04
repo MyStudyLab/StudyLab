@@ -3,10 +3,6 @@
     color: green;
 }
 
-#introMessage {
-    font-size: xx-large;
-}
-
 .test-3 {
     font-size: xx-large;
     text-align: center;
@@ -27,7 +23,7 @@
 }
 
 #widt {
-    padding: 10px 15px 0 15px;
+    padding: 15px 15px 0 15px;
 }
 
 #about-para {
@@ -83,6 +79,9 @@
 
 .raised-element {
     box-shadow: 0 1px 3px #3d4643;
+}
+
+.padded-plot{
     padding: 25px 15px;
 }
 
@@ -133,5 +132,5 @@
 
 body {
     font-family: Roboto, "Open Sans", Helvetica, Arial, sans-serif;
-    background-color: #fff;
+    background-color: #fbfbfb;
 }

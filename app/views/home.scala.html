@@ -4,43 +4,27 @@
 
     <div class="container-fluid">
 
-        <div class="row small-margin-bottom">
-            <div class="col-sm-offset-1 col-sm-10 raised-element">
-                <div id="introMessage">
-                    I've spent <span id="total" class="introMessageValue"></span> hours programming,
-                    averaging <span id="dailyAverage" class="introMessageValue"></span>
-                    hours per day for <span id="daysSinceStart" class="introMessageValue"></span> days.
-                    Today, I've programmed for <span id="todaysTotal" class="introMessageValue"></span> hours.
-                    My longest programming streak is <span id="longestStreak" class="introMessageValue"></span>
-                    days, and I'm currently on <span id="streakArticle"></span> <span id="currentStreak" class="introMessageValue"></span>
-                    day streak.
-                </div>
-            </div>
-        </div>
-
-        <!--
-
         <div class="row small-margin-bottom test-3">
             <div class="col-sm-offset-1 col-sm-2 raised-element">
                 <u class="test-title">Total</u><br>
                 <span id="total-test" class="introMessageValue"></span> hours
             </div>
 
-            <div class=" col-sm-offset-2 col-sm-2 raised-element">
-                <u class="test-title">Average Day</u><br>
-                <span id="average-test" class="introMessageValue"></span> hours
+            <div class=" col-sm-offset-1 col-sm-4 raised-element">
+                <u class="test-title">Today / Average</u><br>
+                <span id="today-test" class="introMessageValue"></span>
+                / <span id="average-test" class="introMessageValue"></span>
             </div>
 
-            <div class=" col-sm-offset-2 col-sm-2 raised-element">
-                <u class="test-title">Today</u><br>
-                <span id="today-test" class="introMessageValue"></span> hours
+            <div class=" col-sm-offset-1 col-sm-2 raised-element">
+                <u class="test-title">Current Streak</u><br>
+                <span id="streak-test" class="introMessageValue"></span> days
             </div>
+
         </div>
 
-        -->
-
         <div class="row small-margin-bottom">
-            <div id = "widt" class="col-sm-offset-1 col-sm-10 raised-element">
+            <div id="widt" class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="todaysSessionsPlot" class="loading-icon">
                     <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
                 </div>
@@ -48,7 +32,7 @@
         </div>
 
         <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+            <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="cumulativePlot" class="googlePlotContainer loading-icon">
                     <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
                 </div>
@@ -56,7 +40,7 @@
         </div>
 
         <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+            <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="subjectTotalsPlot" class="googlePlotContainer loading-icon">
                     <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
                 </div>
@@ -64,7 +48,7 @@
         </div>
 
         <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+            <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="probabilityPlot" class="googlePlotContainer loading-icon">
                     <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
                 </div>
@@ -72,7 +56,7 @@
         </div>
 
         <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element spaced-plot">
+            <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="movingAveragePlot" class="googlePlotContainer loading-icon">
                     <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
                 </div>
@@ -82,7 +66,7 @@
 
     <script>
             // Load the  charts
-            google.charts.load('45', {packages: ['line', 'bar', 'timeline']});
+            google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
 
             function loadJSONFile(path, callback) {
 
@@ -218,36 +202,18 @@
             var vAxisFontSize = 16;
 
 
-            function writeIntroMessage(stats, elementId) {
+            function writeIntroMessage(stats) {
 
-                var introElem = document.getElementById(elementId);
+                document.getElementById("average-test").textContent = stats.dailyAverage.toFixed(2).toString();
 
-                introElem.querySelector("#dailyAverage").textContent = stats.dailyAverage.toFixed(2).toString();
-                //document.getElementById("average-test").textContent = stats.dailyAverage.toFixed(2).toString();
+                document.getElementById("streak-test").textContent = stats.currentStreak.toString();
 
-                introElem.querySelector("#daysSinceStart").textContent = stats.daysSinceStart.toString();
-                introElem.querySelector("#longestStreak").textContent = stats.longestStreak.toString();
-
-                if (stats.currentStreak == 11 || stats.currentStreak == 18 || stats.currentStreak.toString[0] == "8") {
-                    introElem.querySelector("#streakArticle").textContent = "an";
-                } else {
-                    introElem.querySelector("#streakArticle").textContent = "a";
-                }
-
-                introElem.querySelector("#currentStreak").textContent = stats.currentStreak.toString();
-
-
-                introElem.querySelector("#todaysTotal").textContent = stats.todaysTotal.toFixed(2).toString();
-                //document.getElementById("today-test").textContent = stats.todaysTotal.toFixed(2).toString();
+                document.getElementById("today-test").textContent = stats.todaysTotal.toFixed(2).toString();
             }
 
-            function writeIntroMessageJS(stats, elementId) {
+            function writeIntroMessageJS(stats) {
 
-                var introElem = document.getElementById(elementId);
-
-                // document.getElementById("total-test").textContent = Math.round(stats.total).toString();
-
-                introElem.querySelector("#total").textContent = Math.round(stats.total).toString();
+                document.getElementById("total-test").textContent = Math.round(stats.total).toString();
             }
 
 
@@ -311,9 +277,6 @@
                     vAxis: {
                         textStyle: {
                             fontSize: 20
-                        },
-                        gridlines: {
-                            color: "#555"
                         }
                     },
                     backgroundColor: "transparent",
@@ -400,7 +363,8 @@
 
                 var options = {
                     chart: {
-                        title: "Total Hours Studied Per Subject"
+                        title: "Total Hours Studied Per Subject",
+                        subtitle: "10 most studied subjects"
                     },
                     titleTextStyle: {
                         fontSize: titleFontSize,
@@ -418,9 +382,6 @@
                     vAxis: {
                         textStyle: {
                             fontSize: 20
-                        },
-                        gridlines: {
-                            color: "#555"
                         }
                     },
                     backgroundColor: "transparent",
@@ -445,63 +406,6 @@
 
                 return tmp;
             }
-
-
-            /*
-
-             // Returns a function that will draw the AverageSession plot
-             function getAverageSessionPlotDrawer(sessionAverages, elementId) {
-
-             var options = {
-             chart: {
-             title: "Average Study Session Length Per Subject",
-             subtitle: "in hours"
-             },
-             titleTextStyle: {
-             fontSize: titleFontSize,
-             bold: titleIsBold
-             },
-             legend: {
-             position: 'none'
-             },
-             hAxis: {
-             title: "",
-             textStyle: {
-             fontSize: hAxisFontSize
-             },
-             // This is not working
-             slantedText: true
-             // - - - - - - - - - -
-             },
-             vAxis: {
-             textStyle: {
-             fontSize: 20
-             }
-             },
-             backgroundColor: "transparent",
-             chartArea: {
-             backgroundColor: "transparent"
-             },
-             bars: 'vertical',
-             colors: ['green']
-             };
-
-
-             function tmp() {
-
-             var columnLabels = [["Subject", "Average Session Duration"]];
-
-             var chart = new google.charts.Bar(document.getElementById(elementId));
-
-             var table = google.visualization.arrayToDataTable(columnLabels.concat(sessionAverages));
-
-             chart.draw(table, google.charts.Bar.convertOptions(options));
-             }
-
-             return tmp;
-             }
-
-             */
 
 
             function getProbabilityGooglePlotDrawer(probabilities, elementId) {
@@ -620,18 +524,17 @@
                 var s1 = stats1(data.sessions, 100);
                 var s2 = stats2(data.sessions);
 
-                writeIntroMessageJS(s1, "introMessage");
+                writeIntroMessageJS(s1);
 
                 google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(s1.cumulative, "cumulativePlot"));
                 google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(s2.subjectTotals, "subjectTotalsPlot"));
-                // google.charts.setOnLoadCallback(getAverageSessionPlotDrawer(s2.sessionAverages, "averageSessionPlot"));
             });
 
             // Load the chart data and setup callbacks to draw plots when we have it.
             loadJSONFile("/json/stats/1", function (data) {
 
                 // Fill in the values in the intro message.
-                writeIntroMessage(data, "introMessage");
+                writeIntroMessage(data);
 
                 // - - - Set up call-backs to draw the plots - - - - - - - - - -
 
