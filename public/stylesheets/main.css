@@ -37,7 +37,7 @@
 .navbar {
     border-radius: 0;
     font-size: medium;
-    box-shadow: 0 2px 3px #3d4643;
+    box-shadow: 0 2px 3px #242424;
 }
 
 #nav-social-glyph-links {
@@ -78,7 +78,8 @@
 }
 
 .raised-element {
-    box-shadow: 0 1px 3px #3d4643;
+    box-shadow: 0 1px 3px #242424;
+    background-color: #f8f5f0;
 }
 
 .padded-plot{
@@ -132,5 +133,5 @@
 
 body {
     font-family: Roboto, "Open Sans", Helvetica, Arial, sans-serif;
-    background-color: #fbfbfb;
+    background-color: #393939;
 }
