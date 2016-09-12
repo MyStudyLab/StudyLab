@@ -8,7 +8,7 @@ import constructs.{Session, Status}
 import play.api.libs.json._
 
 
-case class Stats(daysSinceStart: Long, currentStreak: Int, longestStreak: Int, dailyAverage: Double, todaysTotal: Double,
+case class Stats(daysSinceStart: Long, currentStreak: Int, dailyAverage: Double, todaysTotal: Double, todayStart: Long,
                  todaysSessions: Vector[Session], probability: Vector[Double], movingAverage: Vector[(Long, Double)])
 
 object Stats {
@@ -19,8 +19,8 @@ object Stats {
     def writes(stats: Stats): JsValue = Json.obj(
       "daysSinceStart" -> stats.daysSinceStart,
       "currentStreak" -> stats.currentStreak,
-      "longestStreak" -> stats.longestStreak,
       "dailyAverage" -> stats.dailyAverage,
+      "todayStart" -> stats.todayStart,
       "todaysTotal" -> stats.todaysTotal,
       "todaysSessions" -> stats.todaysSessions,
       "probability" -> stats.probability,
@@ -40,6 +40,8 @@ object Stats {
 
     val zone = ZoneId.of("America/Chicago")
 
+    val todayStart = ZonedDateTime.now(zone).truncatedTo(ChronoUnit.DAYS).toInstant.toEpochMilli
+
     val totalHours = if (status.isStudying) {
       total(sessions) + (currTimeMillis - status.start) / 3600000d
     } else {
@@ -48,7 +50,7 @@ object Stats {
 
     val dailyAverage = totalHours / daysSinceStart(zone)(sessions)
 
-    val (currentStreak, longestStreak) = currentAndLongestStreaks(sessions)
+    val streak = currentStreak(sessions)
 
     val todaysSessionsVec = if (status.isStudying) {
       todaysSessions(zone)(sessions) :+ Session(status.subject, status.start, currTimeMillis, "")
@@ -58,7 +60,7 @@ object Stats {
 
     val todaysTotal = total(todaysSessionsVec)
 
-    Stats(daysSinceStart(zone)(sessions), currentStreak, longestStreak, dailyAverage, todaysTotal, todaysSessionsVec,
+    Stats(daysSinceStart(zone)(sessions), streak, dailyAverage, todaysTotal, todayStart, todaysSessionsVec,
       probability(144)(sessions), movingAverage(15)(sessions)
     )
   }
@@ -78,16 +80,15 @@ object Stats {
 
 
   /**
-    * The length of the user's longest programming streak and their current streak
+    * The length of the user's current streak
     *
     * @param sessions The user's session list.
     * @return
     */
-  private def currentAndLongestStreaks(sessions: Vector[Session]): (Int, Int) = {
+  private def currentStreak(sessions: Vector[Session]): Int = {
 
     val zone = ZoneId.of("America/Chicago")
 
-    var longest: Int = 0
     var current: Int = 0
 
     // The last element of dailyTotals always holds today's total
@@ -96,33 +97,20 @@ object Stats {
     // We don't analyze today's total until later
     for (dailyTotal <- dTotals.dropRight(1)) {
       if (dailyTotal > 0.0) {
-
-        // The current streak continues
         current += 1
       } else {
-
-        // Check if we have a new longest streak
-        if (current > longest) {
-          longest = current
-        }
-
-        // Reset the current streak counter
         current = 0
       }
     }
 
     // Increment the last (current) streak if the user has programmed today
-    dTotals.lastOption.fold((current, longest))(last => {
+    dTotals.lastOption.fold(current)(last => {
 
       if (last > 0) {
         current += 1
       }
 
-      if (current > longest) {
-        longest = current
-      }
-
-      (current, longest)
+      current
     })
   }
 

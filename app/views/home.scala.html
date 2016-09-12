@@ -2,28 +2,34 @@
 
 @siteTemplate("Homepage") {
 
+    <!-- Contains all raised elements-->
     <div class="container-fluid">
 
-        <div class="row small-margin-bottom test-3">
+            <!-- Summary data -->
+        <div class="row small-margin-bottom data-blocks">
+
+                <!-- Total hours studied -->
             <div class="col-sm-offset-1 col-sm-2 raised-element">
-                <u class="test-title">Total</u><br>
-                <span id="total-test" class="introMessageValue"></span> hours
+                <u class="data-block-title">Total</u><br>
+                <span id="total-value" class="introMessageValue"></span> hours
             </div>
 
+                <!-- Hours studied today vs. average -->
             <div class=" col-sm-offset-1 col-sm-4 raised-element">
-                <u class="test-title">Today / Average</u><br>
-                <span id="today-test" class="introMessageValue"></span>
-                / <span id="average-test" class="introMessageValue"></span>
+                <u class="data-block-title">Today / Average</u><br>
+                <span id="today-value" class="introMessageValue"></span>
+                / <span id="average-value" class="introMessageValue"></span>
             </div>
 
+                <!-- Length of the current streak -->
             <div class=" col-sm-offset-1 col-sm-2 raised-element">
-                <u class="test-title">Current Streak</u><br>
-                <span id="streak-test" class="introMessageValue"></span> days
+                <u class="data-block-title">Current Streak</u><br>
+                <span id="streak-value" class="introMessageValue"></span> days
             </div>
-
         </div>
 
-        <div class="row small-margin-bottom">
+            <!-- Today's sessions plot -->
+        <div id="widt-row" class="row small-margin-bottom">
             <div id="widt" class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="todaysSessionsPlot" class="loading-icon">
                     <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
@@ -31,6 +37,7 @@
             </div>
         </div>
 
+            <!-- Cumulative hours studied plot-->
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="cumulativePlot" class="googlePlotContainer loading-icon">
@@ -39,6 +46,7 @@
             </div>
         </div>
 
+            <!-- Subject totals plot-->
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="subjectTotalsPlot" class="googlePlotContainer loading-icon">
@@ -47,6 +55,7 @@
             </div>
         </div>
 
+            <!-- Average-day probability plot -->
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="probabilityPlot" class="googlePlotContainer loading-icon">
@@ -55,6 +64,7 @@
             </div>
         </div>
 
+            <!-- Moving-average plot -->
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="movingAveragePlot" class="googlePlotContainer loading-icon">
@@ -64,123 +74,11 @@
         </div>
     </div>
 
+    <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
+    <script src="@routes.Assets.at("/javascripts/stats.js")"></script>
     <script>
             // Load the  charts
             google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
-
-            function loadJSONFile(path, callback) {
-
-                var httpRequest = new XMLHttpRequest();
-
-                httpRequest.onreadystatechange = function () {
-                    if (httpRequest.readyState === 4) {
-                        if (httpRequest.status === 200) {
-
-                            // Parse the response text as JSON
-                            var data = JSON.parse(httpRequest.responseText);
-
-                            if (callback) {
-                                callback(data);
-                            }
-                        }
-                    }
-                };
-                httpRequest.open('GET', path);
-                httpRequest.send();
-            }
-
-
-            function stats1(sessions, numLevels) {
-
-                var diff;
-                var cumul = 0;
-
-                // Total duration of completed sessions
-                var total = sessions.reduce(function (prev, curr, arr) {
-                    return prev + ((curr.endTime - curr.startTime) / (3600 * 1000));
-                }, 0);
-
-
-                var levelSize = Math.ceil(total / numLevels);
-
-                var level = 1;
-                var res = [[sessions[0].startTime, 0]];
-
-                for (var i = 0; i < sessions.length; i++) {
-                    diff = (sessions[i].endTime - sessions[i].startTime) / (3600 * 1000);
-
-                    cumul += diff;
-
-                    if (cumul >= level * levelSize) {
-                        res.push([sessions[i].endTime, cumul]);
-                        level += 1;
-                    }
-                }
-
-                // Last item in cums
-                if (res.length < numLevels + 1) {
-                    res.push([sessions[sessions.length - 1].endTime, cumul]);
-                }
-
-
-                return {
-                    "cumulative": res,
-                    "total": total
-                }
-            }
-
-
-            function stats2(sessions) {
-
-                var diff = 0;
-                var total = 0;
-                var count = 0;
-                var subTotals = new Map();
-                var counts = new Map();
-                var diffs = [];
-
-                sessions.forEach(function (curr, i, arr) {
-
-                    diff = (curr.endTime - curr.startTime) / (3600 * 1000);
-
-                    if (subTotals.has(curr.subject)) {
-                        counts.set(curr.subject, counts.get(curr.subject) + 1);
-                        subTotals.set(curr.subject, subTotals.get(curr.subject) + diff);
-                    } else {
-                        counts.set(curr.subject, 1);
-                        subTotals.set(curr.subject, diff);
-                    }
-
-                    count += 1;
-                    total += diff;
-                    diffs.push(diff);
-                });
-
-
-                function cmp(sub1, sub2) {
-                    if (sub1[1] < sub2[1]) {
-                        return 1;
-                    }
-
-                    if (sub1[1] > sub2[1]) {
-                        return -1;
-                    }
-
-                    return 0;
-                }
-
-                var a = Array.from(subTotals.entries());
-
-                var b = a.map(function (curr, i, arr) {
-                    return [curr[0], curr[1] / counts.get(curr[0])];
-                });
-
-                return {
-                    "subjectTotals": a.sort(cmp).slice(0, 10),
-                    "sessionAverages": b.sort(cmp)
-                }
-            }
-
 
             function hms(sec) {
                 var h = Math.floor(sec / 3600);
@@ -202,27 +100,27 @@
             var vAxisFontSize = 16;
 
 
-            function writeIntroMessage(stats) {
+            function writeSummaryData(stats) {
 
-                document.getElementById("average-test").textContent = stats.dailyAverage.toFixed(2).toString();
+                document.getElementById("average-value").textContent = stats.dailyAverage.toFixed(2).toString();
 
-                document.getElementById("streak-test").textContent = stats.currentStreak.toString();
+                document.getElementById("streak-value").textContent = stats.currentStreak.toString();
 
-                document.getElementById("today-test").textContent = stats.todaysTotal.toFixed(2).toString();
+                document.getElementById("today-value").textContent = stats.todaysTotal.toFixed(2).toString();
             }
 
             function writeIntroMessageJS(stats) {
 
-                document.getElementById("total-test").textContent = Math.round(stats.total).toString();
+                document.getElementById("total-value").textContent = Math.round(stats.total).toString();
             }
 
 
-            function getTodaysSessionsGooglePlotDrawer(sessions, elementId) {
+            function getTodaysSessionsPlotDrawer(sessions, elementId) {
 
                 function tmp() {
 
                     var options = {
-                        height: 110,
+                        height: 95,
                         hAxis: {
                             title: "",
                             fontSize: 0
@@ -254,7 +152,7 @@
             }
 
 
-            function getCumulativeGooglePlotDrawer(cumulativeData, elementId) {
+            function getCumulativePlotDrawer(cumulativeData, elementId) {
 
                 var options = {
                     chart: {
@@ -288,8 +186,6 @@
                     // Not working
                     curveType: 'function'
                 };
-
-                convertDates(cumulativeData, 0);
 
                 function tmp() {
 
@@ -408,7 +304,7 @@
             }
 
 
-            function getProbabilityGooglePlotDrawer(probabilities, elementId) {
+            function getProbabilityPlotDrawer(probabilities, elementId) {
 
                 var options = {
                     chart: {
@@ -486,31 +382,6 @@
                 return tmp;
             }
 
-
-            // Get a function that will draw a material-style google chart.
-            function getGoogleMaterialPlotDrawer(plotData, plotOptions, plotType, elementId) {
-
-                function tmp() {
-                    var table = new google.visualization.DataTable();
-
-                    // Add columns to the data table
-                    plotData.columns.forEach(function (curr, i, self) {
-                        table.addColumn(curr[0], curr[1]);
-                    });
-
-                    // Add the rows of data to the data table
-                    table.addRows(plotData.rows);
-
-                    var chart = new google.charts[plotType](document.getElementById(elementId));
-
-                    var convertedOptions = google.charts[plotType].convertOptions(plotOptions);
-
-                    chart.draw(table, convertedOptions);
-                }
-
-                return tmp;
-            }
-
             function convertDates(plotData, column) {
                 plotData.forEach(function (elem, i, self) {
                     elem[column] = new Date(elem[0]);
@@ -526,27 +397,28 @@
 
                 writeIntroMessageJS(s1);
 
-                google.charts.setOnLoadCallback(getCumulativeGooglePlotDrawer(s1.cumulative, "cumulativePlot"));
+                google.charts.setOnLoadCallback(getCumulativePlotDrawer(s1.cumulative, "cumulativePlot"));
                 google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(s2.subjectTotals, "subjectTotalsPlot"));
             });
 
             // Load the chart data and setup callbacks to draw plots when we have it.
             loadJSONFile("/json/stats/1", function (data) {
 
-                // Fill in the values in the intro message.
-                writeIntroMessage(data);
+                // Fill values in the data blocks.
+                writeSummaryData(data);
+
 
                 // - - - Set up call-backs to draw the plots - - - - - - - - - -
 
                 // Only show the current day's overview if the user has studied today.
                 if (data.todaysSessions.length > 0) {
-                    google.charts.setOnLoadCallback(getTodaysSessionsGooglePlotDrawer(data.todaysSessions, "todaysSessionsPlot"));
+                    google.charts.setOnLoadCallback(getTodaysSessionsPlotDrawer(data.todaysSessions, "todaysSessionsPlot"));
                 } else {
-                    document.getElementById("todaysSessionsPlot").style.display = "none";
+                    document.getElementById("widt-row").style.display = "none";
                 }
 
                 google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(data.movingAverage, "movingAveragePlot"));
-                google.charts.setOnLoadCallback(getProbabilityGooglePlotDrawer(data.probability, "probabilityPlot"));
+                google.charts.setOnLoadCallback(getProbabilityPlotDrawer(data.probability, "probabilityPlot"));
             })
     </script>
 

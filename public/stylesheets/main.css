@@ -3,13 +3,13 @@
     color: green;
 }
 
-.test-3 {
+.data-blocks {
     font-size: xx-large;
     text-align: center;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
-.test-title {
+.data-block-title {
     font-size: large;
     color: #757575;
 }
@@ -82,7 +82,7 @@
     background-color: #f8f5f0;
 }
 
-.padded-plot{
+.padded-plot {
     padding: 25px 15px;
 }
 
