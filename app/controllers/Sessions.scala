@@ -33,7 +33,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     * Check a username and password before performing the given action.
     *
     * @param action The action to perform once the request is authenticated.
-    * @tparam A
+    * @tparam A Type parameter of the Action
     * @return
     */
   def checked[A](action: Action[A]) = Action.async(action.parser) { implicit request =>

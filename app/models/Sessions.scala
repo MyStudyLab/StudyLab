@@ -35,6 +35,12 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   // Get a selector for the given value of the "username" field
   protected def usernameSelector(username: String) = BSONDocument("username" -> username)
 
+  // Projector for the fields of a StatusSubjects object.
+  val statusSubjectsProjector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
+
+  // Projector for the fields of a StatusSubjectsSessions object.
+  val statusSubjectsSessionsProjector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
+
   /**
     * Get study stats as JSON.
     *
@@ -45,7 +51,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = statusSubjectsSessionsProjector
 
     bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].map(optData =>
       optData.map(sessionData => Stats.compute(sessionData.sessions, sessionData.status))
@@ -63,7 +69,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = statusSubjectsSessionsProjector
 
     bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions]
   }
@@ -80,7 +86,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
+    val projector = statusSubjectsProjector
 
     bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(optStatsSubs =>
 
@@ -121,7 +127,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = BSONDocument("username" -> 1, "subjects" -> 1, "status" -> 1, "_id" -> 0)
+    val projector = statusSubjectsProjector
 
     bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(opt =>
 
@@ -163,7 +169,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
+    val projector = statusSubjectsProjector
 
     bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(opt =>
 
@@ -200,7 +206,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
+    val projector = statusSubjectsProjector
 
     // Get the user's session data
     bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(opt =>
@@ -242,7 +248,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = BSONDocument("username" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = statusSubjectsSessionsProjector
 
     // Get the user's session data
     bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
@@ -268,7 +274,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // Remove the subject
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
-            if (result.ok) ResultInfo(success = true, s"Successfully removed $subject.")
+            if (result.ok) ResultInfo(success = true, s"Removed $subject.")
             else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
         }
       })
@@ -288,7 +294,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = BSONDocument("username" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = statusSubjectsSessionsProjector
 
     // Get the user's session data
     bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
@@ -329,7 +335,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
             // Add the new subject
             bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
-              if (result.ok) ResultInfo(success = true, s"Successfully renamed $oldName to $newName.")
+              if (result.ok) ResultInfo(success = true, s"Renamed $oldName to $newName.")
               else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
           }
         })
@@ -350,7 +356,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = BSONDocument("username" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = statusSubjectsSessionsProjector
 
     // Get the user's session data
     bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>

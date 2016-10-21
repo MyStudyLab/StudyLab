@@ -28,20 +28,16 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
     Ok(views.html.books())
   }
 
-  def movies = Action {
-    Ok(views.html.movies())
-  }
-
   def quotes = Action {
     Ok(views.html.quotes())
   }
 
 
-  def getQuotes(user_id: Int) = Action.async {
+  def getQuotes(username: String) = Action.async {
 
-    val selector = Json.obj("user_id" -> 1)
+    val selector = Json.obj("username" -> "jgdodson")
 
-    val projector = Json.obj("_id" -> 0, "user_id" -> 0)
+    val projector = Json.obj("_id" -> 0)
 
     val futOptJson = jsonQuotesCollection.find(selector, projector).one[JsObject]
 

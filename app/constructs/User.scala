@@ -1,5 +1,7 @@
 package constructs
 
+import reactivemongo.bson.BSONDocument
+
 
 /**
   * Represents a user of the app.
@@ -20,5 +22,7 @@ object User {
 
   // Implicitly converts to/from BSON
   implicit val UserHandler = Macros.handler[User]
+
+  val projector = BSONDocument("username" -> 1, "firstName" -> 1, "lastName" -> 1, "email" -> 1, "password" -> 1, "joined" -> 1)
 
 }

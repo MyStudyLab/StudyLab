@@ -11,9 +11,6 @@ GET         /about                          controllers.Application.about
 # Books page
 # GET         /books                    controllers.Application.books
 
-# Movies page
-# GET         /movies                   controllers.Application.movies
-
 # Go to the quotes page
 GET         /quotes                         controllers.Application.quotes
 
@@ -24,10 +21,7 @@ GET         /json/stats/:username           controllers.Sessions.getStats(userna
 GET         /json/sessions/:username        controllers.Sessions.getUserSessionData(username: String)
 
 # Get quotes as JSON for the user id
-GET         /json/quotes/:id                controllers.Application.getQuotes(id: Int)
-
-# Get movies as JSON for the user id
-# GET         /json/movies/:id          controllers.Movies.getMovies(id: Int)
+GET         /json/quotes/:username          controllers.Application.getQuotes(username: String)
 
 # Get books as JSON for the user id
 # GET         /json/books/:id         controllers.Books.getBooks(id: Int)

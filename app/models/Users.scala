@@ -70,10 +70,7 @@ class Users(val api: ReactiveMongoApi) {
 
     val selector = BSONDocument("username" -> username)
 
-    // Only need to retrieve password
-    val projector = BSONDocument("password" -> 1, "_id" -> 0)
-
-    bsonUsersCollection.find(selector, projector).one[User].map(optUser =>
+    bsonUsersCollection.find(selector, User.projector).one[User].map(optUser =>
 
       optUser.fold(false)(user => user.password == given)
     )
