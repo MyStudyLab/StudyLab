@@ -1,6 +1,7 @@
 package models
 
 import constructs._
+import helpers.Selectors.usernameSelector
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.BSONDocument
@@ -32,15 +33,6 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   // Default ResultInfo failure message
   val noErrMsg = "Failed without error message"
 
-  // Get a selector for the given value of the "username" field
-  protected def usernameSelector(username: String) = BSONDocument("username" -> username)
-
-  // Projector for the fields of a StatusSubjects object.
-  val statusSubjectsProjector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
-
-  // Projector for the fields of a StatusSubjectsSessions object.
-  val statusSubjectsSessionsProjector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
-
   /**
     * Get study stats as JSON.
     *
@@ -51,9 +43,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = statusSubjectsSessionsProjector
-
-    bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].map(optData =>
+    bsonSessionsCollection.find(selector, StatusSubjectsSessions.projector).one[StatusSubjectsSessions].map(optData =>
       optData.map(sessionData => Stats.compute(sessionData.sessions, sessionData.status))
     )
   }
@@ -69,9 +59,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = statusSubjectsSessionsProjector
-
-    bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions]
+    bsonSessionsCollection.find(selector, StatusSubjectsSessions.projector).one[StatusSubjectsSessions]
   }
 
 
@@ -86,9 +74,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = statusSubjectsProjector
-
-    bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(optStatsSubs =>
+    bsonSessionsCollection.find(selector, StatusSubjects.projector).one[StatusSubjects].flatMap(optStatsSubs =>
 
       optStatsSubs.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
@@ -127,9 +113,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = statusSubjectsProjector
-
-    bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(opt =>
+    bsonSessionsCollection.find(selector, StatusSubjects.projector).one[StatusSubjects].flatMap(opt =>
 
       opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
@@ -169,9 +153,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = statusSubjectsProjector
-
-    bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(opt =>
+    bsonSessionsCollection.find(selector, StatusSubjects.projector).one[StatusSubjects].flatMap(opt =>
 
       opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
@@ -206,10 +188,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = statusSubjectsProjector
-
     // Get the user's session data
-    bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(opt =>
+    bsonSessionsCollection.find(selector, StatusSubjects.projector).one[StatusSubjects].flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
@@ -248,10 +228,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = statusSubjectsSessionsProjector
-
     // Get the user's session data
-    bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
+    bsonSessionsCollection.find(selector, StatusSubjectsSessions.projector).one[StatusSubjectsSessions].flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
@@ -294,10 +272,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = statusSubjectsSessionsProjector
-
     // Get the user's session data
-    bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
+    bsonSessionsCollection.find(selector, StatusSubjectsSessions.projector).one[StatusSubjectsSessions].flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
@@ -356,10 +332,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     val selector = usernameSelector(username)
 
-    val projector = statusSubjectsSessionsProjector
-
     // Get the user's session data
-    bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
+    bsonSessionsCollection.find(selector, StatusSubjectsSessions.projector).one[StatusSubjectsSessions].flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(data => {

@@ -1,5 +1,7 @@
 package constructs
 
+import reactivemongo.bson.BSONDocument
+
 /**
   * Used when both the user's status and subject list are needed.
   *
@@ -16,5 +18,8 @@ object StatusSubjects {
 
   // Implicitly converts to/from BSON
   implicit val StatusSubjectsHandler = Macros.handler[StatusSubjects]
+
+  // TODO: Use reflection to generate this directly from the case class?
+  val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
 }

@@ -1,6 +1,7 @@
 package constructs
 
 import play.api.libs.json.Json
+import reactivemongo.bson.BSONDocument
 
 /**
   * Used when a user's status, subject vector, and session vector are needed.
@@ -22,4 +23,7 @@ object StatusSubjectsSessions {
 
   // Implicitly converts to JSON
   implicit val StatusSubjectsSessionsWrites = Json.writes[StatusSubjectsSessions]
+
+  // TODO: Use reflection to generate this directly from the case class?
+  val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
 }
