@@ -18,8 +18,8 @@ object StatusSubjectsSessions {
   import reactivemongo.bson.Macros
 
   // Implicitly converts to/from BSON
-  implicit val SessionDataHandler = Macros.handler[StatusSubjectsSessions]
+  implicit val StatusSubjectsSessionsHandler = Macros.handler[StatusSubjectsSessions]
 
   // Implicitly converts to JSON
-  implicit val SessionDataWrites = Json.writes[StatusSubjectsSessions]
+  implicit val StatusSubjectsSessionsWrites = Json.writes[StatusSubjectsSessions]
 }

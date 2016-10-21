@@ -22,5 +22,5 @@ object Subject {
   implicit val SubjectHandler = Macros.handler[Subject]
 
   // Implicitly converts to JSON
-  implicit val subjectWrites = Json.writes[Subject]
+  implicit val SubjectWrites = Json.writes[Subject]
 }

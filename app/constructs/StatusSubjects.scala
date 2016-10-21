@@ -15,7 +15,6 @@ object StatusSubjects {
   import reactivemongo.bson.Macros
 
   // Implicitly converts to/from BSON
-  implicit val StatusDataHandler = Macros.handler[StatusSubjects]
-
+  implicit val StatusSubjectsHandler = Macros.handler[StatusSubjects]
 
 }

@@ -29,6 +29,11 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   // A result indicating that the given subject was invalid.
   val invalidSubject = ResultInfo(success = false, "Invalid subject")
 
+  // Default ResultInfo failure message
+  val noErrMsg = "Failed without error message"
+
+  // Get a selector for the given value of the "username" field
+  protected def usernameSelector(username: String) = BSONDocument("username" -> username)
 
   /**
     * Get study stats as JSON.
@@ -38,7 +43,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def getStats(username: String): Future[Option[Stats]] = {
 
-    val selector = BSONDocument("username" -> username)
+    val selector = usernameSelector(username)
 
     val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
 
@@ -56,7 +61,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def getUserSessionData(username: String): Future[Option[StatusSubjectsSessions]] = {
 
-    val selector = BSONDocument("username" -> username)
+    val selector = usernameSelector(username)
 
     val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
 
@@ -73,7 +78,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def startSession(username: String, subject: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("username" -> username)
+    val selector = usernameSelector(username)
 
     val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
@@ -96,8 +101,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // Update the status
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
-            if (result.ok) ResultInfo(success = true, s"Now studying $subject")
-            else ResultInfo.databaseError
+            if (result.ok) ResultInfo(success = true, message = s"Now studying $subject")
+            else ResultInfo(success = false, message = result.errmsg.getOrElse(noErrMsg))
           )
         }
       })
@@ -114,7 +119,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def stopSession(username: String, message: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("username" -> username)
+    val selector = usernameSelector(username)
 
     val projector = BSONDocument("username" -> 1, "subjects" -> 1, "status" -> 1, "_id" -> 0)
 
@@ -141,7 +146,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           // Add the new session and updated stats
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
             if (result.ok) ResultInfo(success = true, "Finished studying")
-            else ResultInfo(success = false, result.errmsg.getOrElse("no err message")))
+            else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
         }
       })
     )
@@ -156,7 +161,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def abortSession(username: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("username" -> username)
+    val selector = usernameSelector(username)
 
     val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
@@ -177,7 +182,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           // Update the status
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
             if (result.ok) ResultInfo(success = true, "Study session aborted")
-            else ResultInfo.databaseError)
+            else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
         }
       })
     )
@@ -193,7 +198,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def addSubject(username: String, subject: String, description: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("username" -> username)
+    val selector = usernameSelector(username)
 
     val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
@@ -219,7 +224,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           // Add the new subject
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
             if (result.ok) ResultInfo(success = true, s"Successfully added $subject.")
-            else ResultInfo.databaseError)
+            else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
         }
       })
     )
@@ -235,7 +240,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def removeSubject(username: String, subject: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("username" -> username)
+    val selector = usernameSelector(username)
 
     val projector = BSONDocument("username" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
@@ -264,7 +269,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           // Remove the subject
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
             if (result.ok) ResultInfo(success = true, s"Successfully removed $subject.")
-            else ResultInfo.databaseError)
+            else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
         }
       })
     )
@@ -281,7 +286,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def renameSubject(username: String, oldName: String, newName: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("username" -> username)
+    val selector = usernameSelector(username)
 
     val projector = BSONDocument("username" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
@@ -325,7 +330,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
             // Add the new subject
             bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
               if (result.ok) ResultInfo(success = true, s"Successfully renamed $oldName to $newName.")
-              else ResultInfo.databaseError)
+              else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
           }
         })
       })
@@ -343,7 +348,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def mergeSubjects(username: String, absorbed: String, absorbing: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("username" -> username)
+    val selector = usernameSelector(username)
 
     val projector = BSONDocument("username" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
@@ -387,7 +392,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
             // Merge the subjects
             bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
               if (result.ok) ResultInfo(success = true, s"Successfully merged $absorbed into $absorbing.")
-              else ResultInfo.databaseError)
+              else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
           })
         })
       })
