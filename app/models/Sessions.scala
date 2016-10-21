@@ -141,7 +141,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           // Add the new session and updated stats
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
             if (result.ok) ResultInfo(success = true, "Finished studying")
-            else ResultInfo.databaseError)
+            else ResultInfo(success = false, result.errmsg.getOrElse("no err message")))
         }
       })
     )

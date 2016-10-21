@@ -21,23 +21,6 @@ class Users(val api: ReactiveMongoApi) {
 
 
   /**
-    * Get a new and unique user ID.
-    *
-    * @return
-    */
-  def getNewUserID(): Future[Long] = {
-
-    val trial: Long = (math.random * 1000000000L).toLong
-
-    val selector = BSONDocument("user_id" -> trial)
-
-    val projector = BSONDocument("_id" -> 0)
-
-    bsonUsersCollection.find(selector, projector).one[User].flatMap(_.fold(Future(trial))(user => getNewUserID()))
-  }
-
-
-  /**
     * Return true iff the username is already in the database.
     *
     * @param username The username to check for.
@@ -71,11 +54,8 @@ class Users(val api: ReactiveMongoApi) {
     */
   def addNewUser(newUser: User): Future[Boolean] = {
 
-    getNewUserID().flatMap(newUserID => {
-
-      bsonUsersCollection.insert(newUser).map(result => {
-        result.ok
-      })
+    bsonUsersCollection.insert(newUser).map(result => {
+      result.ok
     })
   }
 
@@ -100,7 +80,11 @@ class Users(val api: ReactiveMongoApi) {
   }
 
 
-  def findUserByName(name: String): Future[Option[Int]] = {
+  def findByUsername(query: String): Future[List[User]] = {
+    ???
+  }
+
+  def findByName(name: String): Future[Option[Int]] = {
     ???
   }
 
