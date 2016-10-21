@@ -2,9 +2,9 @@ package controllers
 
 import javax.inject.Inject
 
-import forms.{AddMovieForm, PasswordAndUserID}
+import forms.{AddMovieForm, PasswordAndUsername}
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.json.{JsBoolean, JsObject, Json}
+import play.api.libs.json.{JsBoolean, Json}
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, Controller}
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
@@ -25,11 +25,11 @@ class Movies @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: 
 
   def checked[A](action: Action[A]) = Action.async(action.parser) { implicit request =>
 
-    PasswordAndUserID.form.bindFromRequest()(request).fold(
+    PasswordAndUsername.form.bindFromRequest()(request).fold(
       badForm => Future(Ok("Invalid Form")),
       goodForm => {
 
-        users.checkPassword(goodForm.user_id, goodForm.password).flatMap(matched => {
+        users.checkPassword(goodForm.username, goodForm.password).flatMap(matched => {
           if (matched) {
             action(request)
           } else {
@@ -57,15 +57,15 @@ class Movies @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: 
 
   def update() = Action.async { implicit request =>
 
-    PasswordAndUserID.form.bindFromRequest()(request).fold(
+    PasswordAndUsername.form.bindFromRequest()(request).fold(
       badForm => Future(Ok("")),
-      goodForm => movies.updateStats(goodForm.user_id).map(a => if (a) Ok("updated") else Ok("error"))
+      goodForm => movies.updateStats(goodForm.username).map(a => if (a) Ok("updated") else Ok("error"))
     )
   }
 
-  def getMovies(user_id: Int) = Action.async {
+  def getMovies(username: String) = Action.async {
 
-    movies.getAllJson(user_id).map(a => Ok(a.getOrElse(failResponse)))
+    movies.getAllJson(username).map(a => Ok(a.getOrElse(failResponse)))
   }
 
   def updateMovieStats() = checked(update)

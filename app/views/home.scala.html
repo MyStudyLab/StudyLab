@@ -390,7 +390,7 @@
 
 
             // Moving stat computation to JS
-            loadJSONFile("/json/sessions/1", function (data) {
+            loadJSONFile("/json/sessions/jgdodson", function (data) {
 
                 var s1 = stats1(data.sessions, 100);
                 var s2 = stats2(data.sessions);
@@ -402,7 +402,7 @@
             });
 
             // Load the chart data and setup callbacks to draw plots when we have it.
-            loadJSONFile("/json/stats/1", function (data) {
+            loadJSONFile("/json/stats/jgdodson", function (data) {
 
                 // Fill values in the data blocks.
                 writeSummaryData(data);

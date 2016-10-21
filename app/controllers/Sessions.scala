@@ -38,10 +38,10 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   def checked[A](action: Action[A]) = Action.async(action.parser) { implicit request =>
 
-    PasswordAndUserID.form.bindFromRequest()(request).fold(
+    PasswordAndUsername.form.bindFromRequest()(request).fold(
       badForm => invalidForm,
       goodForm =>
-        users.checkPassword(goodForm.user_id, goodForm.password).flatMap(matched =>
+        users.checkPassword(goodForm.username, goodForm.password).flatMap(matched =>
           if (matched) action(request)
           else Future(Ok("Bad username or password."))
         )
@@ -58,7 +58,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     SessionStartForm.startForm.bindFromRequest()(request).fold(
       badForm => invalidForm,
-      goodForm => sessions.startSession(goodForm.user_id, goodForm.subject).map(resultInfo => Ok(resultInfo.message))
+      goodForm => sessions.startSession(goodForm.username, goodForm.subject).map(resultInfo => Ok(resultInfo.message))
     )
   }
 
@@ -72,7 +72,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     SessionStopForm.stopForm.bindFromRequest()(request).fold(
       badForm => invalidForm,
-      goodForm => sessions.stopSession(goodForm.user_id, goodForm.message).map(resultInfo => Ok(resultInfo.message))
+      goodForm => sessions.stopSession(goodForm.username, goodForm.message).map(resultInfo => Ok(resultInfo.message))
     )
   }
 
@@ -86,7 +86,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     SessionStopForm.stopForm.bindFromRequest()(request).fold(
       badForm => invalidForm,
-      goodForm => sessions.abortSession(goodForm.user_id).map(a => Ok(a.message))
+      goodForm => sessions.abortSession(goodForm.username).map(a => Ok(a.message))
     )
   }
 
@@ -100,7 +100,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     AddOrRemoveSubjectForm.form.bindFromRequest()(request).fold(
       badForm => invalidForm,
-      goodForm => sessions.addSubject(goodForm.user_id, goodForm.subject, goodForm.description).map(a => Ok(a.message))
+      goodForm => sessions.addSubject(goodForm.username, goodForm.subject, goodForm.description).map(a => Ok(a.message))
     )
   }
 
@@ -114,7 +114,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     AddOrRemoveSubjectForm.form.bindFromRequest()(request).fold(
       badForm => invalidForm,
-      goodForm => sessions.removeSubject(goodForm.user_id, goodForm.subject).map(a => Ok(a.message))
+      goodForm => sessions.removeSubject(goodForm.username, goodForm.subject).map(a => Ok(a.message))
     )
   }
 
@@ -128,7 +128,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     RenameSubjectForm.form.bindFromRequest()(request).fold(
       badForm => invalidForm,
-      goodForm => sessions.renameSubject(goodForm.user_id, goodForm.oldName, goodForm.newName).map(a => Ok(a.message))
+      goodForm => sessions.renameSubject(goodForm.username, goodForm.oldName, goodForm.newName).map(a => Ok(a.message))
     )
   }
 
@@ -142,22 +142,22 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     MergeSubjectsForm.form.bindFromRequest()(request).fold(
       badForm => invalidForm,
-      goodForm => sessions.mergeSubjects(goodForm.user_id, goodForm.absorbed, goodForm.absorbing).map(a => Ok(a.message))
+      goodForm => sessions.mergeSubjects(goodForm.username, goodForm.absorbed, goodForm.absorbing).map(a => Ok(a.message))
     )
   }
 
 
-  def getStats(user_id: Int) = Action.async { implicit request =>
+  def getStats(username: String) = Action.async { implicit request =>
 
     // Return the result with the current time in the users timezone
-    sessions.getStats(user_id).map(optStats => optStats.fold(Ok(Json.obj("success" -> false)))(stats =>
+    sessions.getStats(username).map(optStats => optStats.fold(Ok(Json.obj("success" -> false)))(stats =>
       Ok(Json.toJson(stats))))
   }
 
 
-  def getUserSessionData(user_id: Int) = Action.async { implicit request =>
+  def getUserSessionData(username: String) = Action.async { implicit request =>
 
-    sessions.getUserSessionData(user_id).map(optData => optData.fold(Ok(Json.obj("success" -> false)))(data => Ok(Json.toJson(data))))
+    sessions.getUserSessionData(username).map(optData => optData.fold(Ok(Json.obj("success" -> false)))(data => Ok(Json.toJson(data))))
   }
 
 

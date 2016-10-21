@@ -23,10 +23,10 @@ class Movies(val api: ReactiveMongoApi) {
   def jsonMovieCollection: JSONCollection = api.db.collection[JSONCollection]("movies")
 
 
-  def getAll(user_id: Int): Future[Option[Vector[Movie]]] = {
+  def getAll(username: String): Future[Option[Vector[Movie]]] = {
 
     // Will look for the user with the given id
-    val selector = BSONDocument("user_id" -> user_id)
+    val selector = BSONDocument("username" -> username)
 
     // Will get book data here
     val projector = BSONDocument("_id" -> 0, "movies" -> 1)
@@ -36,10 +36,10 @@ class Movies(val api: ReactiveMongoApi) {
   }
 
 
-  def getAllJson(user_id: Int): Future[Option[JsObject]] = {
+  def getAllJson(username: String): Future[Option[JsObject]] = {
 
     // Will look for the user with the given id
-    val selector = Json.obj("user_id" -> user_id)
+    val selector = Json.obj("username" -> username)
 
     // Will get book data here
     val projector = Json.obj("_id" -> 0, "movies" -> 1, "stats" -> 1)
@@ -49,10 +49,10 @@ class Movies(val api: ReactiveMongoApi) {
   }
 
 
-  def updateStats(user_id: Int): Future[Boolean] = {
+  def updateStats(username: String): Future[Boolean] = {
 
     // Will look for the user with the given id
-    val selector = BSONDocument("user_id" -> user_id)
+    val selector = BSONDocument("username" -> username)
 
     // Will get book data here
     val projector = BSONDocument("_id" -> 0, "movies" -> 1)

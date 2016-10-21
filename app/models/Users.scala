@@ -66,19 +66,12 @@ class Users(val api: ReactiveMongoApi) {
   /**
     * Add a new user to the database.
     *
-    * @param firstName The first name of the new user.
-    * @param lastName  The last name of the new user.
-    * @param email     The email address of the new user.
-    * @param password  The account password of the new user.
+    * @param newUser The user being added.
     * @return
     */
-  def addNewUser(username: String, firstName: String, lastName: String, email: String, password: String): Future[Boolean] = {
-
-    // TODO: Add a field to indicate whether email has been verified
+  def addNewUser(newUser: User): Future[Boolean] = {
 
     getNewUserID().flatMap(newUserID => {
-
-      val newUser = User(0, firstName, lastName, email, password, System.currentTimeMillis())
 
       bsonUsersCollection.insert(newUser).map(result => {
         result.ok
@@ -97,7 +90,8 @@ class Users(val api: ReactiveMongoApi) {
 
     val selector = BSONDocument("username" -> username)
 
-    val projector = BSONDocument("_id" -> 0)
+    // Only need to retrieve password
+    val projector = BSONDocument("password" -> 1, "_id" -> 0)
 
     bsonUsersCollection.find(selector, projector).one[User].map(optUser =>
 

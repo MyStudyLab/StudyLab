@@ -33,14 +33,14 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   /**
     * Get study stats as JSON.
     *
-    * @param user_id The user ID for which to get study stats.
+    * @param username The username for which to get study stats.
     * @return
     */
-  def getStats(user_id: Int): Future[Option[Stats]] = {
+  def getStats(username: String): Future[Option[Stats]] = {
 
-    val selector = BSONDocument("user_id" -> user_id)
+    val selector = BSONDocument("username" -> username)
 
-    val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
 
     bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].map(optData =>
       optData.map(sessionData => Stats.compute(sessionData.sessions, sessionData.status))
@@ -48,11 +48,17 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   }
 
 
-  def getUserSessionData(user_id: Int): Future[Option[StatusSubjectsSessions]] = {
+  /**
+    * Return session data for the given user.
+    *
+    * @param username The username for which to retrieve session data.
+    * @return
+    */
+  def getUserSessionData(username: String): Future[Option[StatusSubjectsSessions]] = {
 
-    val selector = BSONDocument("user_id" -> user_id)
+    val selector = BSONDocument("username" -> username)
 
-    val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
 
     bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions]
   }
@@ -61,16 +67,15 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   /**
     * Starts a study session for the given user and subject.
     *
-    * @param user_id The user ID for which to start a new session.
-    * @param subject The subject of the new study session.
+    * @param username The username for which to start a new session.
+    * @param subject  The subject of the new study session.
     * @return
     */
-  def startSession(user_id: Int, subject: String): Future[ResultInfo] = {
+  def startSession(username: String, subject: String): Future[ResultInfo] = {
 
-    // Find the document with the given user id
-    val selector = BSONDocument("user_id" -> user_id)
+    val selector = BSONDocument("username" -> username)
 
-    val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
+    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
     bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(optStatsSubs =>
 
@@ -103,15 +108,15 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   /**
     * Stops the current study session.
     *
-    * @param user_id The user ID for which to stop the current session.
-    * @param message The commit message for the study session.
+    * @param username The username for which to stop the current session.
+    * @param message  The commit message for the study session.
     * @return
     */
-  def stopSession(user_id: Int, message: String): Future[ResultInfo] = {
+  def stopSession(username: String, message: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("user_id" -> user_id)
+    val selector = BSONDocument("username" -> username)
 
-    val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "_id" -> 0)
+    val projector = BSONDocument("username" -> 1, "subjects" -> 1, "status" -> 1, "_id" -> 0)
 
     bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(opt =>
 
@@ -146,14 +151,14 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   /**
     * Aborts the current study session.
     *
-    * @param user_id The user ID for which to abort the current session.
+    * @param username The username for which to abort the current session.
     * @return
     */
-  def abortSession(user_id: Int): Future[ResultInfo] = {
+  def abortSession(username: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("user_id" -> user_id)
+    val selector = BSONDocument("username" -> username)
 
-    val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
+    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
     bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(opt =>
 
@@ -182,15 +187,15 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   /**
     * Adds the given subject to the user's subject list.
     *
-    * @param user_id The user ID for which to add the given subject.
-    * @param subject The new subject.
+    * @param username The username for which to add the given subject.
+    * @param subject  The new subject.
     * @return
     */
-  def addSubject(user_id: Int, subject: String, description: String): Future[ResultInfo] = {
+  def addSubject(username: String, subject: String, description: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("user_id" -> user_id)
+    val selector = BSONDocument("username" -> username)
 
-    val projector = BSONDocument("user_id" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
+    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
 
     // Get the user's session data
     bsonSessionsCollection.find(selector, projector).one[StatusSubjects].flatMap(opt =>
@@ -224,15 +229,15 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   /**
     * Removes the given subject from the user's subject list.
     *
-    * @param user_id The user ID for which to remove the subject.
-    * @param subject The subject to remove.
+    * @param username The user ID for which to remove the subject.
+    * @param subject  The subject to remove.
     * @return
     */
-  def removeSubject(user_id: Int, subject: String): Future[ResultInfo] = {
+  def removeSubject(username: String, subject: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("user_id" -> user_id)
+    val selector = BSONDocument("username" -> username)
 
-    val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = BSONDocument("username" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
     // Get the user's session data
     bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
@@ -269,16 +274,16 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   /**
     * Rename an existing subject.
     *
-    * @param user_id The user ID for which to rename the given subject.
-    * @param oldName The subject to rename.
-    * @param newName The new subject name.
+    * @param username The username for which to rename the given subject.
+    * @param oldName  The subject to rename.
+    * @param newName  The new subject name.
     * @return
     */
-  def renameSubject(user_id: Int, oldName: String, newName: String): Future[ResultInfo] = {
+  def renameSubject(username: String, oldName: String, newName: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("user_id" -> user_id)
+    val selector = BSONDocument("username" -> username)
 
-    val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = BSONDocument("username" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
     // Get the user's session data
     bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
@@ -331,16 +336,16 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   /**
     * Merge one subject into another, combining their sessions.
     *
-    * @param user_id   The user ID for which to merge the subjects.
+    * @param username  The username for which to merge the subjects.
     * @param absorbed  The subject that will be absorbed.
     * @param absorbing The subject that will absorb the other.
     * @return
     */
-  def mergeSubjects(user_id: Int, absorbed: String, absorbing: String): Future[ResultInfo] = {
+  def mergeSubjects(username: String, absorbed: String, absorbing: String): Future[ResultInfo] = {
 
-    val selector = BSONDocument("user_id" -> user_id)
+    val selector = BSONDocument("username" -> username)
 
-    val projector = BSONDocument("user_id" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
+    val projector = BSONDocument("username" -> 1, "subjects" -> 1, "status" -> 1, "sessions" -> 1, "_id" -> 0)
 
     // Get the user's session data
     bsonSessionsCollection.find(selector, projector).one[StatusSubjectsSessions].flatMap(opt =>
