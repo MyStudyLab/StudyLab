@@ -15,4 +15,6 @@ object Selectors {
     */
   def usernameSelector(username: String) = BSONDocument("username" -> username)
 
+  def emailSelector(email: String) = BSONDocument("email" -> email)
+
 }

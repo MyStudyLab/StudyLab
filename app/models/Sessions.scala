@@ -22,13 +22,13 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   def bsonSessionsCollection: BSONCollection = mongoApi.db.collection[BSONCollection]("sessions")
 
   // A result indicating that the user was already studying.
-  val alreadyStudying = ResultInfo(success = false, "Already studying")
+  val alreadyStudying = ResultInfo.failWithMessage("Already studying")
 
   // A result indicating that the user was not studying.
-  val notStudying = ResultInfo(success = false, "Not studying")
+  val notStudying = ResultInfo.failWithMessage("Not studying")
 
   // A result indicating that the given subject was invalid.
-  val invalidSubject = ResultInfo(success = false, "Invalid subject")
+  val invalidSubject = ResultInfo.failWithMessage("Invalid subject")
 
   // Default ResultInfo failure message
   val noErrMsg = "Failed without error message"
@@ -41,9 +41,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def getStats(username: String): Future[Option[Stats]] = {
 
-    val selector = usernameSelector(username)
-
-    bsonSessionsCollection.find(selector, StatusSubjectsSessions.projector).one[StatusSubjectsSessions].map(optData =>
+    bsonSessionsCollection.find(usernameSelector(username), StatusSubjectsSessions.projector).one[StatusSubjectsSessions].map(optData =>
       optData.map(sessionData => Stats.compute(sessionData.sessions, sessionData.status))
     )
   }
@@ -57,9 +55,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def getUserSessionData(username: String): Future[Option[StatusSubjectsSessions]] = {
 
-    val selector = usernameSelector(username)
-
-    bsonSessionsCollection.find(selector, StatusSubjectsSessions.projector).one[StatusSubjectsSessions]
+    bsonSessionsCollection.find(usernameSelector(username), StatusSubjectsSessions.projector).one[StatusSubjectsSessions]
   }
 
 
@@ -93,7 +89,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // Update the status
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
-            if (result.ok) ResultInfo(success = true, message = s"Now studying $subject")
+            if (result.ok) ResultInfo.succeedWithMessage(s"Now studying $subject")
             else ResultInfo(success = false, message = result.errmsg.getOrElse(noErrMsg))
           )
         }
@@ -186,10 +182,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def addSubject(username: String, subject: String, description: String): Future[ResultInfo] = {
 
-    val selector = usernameSelector(username)
-
     // Get the user's session data
-    bsonSessionsCollection.find(selector, StatusSubjects.projector).one[StatusSubjects].flatMap(opt =>
+    bsonSessionsCollection.find(usernameSelector(username), StatusSubjects.projector).one[StatusSubjects].flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
@@ -208,7 +202,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           )
 
           // Add the new subject
-          bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
+          bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
             if (result.ok) ResultInfo(success = true, s"Successfully added $subject.")
             else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
         }
@@ -226,10 +220,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def removeSubject(username: String, subject: String): Future[ResultInfo] = {
 
-    val selector = usernameSelector(username)
-
     // Get the user's session data
-    bsonSessionsCollection.find(selector, StatusSubjectsSessions.projector).one[StatusSubjectsSessions].flatMap(opt =>
+    bsonSessionsCollection.find(usernameSelector(username), StatusSubjectsSessions.projector).one[StatusSubjectsSessions].flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
@@ -251,7 +243,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           )
 
           // Remove the subject
-          bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
+          bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
             if (result.ok) ResultInfo(success = true, s"Removed $subject.")
             else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
         }
@@ -270,10 +262,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def renameSubject(username: String, oldName: String, newName: String): Future[ResultInfo] = {
 
-    val selector = usernameSelector(username)
-
     // Get the user's session data
-    bsonSessionsCollection.find(selector, StatusSubjectsSessions.projector).one[StatusSubjectsSessions].flatMap(opt =>
+    bsonSessionsCollection.find(usernameSelector(username), StatusSubjectsSessions.projector).one[StatusSubjectsSessions].flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
@@ -310,7 +300,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
             )
 
             // Add the new subject
-            bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
+            bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
               if (result.ok) ResultInfo(success = true, s"Renamed $oldName to $newName.")
               else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
           }
@@ -330,10 +320,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def mergeSubjects(username: String, absorbed: String, absorbing: String): Future[ResultInfo] = {
 
-    val selector = usernameSelector(username)
-
     // Get the user's session data
-    bsonSessionsCollection.find(selector, StatusSubjectsSessions.projector).one[StatusSubjectsSessions].flatMap(opt =>
+    bsonSessionsCollection.find(usernameSelector(username), StatusSubjectsSessions.projector).one[StatusSubjectsSessions].flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(data => {
@@ -370,7 +358,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
             )
 
             // Merge the subjects
-            bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
+            bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
               if (result.ok) ResultInfo(success = true, s"Successfully merged $absorbed into $absorbing.")
               else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
           })

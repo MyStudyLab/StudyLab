@@ -1,12 +1,13 @@
 package models
 
 import constructs.User
+import helpers.Selectors.{emailSelector, usernameSelector}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
-import reactivemongo.bson.BSONDocument
 
 import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import reactivemongo.bson.BSONDocument
 
 /**
   * User model class.
@@ -16,8 +17,8 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 class Users(val api: ReactiveMongoApi) {
 
 
-  // Connection to the User collection
-  def bsonUsersCollection: BSONCollection = api.db.collection[BSONCollection]("users")
+  // Connection to the user collection
+  def usersCollectionBSON: BSONCollection = api.db.collection[BSONCollection]("users")
 
 
   /**
@@ -28,9 +29,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def usernameInUse(username: String): Future[Boolean] = {
 
-    val selector = BSONDocument("username" -> username)
-
-    bsonUsersCollection.count(Some(selector), limit = 1).map(c => if (c == 0) false else true)
+    usersCollectionBSON.count(Some(usernameSelector(username)), limit = 1).map(count => count != 0)
   }
 
   /**
@@ -41,9 +40,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def emailInUse(email: String): Future[Boolean] = {
 
-    val selector = BSONDocument("email" -> email)
-
-    bsonUsersCollection.count(Some(selector), limit = 1).map(c => if (c == 0) false else true)
+    usersCollectionBSON.count(Some(emailSelector(email)), limit = 1).map(count => count != 0)
   }
 
   /**
@@ -54,9 +51,11 @@ class Users(val api: ReactiveMongoApi) {
     */
   def addNewUser(newUser: User): Future[Boolean] = {
 
-    bsonUsersCollection.insert(newUser).map(result => {
+    usersCollectionBSON.insert(newUser).map(result => {
       result.ok
     })
+
+    // TODO: Add a corresponding document to the sessions collection
   }
 
   /**
@@ -68,17 +67,30 @@ class Users(val api: ReactiveMongoApi) {
     */
   def checkPassword(username: String, given: String): Future[Boolean] = {
 
-    val selector = BSONDocument("username" -> username)
-
-    bsonUsersCollection.find(selector, User.projector).one[User].map(optUser =>
+    usersCollectionBSON.find(usernameSelector(username), User.projector).one[User].map(optUser =>
 
       optUser.fold(false)(user => user.password == given)
     )
   }
 
 
-  def findByUsername(query: String): Future[List[User]] = {
-    ???
+  def getUserByUsername(username: String): Future[Option[User]] = {
+    usersCollectionBSON.find(usernameSelector(username), User.projector).one[User]
+  }
+
+  /**
+    *
+    *
+    * @param query
+    * @param limit
+    * @return
+    */
+  def searchUsername(query: String, limit: Int = Int.MaxValue): Future[List[User]] = {
+
+    // ALl usernames which contain the query
+    val selector = BSONDocument("username" -> BSONDocument("$regex" -> query))
+
+    usersCollectionBSON.find(selector).cursor[User]().collect[List](upTo = limit)
   }
 
   def findByName(name: String): Future[Option[Int]] = {
