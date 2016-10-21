@@ -52,6 +52,8 @@ object Stats {
 
     val streak = currentStreak(sessions)
 
+    // TODO: Bug!!! Must split the current session (in case it spans midnight)
+    // Actually must check if current session is the only one for today
     val todaysSessionsVec = if (status.isStudying) {
       todaysSessions(zone)(sessions) :+ Session(status.subject, status.start, currTimeMillis, "")
     } else {

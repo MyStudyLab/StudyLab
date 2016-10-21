@@ -16,6 +16,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 class Users(val api: ReactiveMongoApi) {
 
 
+  // Connection to the User collection
   def bsonUsersCollection: BSONCollection = api.db.collection[BSONCollection]("users")
 
 
@@ -37,15 +38,43 @@ class Users(val api: ReactiveMongoApi) {
 
 
   /**
-    * Add a new user.
+    * Return true iff the username is already in the database.
+    *
+    * @param username The username to check for.
+    * @return
+    */
+  def usernameInUse(username: String): Future[Boolean] = {
+
+    val selector = BSONDocument("username" -> username)
+
+    bsonUsersCollection.count(Some(selector), limit = 1).map(c => if (c == 0) false else true)
+  }
+
+  /**
+    * Return true if the email is already in the database.
+    *
+    * @param email The email address to check for.
+    * @return
+    */
+  def emailInUse(email: String): Future[Boolean] = {
+
+    val selector = BSONDocument("email" -> email)
+
+    bsonUsersCollection.count(Some(selector), limit = 1).map(c => if (c == 0) false else true)
+  }
+
+  /**
+    * Add a new user to the database.
     *
     * @param firstName The first name of the new user.
     * @param lastName  The last name of the new user.
-    * @param email The email address of the new user.
-    * @param password The account password of the new user.
+    * @param email     The email address of the new user.
+    * @param password  The account password of the new user.
     * @return
     */
   def addNewUser(username: String, firstName: String, lastName: String, email: String, password: String): Future[Boolean] = {
+
+    // TODO: Add a field to indicate whether email has been verified
 
     getNewUserID().flatMap(newUserID => {
 
@@ -60,13 +89,13 @@ class Users(val api: ReactiveMongoApi) {
   /**
     * Check a string against a user's password
     *
-    * @param user_id The user ID for which to check the password.
-    * @param given   The string to check against the user's actual password.
+    * @param username The username for which to check the password.
+    * @param given    The string to check against the user's actual password.
     * @return
     */
-  def checkPassword(user_id: Int, given: String): Future[Boolean] = {
+  def checkPassword(username: String, given: String): Future[Boolean] = {
 
-    val selector = BSONDocument("user_id" -> user_id)
+    val selector = BSONDocument("username" -> username)
 
     val projector = BSONDocument("_id" -> 0)
 
