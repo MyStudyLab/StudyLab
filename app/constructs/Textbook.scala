@@ -8,7 +8,7 @@ object Textbook {
 
   import reactivemongo.bson.Macros
 
-  // Implicitly converts to/from BSON
+  // Implicitly convert to/from BSON
   implicit val textbookHandler = Macros.handler[Textbook]
 
 }

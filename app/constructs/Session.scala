@@ -28,11 +28,11 @@ object Session {
 
   import reactivemongo.bson.Macros
 
-  // Implicitly converts to/from BSON
+  // Implicitly convert to/from BSON
   implicit val sessionHandler = Macros.handler[Session]
 
 
-  // Implicitly converts to JSON
+  // Implicitly convert to JSON
   implicit val sessionWrites = Json.writes[Session]
 
 }

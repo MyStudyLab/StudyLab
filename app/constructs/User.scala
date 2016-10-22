@@ -20,9 +20,10 @@ object User {
 
   import reactivemongo.bson.Macros
 
-  // Implicitly converts to/from BSON
+  // Implicitly convert to/from BSON
   implicit val UserHandler = Macros.handler[User]
 
-  val projector = BSONDocument("username" -> 1, "firstName" -> 1, "lastName" -> 1, "email" -> 1, "password" -> 1, "joined" -> 1)
+  // A MongoDB projector for get only the fields for this class
+  val projector = BSONDocument("username" -> 1, "firstName" -> 1, "lastName" -> 1, "email" -> 1, "password" -> 1, "joined" -> 1, "_id" -> 0)
 
 }

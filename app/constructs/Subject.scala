@@ -18,9 +18,9 @@ object Subject {
 
   import reactivemongo.bson.Macros
 
-  // Implicitly converts to/from BSON
+  // Implicitly convert to/from BSON
   implicit val SubjectHandler = Macros.handler[Subject]
 
-  // Implicitly converts to JSON
+  // Implicitly convert to JSON
   implicit val SubjectWrites = Json.writes[Subject]
 }

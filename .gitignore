@@ -15,4 +15,5 @@ dist
 /RUNNING_PID
 /.settings
 
-    
+# My todo files, etc.
+*.txt    

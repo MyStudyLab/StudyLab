@@ -17,10 +17,10 @@ object Status {
 
   import reactivemongo.bson.Macros
 
-  // Implicitly converts to/from BSON
+  // Implicitly convert to/from BSON
   implicit val StatusHandler = Macros.handler[Status]
 
-  // Implicitly converts to JSON
+  // Implicitly convert to JSON
   implicit val statusWrites = Json.writes[Status]
 
 }

@@ -1,36 +1,40 @@
-// TODO: Comment this function and split sessions on boundaries
+function splitSessions(sessions, numGroups) {
+
+}
+
+// TODO: Comment this function
 function stats1(sessions, numLevels) {
 
     var diff;
     var cumul = 0;
 
     // Total duration of completed sessions
-    var total = sessions.reduce(function (prev, curr, arr) {
-        return prev + ((curr.endTime - curr.startTime) / (3600 * 1000));
-    }, 0);
+    var total = sumSessions(sessions);
 
-
-    var levelSize = Math.ceil(total / numLevels);
+    var levelSize = total / numLevels;
 
     var level = 1;
     var res = [[new Date(sessions[0].startTime), 0]];
 
-    for (var i = 0; i < sessions.length; i++) {
-        diff = (sessions[i].endTime - sessions[i].startTime) / (3600 * 1000);
+    sessions.forEach(function (curr, i, arr) {
+        diff = (curr.endTime - curr.startTime) / (3600 * 1000);
 
         cumul += diff;
 
         if (cumul >= level * levelSize) {
-            res.push([new Date(sessions[i].endTime), cumul]);
+
+            // How much the session extends past the level boundary
+            var t = (cumul - level * levelSize) * 3600 * 1000;
+
+            res.push([new Date(curr.endTime - t), level * levelSize]);
             level += 1;
         }
-    }
+    });
 
-    // Last item in cums
+    // Last item in cumuls
     if (res.length < numLevels + 1) {
         res.push([new Date(sessions[sessions.length - 1].endTime), cumul]);
     }
-
 
     return {
         "cumulative": res,
