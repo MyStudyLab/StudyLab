@@ -24,10 +24,6 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
     Ok(views.html.about())
   }
 
-  def books = Action {
-    Ok(views.html.books())
-  }
-
   def quotes = Action {
     Ok(views.html.quotes())
   }

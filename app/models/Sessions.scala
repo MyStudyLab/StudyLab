@@ -72,6 +72,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     bsonSessionsCollection.find(selector, StatusSubjects.projector).one[StatusSubjects].flatMap(optStatsSubs =>
 
+      // TODO: Change the error message here. Username and pass will have been checked already.
       optStatsSubs.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
         if (statsAndSubs.status.isStudying) Future(alreadyStudying)

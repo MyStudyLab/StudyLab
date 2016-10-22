@@ -8,9 +8,6 @@ GET         /                               controllers.Application.home
 # About page
 GET         /about                          controllers.Application.about
 
-# Books page
-# GET         /books                    controllers.Application.books
-
 # Go to the quotes page
 GET         /quotes                         controllers.Application.quotes
 
@@ -22,9 +19,6 @@ GET         /json/sessions/:username        controllers.Sessions.getUserSessionD
 
 # Get quotes as JSON for the user id
 GET         /json/quotes/:username          controllers.Application.getQuotes(username: String)
-
-# Get books as JSON for the user id
-# GET         /json/books/:id         controllers.Books.getBooks(id: Int)
 
 # Start a study session
 POST        /study/start                    controllers.Sessions.startSession()
