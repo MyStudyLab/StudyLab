@@ -21,16 +21,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   // An interface to the sessions collection as BSON
   def bsonSessionsCollection: BSONCollection = mongoApi.db.collection[BSONCollection]("sessions")
 
-  // A result indicating that the user was already studying.
-  val alreadyStudying = ResultInfo.failWithMessage("Already studying")
-
-  // A result indicating that the user was not studying.
-  val notStudying = ResultInfo.failWithMessage("Not studying")
-
-  // A result indicating that the given subject was invalid.
-  val invalidSubject = ResultInfo.failWithMessage("Invalid subject")
-
-  // Default ResultInfo failure message
+  // ResultInfo message when Mongo fails without one
   val noErrMsg = "Failed without error message"
 
   /**
@@ -75,8 +66,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
       // TODO: Change the error message here. Username and pass will have been checked already.
       optStatsSubs.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
-        if (statsAndSubs.status.isStudying) Future(alreadyStudying)
-        else if (!statsAndSubs.subjects.map(_.name).contains(subject)) Future(invalidSubject)
+        if (statsAndSubs.status.isStudying) Future(ResultInfo.alreadyStudying)
+        else if (!statsAndSubs.subjects.map(_.name).contains(subject)) Future(ResultInfo.invalidSubject)
         else {
 
           // The modifier to start a session
@@ -91,7 +82,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
           // Update the status
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
             if (result.ok) ResultInfo.succeedWithMessage(s"Now studying $subject")
-            else ResultInfo(success = false, message = result.errmsg.getOrElse(noErrMsg))
+            else ResultInfo.failWithMessage(message = result.errmsg.getOrElse(noErrMsg))
           )
         }
       })
@@ -114,7 +105,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
       opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
-        if (!statsAndSubs.status.isStudying) Future(notStudying)
+        if (!statsAndSubs.status.isStudying) Future(ResultInfo.notStudying)
         else {
 
           // The newly completed study session
@@ -132,8 +123,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // Add the new session and updated stats
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
-            if (result.ok) ResultInfo(success = true, "Finished studying")
-            else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
+            if (result.ok) ResultInfo.succeedWithMessage("Finished studying")
+            else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
         }
       })
     )
@@ -154,7 +145,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
       opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
-        if (!statsAndSubs.status.isStudying) Future(notStudying)
+        if (!statsAndSubs.status.isStudying) Future(ResultInfo.notStudying)
         else {
 
           // The modifier needed to abort a session
@@ -166,8 +157,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // Update the status
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
-            if (result.ok) ResultInfo(success = true, "Study session aborted")
-            else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
+            if (result.ok) ResultInfo.succeedWithMessage("Study session aborted")
+            else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
         }
       })
     )
@@ -191,9 +182,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
         if (statsAndSubs.subjects.map(_.name).contains(subject)) {
 
-          Future(ResultInfo(success = true, "Subject already exists."))
+          Future(ResultInfo.succeedWithMessage("Subject already exists."))
         } else {
-
 
           // The modifier to add a subject
           val modifier = BSONDocument(
@@ -204,8 +194,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // Add the new subject
           bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
-            if (result.ok) ResultInfo(success = true, s"Successfully added $subject.")
-            else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
+            if (result.ok) ResultInfo.succeedWithMessage(s"Added $subject to subject list.")
+            else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
         }
       })
     )
@@ -228,9 +218,9 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
       opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
 
         if (!sessionData.subjects.map(_.name).contains(subject)) {
-          Future(ResultInfo(success = false, "Invalid subject."))
+          Future(ResultInfo.failWithMessage("Invalid subject."))
         } else if (sessionData.sessions.map(_.subject).toSet.contains(subject)) {
-          Future(ResultInfo(success = false, s"Can't remove $subject. It has been studied."))
+          Future(ResultInfo.failWithMessage(s"Can't remove $subject. It has been studied."))
         } else {
 
           // New subject vector without the subject.
@@ -245,8 +235,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // Remove the subject
           bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
-            if (result.ok) ResultInfo(success = true, s"Removed $subject.")
-            else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
+            if (result.ok) ResultInfo.succeedWithMessage(s"Removed $subject.")
+            else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
         }
       })
     )
@@ -271,14 +261,14 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
 
         if (sessionData.status.isStudying) {
-          Future(ResultInfo(success = false, "Can't rename subjects while studying."))
+          Future(ResultInfo.failWithMessage("Can't rename subjects while studying."))
         } else sessionData.subjects.find(_.name == oldName).fold(
-          Future(ResultInfo(success = false, s"$oldName is an invalid subject."))
+          Future(ResultInfo.failWithMessage(s"$oldName is an invalid subject."))
         )(oldSub => {
 
           // Check if the new subject name is already in use
           if (sessionData.subjects.map(_.name).contains(newName)) {
-            Future(ResultInfo(success = false, s"Can't rename to $newName. It is an existing subject."))
+            Future(ResultInfo.failWithMessage(s"Can't rename to $newName. It is an existing subject."))
           } else {
 
             val newSub = Subject(newName, oldSub.added, oldSub.description)
@@ -302,8 +292,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
             // Add the new subject
             bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
-              if (result.ok) ResultInfo(success = true, s"Renamed $oldName to $newName.")
-              else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
+              if (result.ok) ResultInfo.succeedWithMessage(s"Renamed $oldName to $newName.")
+              else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
           }
         })
       })
@@ -328,13 +318,13 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
       opt.fold(Future(ResultInfo.badUsernameOrPass))(data => {
 
         // Refactor this if-else sequence using find to get references to the two subjects
-        if (data.status.isStudying) {
-          Future(ResultInfo(success = false, "Can't merge while studying."))
-        } else data.subjects.find(_.name == absorbed).fold(
-          Future(ResultInfo(success = false, s"Can't merge. $absorbed is an invalid subject."))
+        if (data.status.isStudying) Future(ResultInfo.failWithMessage("Can't merge while studying."))
+
+        else data.subjects.find(_.name == absorbed).fold(
+          Future(ResultInfo.failWithMessage(s"Can't merge: $absorbed is an invalid subject."))
         )(absorbedSub => {
           data.subjects.find(_.name == absorbing).fold(
-            Future(ResultInfo(success = false, s"Can't merge. $absorbing is an invalid subject."))
+            Future(ResultInfo.failWithMessage(s"Can't merge: $absorbing is an invalid subject."))
           )(absorbingSub => {
 
             val minAdded = math.min(absorbedSub.added, absorbingSub.added)
@@ -360,14 +350,12 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
             // Merge the subjects
             bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
-              if (result.ok) ResultInfo(success = true, s"Successfully merged $absorbed into $absorbing.")
-              else ResultInfo(success = false, result.errmsg.getOrElse(noErrMsg)))
+              if (result.ok) ResultInfo.succeedWithMessage(s"Merged $absorbed into $absorbing.")
+              else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
           })
         })
       })
     )
   }
 
-
 }
-
