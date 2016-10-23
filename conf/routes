@@ -12,10 +12,10 @@ GET         /about                          controllers.Application.about
 GET         /quotes                         controllers.Application.quotes
 
 # Get stats as JSON for the user id
-GET         /json/stats/:username           controllers.Sessions.getStats(username: String)
+GET         /json/stats/:username           controllers.Sessions.statsForUsername(username: String)
 
 # Get sessions as JSON for the user id
-GET         /json/sessions/:username        controllers.Sessions.getUserSessionData(username: String)
+GET         /json/sessions/:username        controllers.Sessions.sessionsForUsername(username: String)
 
 # Get quotes as JSON for the user id
 GET         /json/quotes/:username          controllers.Application.getQuotes(username: String)

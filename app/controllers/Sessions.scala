@@ -1,18 +1,22 @@
 package controllers
 
+// Standard Library imports
 import javax.inject.Inject
+import scala.concurrent.Future
 
+// Play Framework imports
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-
-import scala.concurrent.Future
-import forms._
 import play.api.libs.json.Json
+
+// Project Imports
+import constructs.ResultInfo
+import forms._
 
 
 /**
-  * Controller to manage study sessions.
+  * Controller to manage the study sessions API.
   *
   * @param reactiveMongoApi Holds a reference to the database.
   */
@@ -20,13 +24,13 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   extends Controller with MongoController with ReactiveMongoComponents {
 
   // Sessions model
-  val sessions = new models.Sessions(reactiveMongoApi)
+  protected val sessions = new models.Sessions(reactiveMongoApi)
 
   // User model
-  val users = new models.Users(reactiveMongoApi)
+  protected val users = new models.Users(reactiveMongoApi)
 
   // Response indicating the request form was invalid.
-  val invalidForm = Future(Ok("Invalid form."))
+  protected def invalidFormResponse = Future(Ok(Json.toJson(ResultInfo.invalidForm)))
 
 
   /**
@@ -36,14 +40,14 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     * @tparam A Type parameter of the Action
     * @return
     */
-  def checked[A](action: Action[A]) = Action.async(action.parser) { implicit request =>
+  protected def checked[A](action: Action[A]) = Action.async(action.parser) { implicit request =>
 
     PasswordAndUsername.form.bindFromRequest()(request).fold(
-      badForm => invalidForm,
+      badForm => invalidFormResponse,
       goodForm =>
         users.checkPassword(goodForm.username, goodForm.password).flatMap(matched =>
           if (matched) action(request)
-          else Future(Ok("Bad username or password."))
+          else Future(Ok(Json.toJson(ResultInfo.badUsernameOrPass)))
         )
     )
   }
@@ -54,11 +58,11 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def start = Action.async { implicit request =>
+  protected def start = Action.async { implicit request =>
 
     SessionStartForm.startForm.bindFromRequest()(request).fold(
-      badForm => invalidForm,
-      goodForm => sessions.startSession(goodForm.username, goodForm.subject).map(resultInfo => Ok(resultInfo.message))
+      badForm => invalidFormResponse,
+      goodForm => sessions.startSession(goodForm.username, goodForm.subject).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
 
@@ -68,11 +72,11 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def stop = Action.async { implicit request =>
+  protected def stop = Action.async { implicit request =>
 
     SessionStopForm.stopForm.bindFromRequest()(request).fold(
-      badForm => invalidForm,
-      goodForm => sessions.stopSession(goodForm.username, goodForm.message).map(resultInfo => Ok(resultInfo.message))
+      badForm => invalidFormResponse,
+      goodForm => sessions.stopSession(goodForm.username, goodForm.message).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
 
@@ -82,11 +86,11 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def abort = Action.async { implicit request =>
+  protected def abort = Action.async { implicit request =>
 
     SessionStopForm.stopForm.bindFromRequest()(request).fold(
-      badForm => invalidForm,
-      goodForm => sessions.abortSession(goodForm.username).map(a => Ok(a.message))
+      badForm => invalidFormResponse,
+      goodForm => sessions.abortSession(goodForm.username).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
 
@@ -96,11 +100,11 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def add = Action.async { implicit request =>
+  protected def add = Action.async { implicit request =>
 
     AddOrRemoveSubjectForm.form.bindFromRequest()(request).fold(
-      badForm => invalidForm,
-      goodForm => sessions.addSubject(goodForm.username, goodForm.subject, goodForm.description).map(a => Ok(a.message))
+      badForm => invalidFormResponse,
+      goodForm => sessions.addSubject(goodForm.username, goodForm.subject, goodForm.description).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
 
@@ -110,11 +114,11 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def remove = Action.async { implicit request =>
+  protected def remove = Action.async { implicit request =>
 
     AddOrRemoveSubjectForm.form.bindFromRequest()(request).fold(
-      badForm => invalidForm,
-      goodForm => sessions.removeSubject(goodForm.username, goodForm.subject).map(a => Ok(a.message))
+      badForm => invalidFormResponse,
+      goodForm => sessions.removeSubject(goodForm.username, goodForm.subject).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
 
@@ -124,11 +128,11 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def rename = Action.async { implicit request =>
+  protected def rename = Action.async { implicit request =>
 
     RenameSubjectForm.form.bindFromRequest()(request).fold(
-      badForm => invalidForm,
-      goodForm => sessions.renameSubject(goodForm.username, goodForm.oldName, goodForm.newName).map(a => Ok(a.message))
+      badForm => invalidFormResponse,
+      goodForm => sessions.renameSubject(goodForm.username, goodForm.oldName, goodForm.newName).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
 
@@ -138,41 +142,88 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def merge = Action.async { implicit request =>
+  protected def merge = Action.async { implicit request =>
 
     MergeSubjectsForm.form.bindFromRequest()(request).fold(
-      badForm => invalidForm,
-      goodForm => sessions.mergeSubjects(goodForm.username, goodForm.absorbed, goodForm.absorbing).map(a => Ok(a.message))
+      badForm => invalidFormResponse,
+      goodForm => sessions.mergeSubjects(goodForm.username, goodForm.absorbed, goodForm.absorbing).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
 
 
-  def getStats(username: String) = Action.async { implicit request =>
+  /**
+    * Retrieve the stats for the given username
+    *
+    * @param username The username for which to retrieve stats
+    * @return
+    */
+  def statsForUsername(username: String) = Action.async { implicit request =>
 
     // Return the result with the current time in the users timezone
-    sessions.getStats(username).map(optStats => optStats.fold(Ok(Json.obj("success" -> false)))(stats =>
+    sessions.getStats(username).map(optStats => optStats.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve stats"))))(stats =>
       Ok(Json.toJson(stats))))
   }
 
 
-  def getUserSessionData(username: String) = Action.async { implicit request =>
+  /**
+    * Retrieve the session and status data for the given username
+    *
+    * @param username The username for which to retrieve session data
+    * @return
+    */
+  def sessionsForUsername(username: String) = Action.async { implicit request =>
 
-    sessions.getUserSessionData(username).map(optData => optData.fold(Ok(Json.obj("success" -> false)))(data => Ok(Json.toJson(data))))
+    sessions.getUserSessionData(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve sessions"))))(data => Ok(Json.toJson(data))))
   }
 
 
+  /**
+    * Start a study session
+    *
+    * @return
+    */
   def startSession() = checked(start)
 
+  /**
+    * Stop a study session
+    *
+    * @return
+    */
   def stopSession() = checked(stop)
 
+  /**
+    * Abort the current study session
+    *
+    * @return
+    */
   def abortSession() = checked(abort)
 
+  /**
+    * Add a subject to a user's subject list
+    *
+    * @return
+    */
   def addSubject() = checked(add)
 
+  /**
+    * Remove a subject from a user's subject list
+    *
+    * @return
+    */
   def removeSubject() = checked(remove)
 
+  /**
+    * Rename one of the subjects in a user's subject list
+    *
+    * @return
+    */
   def renameSubject() = checked(rename)
 
+  /**
+    * Merge two subjects from a user's subject list
+    *
+    * @return
+    */
   def mergeSubjects() = checked(merge)
 
 }

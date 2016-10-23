@@ -77,9 +77,11 @@
     <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
     <script src="@routes.Assets.at("/javascripts/stats.js")"></script>
     <script>
+
             // Load the  charts
             google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
 
+            // Get a duration as [hh, mm, ss] from seconds
             function hms(sec) {
                 var h = Math.floor(sec / 3600);
 
@@ -97,9 +99,10 @@
             var titleIsBold = true;
             var titleFontSize = 32;
             var hAxisFontSize = 20;
-            var vAxisFontSize = 16;
+            var vAxisFontSize = 20;
 
 
+            // Writes values currently computed on the backend
             function writeSummaryData(stats) {
 
                 document.getElementById("average-value").textContent = stats.dailyAverage.toFixed(2).toString();
@@ -109,6 +112,7 @@
                 document.getElementById("today-value").textContent = stats.todaysTotal.toFixed(2).toString();
             }
 
+            //
             function writeIntroMessageJS(stats) {
 
                 document.getElementById("total-value").textContent = Math.round(stats.total).toString();
@@ -174,7 +178,7 @@
                     },
                     vAxis: {
                         textStyle: {
-                            fontSize: 20
+                            fontSize: vAxisFontSize
                         }
                     },
                     backgroundColor: "transparent",
@@ -224,7 +228,7 @@
                     },
                     vAxis: {
                         textStyle: {
-                            fontSize: 20
+                            fontSize: vAxisFontSize
                         }
                     },
                     backgroundColor: "transparent",
@@ -277,7 +281,7 @@
                     },
                     vAxis: {
                         textStyle: {
-                            fontSize: 20
+                            fontSize: vAxisFontSize
                         }
                     },
                     backgroundColor: "transparent",
@@ -328,7 +332,7 @@
                     },
                     vAxis: {
                         textStyle: {
-                            fontSize: 20
+                            fontSize: vAxisFontSize
                         }
                     },
                     backgroundColor: "transparent",
@@ -391,6 +395,15 @@
 
             // Moving stat computation to JS
             loadJSONFile("/json/sessions/jgdodson", function (data) {
+
+                // The current time could come from the timestamp in the ResultInfo...
+                if (data.status.isStudying) {
+                    data.sessions.push({
+                        "subject": data.status.subject,
+                        "startTime": data.status.start,
+                        "endTime": new Date().getTime()
+                    });
+                }
 
                 var s1 = stats1(data.sessions, 100);
                 var s2 = stats2(data.sessions);

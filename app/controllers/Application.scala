@@ -15,7 +15,6 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
   def jsonQuotesCollection: JSONCollection = db.collection[JSONCollection]("quotes")
 
-
   def home = Action {
     Ok(views.html.home())
   }
