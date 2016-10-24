@@ -8,7 +8,7 @@ import constructs.{Session, Status}
 import play.api.libs.json._
 
 
-case class Stats(probability: Vector[Double], movingAverage: Vector[(Long, Double)])
+case class Stats(movingAverage: Vector[(Long, Double)])
 
 object Stats {
 
@@ -16,7 +16,6 @@ object Stats {
   implicit object StatsWrites extends Writes[Stats] {
 
     def writes(stats: Stats): JsValue = Json.obj(
-      "probability" -> stats.probability,
       "movingAverage" -> stats.movingAverage.map(p => JsArray(Seq(JsNumber(p._1), JsNumber(p._2))))
     )
 
@@ -29,7 +28,7 @@ object Stats {
     */
   def compute(sessions: Vector[Session], status: Status): Stats = {
 
-    Stats(probability(144)(sessions), movingAverage(15)(sessions)
+    Stats(movingAverage(15)(sessions)
     )
   }
 
@@ -112,34 +111,6 @@ object Stats {
       )).toVector
 
     (bounds :+ (endDayZDT.toInstant.toEpochMilli, endInstant.toEpochMilli)).zip(groupSessions(sessions, dayMarks))
-  }
-
-
-  private def probability(numBins: Int)(sessions: Vector[Session]): Vector[Double] = {
-
-    val bins = Array.fill[Double](numBins)(0)
-
-    val boundsAndGroups = groupDays(ZoneId.of("America/Chicago"))(sessions)
-
-    for ((bounds, group) <- boundsAndGroups) {
-
-      for (session <- group) {
-
-        val diff: Long = bounds._2 - bounds._1
-
-        val startBin: Int = (((session.startTime - bounds._1) * numBins) / diff).toInt
-
-        val endBin: Int = (((session.endTime - bounds._1) * numBins) / diff).toInt
-
-        // Currently excluding the end bin
-        for (bin <- startBin until endBin) {
-          bins(bin) += 1
-        }
-      }
-    }
-
-    // Normalize by number of days
-    bins.toVector.map(_ / boundsAndGroups.length)
   }
 
 }

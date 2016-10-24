@@ -140,7 +140,7 @@
                         });
 
                         carryOver = [{
-                            "start": dayMark.clone(),
+                            "start": dayMark.clone().add(1, 'day').startOf('day'),
                             "stop": m_sessions[sess_ind].stop.clone(),
                             "subject": m_sessions[sess_ind].subject
                         }];
@@ -211,6 +211,37 @@
             }
 
 
+            function probability(numBins, dayGroups) {
+
+                var bins = [];
+
+                for (var i = 0; i < numBins; i++) {
+                    bins.push(0);
+                }
+
+                dayGroups.forEach(function (dayGroup, i, _) {
+                    dayGroup['sessions'].forEach(function (session, j, _) {
+
+                        var upperBound = dayGroup['date'].clone() ;
+                        var lowerBound = dayGroup['date'].clone().startOf('day');
+
+                        var startBin = Math.floor((session.start - lowerBound) * numBins / (upperBound - lowerBound));
+                        var stopBin = Math.floor((session.stop - lowerBound) * numBins / (upperBound - lowerBound));
+
+                        for (var b = startBin; b < stopBin; b++) {
+                            bins[b] += 1;
+                        }
+                    });
+                });
+
+                // Normalize
+                bins.forEach(function (curr, i, arr) {
+                    bins[i] = curr / dayGroups.length;
+                });
+
+                return bins;
+            }
+
             // TODO: Comment this function
             function stats1(sessions, numLevels) {
 
@@ -254,7 +285,8 @@
                     "todaysSessions": todaysSessions(dayGroups),
                     "todaysTotal": todaysTotal(dayGroups),
                     "currentStreak": currentStreak(dayGroups),
-                    "daysSinceStart": daysSinceStart(dayGroups)
+                    "daysSinceStart": daysSinceStart(dayGroups),
+                    "probability": probability(100, dayGroups)
                 }
             }
 
@@ -600,6 +632,7 @@
 
                 google.charts.setOnLoadCallback(getCumulativePlotDrawer(s1.cumulative, "cumulativePlot"));
                 google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(s2.subjectTotals, "subjectTotalsPlot"));
+                google.charts.setOnLoadCallback(getProbabilityPlotDrawer(s1.probability, "probabilityPlot"));
             });
 
             // Load the chart data and setup callbacks to draw plots when we have it.
@@ -608,7 +641,6 @@
                 // - - - Set up call-backs to draw the plots - - - - - - - - - -
 
                 google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(data.movingAverage, "movingAveragePlot"));
-                google.charts.setOnLoadCallback(getProbabilityPlotDrawer(data.probability, "probabilityPlot"));
             })
     </script>
 
