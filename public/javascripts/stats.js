@@ -2,6 +2,20 @@ function splitSessions(sessions, numGroups) {
 
 }
 
+// TODO: Probability distribution of session length (total and per-subject)
+// TODO: Probability distribution of daily total (total and per-subject)
+
+function stdevOfSessionLength(sessions) {
+
+    var mu = averageSessionDuration(sessions);
+
+    var sse = sessions.reduce(function (acc, curr, ind) {
+        return acc + Math.pow(durationInHours(curr) - mu, 2);
+    });
+
+    return Math.pow(sse / (sessions.length - 1), 0.5);
+}
+
 // TODO: Comment this function
 function stats1(sessions, numLevels) {
 
@@ -118,6 +132,10 @@ function moving_average(sessions, radius, n) {
     return res;
 }
 
+function durationInHours(session) {
+    return (session.endTime - session.startTime) / 3600000;
+}
+
 // Compute the total duration, in seconds, of a group of sessions.
 function sumSessions(sessions) {
 
@@ -156,6 +174,15 @@ function sessionsSince(t, sessions) {
     result.reverse();
 
     return result;
+}
+
+function averageSessionDuration(sessions) {
+
+    var total = sessions.reduce(function (acc, curr, ind) {
+        return acc + durationInHours(curr)
+    }, 0);
+
+    return total / sessions.length;
 }
 
 function todaysSessions(sessions) {

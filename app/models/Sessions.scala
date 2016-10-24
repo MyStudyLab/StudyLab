@@ -1,18 +1,17 @@
 package models
 
-// Standard Library Imports
+// Standard Library
 import scala.concurrent.Future
 
-// Play Framework imports
+// Play Framework
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-// Reactive Mongo imports
+// Reactive Mongo
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
-import reactivemongo.bson.BSONDocument
-import reactivemongo.play.json._
+import reactivemongo.bson.{BSONDocument, BSONDocumentReader}
 
-// Project Imports
+// Project
 import constructs._
 import helpers.Selectors.usernameSelector
 
@@ -23,19 +22,6 @@ import helpers.Selectors.usernameSelector
   */
 class Sessions(val mongoApi: ReactiveMongoApi) {
 
-  /*
-    TODO: Could write a function to perform the initial search. Give it the collection and the type to retrieve?
-    Create a class that bundles the construct case class with the projector
-  */
-
-  /*
-  protected def getDataForUsername[T <: MyType](collection: String)(username: String): T = {
-
-    mongoApi.db.collection[BSONCollection](collection).find(usernameSelector(username), T.projector).one[T]
-
-  }
-  */
-
   // An interface to the sessions collection as BSON
   protected def bsonSessionsCollection: BSONCollection = mongoApi.db.collection[BSONCollection]("sessions")
 
@@ -43,16 +29,32 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   protected val noErrMsg = "Failed without error message"
 
   /**
+    * Retrieve data for the given username.
+    *
+    * @param username Username of the user for which we are fetching data.
+    * @param proj
+    * @param bsonReader
+    * @tparam T Case class specifying what data should be returned.
+    * @return
+    */
+  protected def userData[T](username: String)(implicit proj: Projector[T], bsonReader: BSONDocumentReader[T]): Future[Option[T]] = {
+
+    mongoApi.db.collection[BSONCollection]("sessions").find(usernameSelector(username), proj.projector).one[T]
+
+  }
+
+  /**
     * Get study stats as JSON.
+    *
+    * Will eventually be removed -> All stat computation moving to JS
     *
     * @param username The username for which to get study stats.
     * @return
     */
   def getStats(username: String): Future[Option[Stats]] = {
 
-    bsonSessionsCollection.find(usernameSelector(username), StatusSubjectsSessions.projector).one[StatusSubjectsSessions].map(optData =>
-      optData.map(sessionData => Stats.compute(sessionData.sessions, sessionData.status))
-    )
+    userData[StatusSubjectsSessions](username)
+      .map(_.map(sessionData => Stats.compute(sessionData.sessions, sessionData.status)))
   }
 
 
@@ -64,7 +66,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def getUserSessionData(username: String): Future[Option[StatusSubjectsSessions]] = {
 
-    bsonSessionsCollection.find(usernameSelector(username), StatusSubjectsSessions.projector).one[StatusSubjectsSessions]
+    userData[StatusSubjectsSessions](username)
   }
 
 
@@ -77,9 +79,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def startSession(username: String, subject: String): Future[ResultInfo] = {
 
-    val selector = usernameSelector(username)
-
-    bsonSessionsCollection.find(selector, StatusSubjects.projector).one[StatusSubjects].flatMap(optStatsSubs =>
+    userData[StatusSubjects](username).flatMap(optStatsSubs =>
 
       // TODO: Change the error message here. Username and pass will have been checked already.
       optStatsSubs.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
@@ -87,6 +87,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
         if (statsAndSubs.status.isStudying) Future(ResultInfo.alreadyStudying)
         else if (!statsAndSubs.subjects.map(_.name).contains(subject)) Future(ResultInfo.invalidSubject)
         else {
+
+          val selector = usernameSelector(username)
 
           // The modifier to start a session
           val modifier = BSONDocument(
@@ -117,9 +119,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def stopSession(username: String, message: String): Future[ResultInfo] = {
 
-    val selector = usernameSelector(username)
-
-    bsonSessionsCollection.find(selector, StatusSubjects.projector).one[StatusSubjects].flatMap(opt =>
+    userData[StatusSubjects](username).flatMap(opt =>
 
       opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
@@ -128,6 +128,8 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // The newly completed study session
           val newSession = Session(statsAndSubs.status.subject, statsAndSubs.status.start, System.currentTimeMillis(), message)
+
+          val selector = usernameSelector(username)
 
           // The modifier to stop a session
           val modifier = BSONDocument(
@@ -157,14 +159,14 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     */
   def abortSession(username: String): Future[ResultInfo] = {
 
-    val selector = usernameSelector(username)
-
-    bsonSessionsCollection.find(selector, StatusSubjects.projector).one[StatusSubjects].flatMap(opt =>
+    userData[StatusSubjects](username).flatMap(opt =>
 
       opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
 
         if (!statsAndSubs.status.isStudying) Future(ResultInfo.notStudying)
         else {
+
+          val selector = usernameSelector(username)
 
           // The modifier needed to abort a session
           val modifier = BSONDocument(
@@ -193,7 +195,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   def addSubject(username: String, subject: String, description: String): Future[ResultInfo] = {
 
     // Get the user's session data
-    bsonSessionsCollection.find(usernameSelector(username), StatusSubjects.projector).one[StatusSubjects].flatMap(opt =>
+    userData[StatusSubjects](username).flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
@@ -230,7 +232,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   def removeSubject(username: String, subject: String): Future[ResultInfo] = {
 
     // Get the user's session data
-    bsonSessionsCollection.find(usernameSelector(username), StatusSubjectsSessions.projector).one[StatusSubjectsSessions].flatMap(opt =>
+    userData[StatusSubjectsSessions](username).flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
@@ -272,7 +274,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   def renameSubject(username: String, oldName: String, newName: String): Future[ResultInfo] = {
 
     // Get the user's session data
-    bsonSessionsCollection.find(usernameSelector(username), StatusSubjectsSessions.projector).one[StatusSubjectsSessions].flatMap(opt =>
+    userData[StatusSubjectsSessions](username).flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
@@ -330,7 +332,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   def mergeSubjects(username: String, absorbed: String, absorbing: String): Future[ResultInfo] = {
 
     // Get the user's session data
-    bsonSessionsCollection.find(usernameSelector(username), StatusSubjectsSessions.projector).one[StatusSubjectsSessions].flatMap(opt =>
+    userData[StatusSubjectsSessions](username).flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.badUsernameOrPass))(data => {

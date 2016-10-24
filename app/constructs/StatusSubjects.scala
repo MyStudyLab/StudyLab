@@ -19,8 +19,7 @@ object StatusSubjects {
   // Implicitly convert to/from BSON
   implicit val StatusSubjectsHandler = Macros.handler[StatusSubjects]
 
-  // TODO: Use reflection to generate this directly from the case class?
-  // A MongoDB projector for get only the fields for this class
-  val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
-
+  implicit val statusSubjectsProjector = new Projector[StatusSubjects] {
+    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
+  }
 }

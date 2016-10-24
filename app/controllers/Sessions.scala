@@ -1,16 +1,16 @@
 package controllers
 
-// Standard Library imports
+// Standard Library
 import javax.inject.Inject
 import scala.concurrent.Future
 
-// Play Framework imports
+// Play Framework
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.Json
 
-// Project Imports
+// Project
 import constructs.ResultInfo
 import forms._
 
@@ -45,7 +45,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     PasswordAndUsername.form.bindFromRequest()(request).fold(
       badForm => invalidFormResponse,
       goodForm =>
-        users.checkPassword(goodForm.username, goodForm.password).flatMap(matched =>
+        users.checkCredentials(goodForm.username, goodForm.password).flatMap(matched =>
           if (matched) action(request)
           else Future(Ok(Json.toJson(ResultInfo.badUsernameOrPass)))
         )

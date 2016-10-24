@@ -1,13 +1,19 @@
 package models
 
-import constructs.User
-import helpers.Selectors.{emailSelector, usernameSelector}
+// Standard Library
+import scala.concurrent.Future
+
+// Play Framework
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
+// Reactive Mongo
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
-
-import scala.concurrent.Future
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import reactivemongo.bson.BSONDocument
+
+// Project
+import constructs.User
+import helpers.Selectors.{emailSelector, usernameSelector}
 
 /**
   * User model class.
@@ -18,7 +24,7 @@ class Users(val api: ReactiveMongoApi) {
 
 
   // Connection to the user collection
-  def usersCollectionBSON: BSONCollection = api.db.collection[BSONCollection]("users")
+  protected def usersCollectionBSON: BSONCollection = api.db.collection[BSONCollection]("users")
 
 
   /**
@@ -65,7 +71,7 @@ class Users(val api: ReactiveMongoApi) {
     * @param given    The string to check against the user's actual password.
     * @return
     */
-  def checkPassword(username: String, given: String): Future[Boolean] = {
+  def checkCredentials(username: String, given: String): Future[Boolean] = {
 
     usersCollectionBSON.find(usernameSelector(username), User.projector).one[User].map(optUser =>
 
