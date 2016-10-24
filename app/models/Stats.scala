@@ -8,8 +8,8 @@ import constructs.{Session, Status}
 import play.api.libs.json._
 
 
-case class Stats(daysSinceStart: Long, currentStreak: Int, dailyAverage: Double, todaysTotal: Double, todayStart: Long,
-                 todaysSessions: Vector[Session], probability: Vector[Double], movingAverage: Vector[(Long, Double)])
+case class Stats(currentStreak: Int, todayStart: Long, todaysSessions: Vector[Session], probability: Vector[Double],
+                 movingAverage: Vector[(Long, Double)])
 
 object Stats {
 
@@ -17,11 +17,8 @@ object Stats {
   implicit object StatsWrites extends Writes[Stats] {
 
     def writes(stats: Stats): JsValue = Json.obj(
-      "daysSinceStart" -> stats.daysSinceStart,
       "currentStreak" -> stats.currentStreak,
-      "dailyAverage" -> stats.dailyAverage,
       "todayStart" -> stats.todayStart,
-      "todaysTotal" -> stats.todaysTotal,
       "todaysSessions" -> stats.todaysSessions,
       "probability" -> stats.probability,
       "movingAverage" -> stats.movingAverage.map(p => JsArray(Seq(JsNumber(p._1), JsNumber(p._2))))
@@ -42,14 +39,6 @@ object Stats {
 
     val todayStart = ZonedDateTime.now(zone).truncatedTo(ChronoUnit.DAYS).toInstant.toEpochMilli
 
-    val totalHours = if (status.isStudying) {
-      total(sessions) + (currTimeMillis - status.start) / 3600000d
-    } else {
-      total(sessions)
-    }
-
-    val dailyAverage = totalHours / daysSinceStart(zone)(sessions)
-
     val streak = currentStreak(sessions)
 
     // TODO: Bug!!! Must split the current session (in case it spans midnight)
@@ -60,9 +49,7 @@ object Stats {
       todaysSessions(zone)(sessions)
     }
 
-    val todaysTotal = total(todaysSessionsVec)
-
-    Stats(daysSinceStart(zone)(sessions), streak, dailyAverage, todaysTotal, todayStart, todaysSessionsVec,
+    Stats(streak, todayStart, todaysSessionsVec,
       probability(144)(sessions), movingAverage(15)(sessions)
     )
   }
@@ -189,27 +176,6 @@ object Stats {
 
     groupDays(zone)(sessions).map(s => total(s._2))
   }
-
-
-  private def startDate(zone: ZoneId)(sessions: Vector[Session]): ZonedDateTime = {
-
-    // TODO: check for empty lists
-    val startInstant = time.Instant.ofEpochMilli(sessions.head.startTime)
-
-    val startZDT = time.ZonedDateTime.ofInstant(startInstant, zone).truncatedTo(ChronoUnit.DAYS)
-
-    startZDT
-  }
-
-
-  private def daysSinceStart(zone: ZoneId)(sessions: Vector[Session]): Long = {
-
-    val now = ZonedDateTime.now(zone)
-
-    // We include the current day, hence the + 1
-    startDate(zone)(sessions).until(now, ChronoUnit.DAYS) + 1
-  }
-
 
   private def todaysSessions(zone: ZoneId)(sessions: Vector[Session]): Vector[Session] = {
 

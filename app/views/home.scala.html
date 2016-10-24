@@ -91,8 +91,8 @@
 
                 var m = sessions.map(function (curr, i, arr) {
                     return {
-                        "start": moment.tz(curr.startTime, "America/Chicago"),
-                        "stop": moment.tz(curr.endTime, "America/Chicago"),
+                        "start": moment(curr.startTime).tz("America/Chicago"),
+                        "stop": moment(curr.endTime).tz("America/Chicago"),
                         "subject": curr.subject
                     }
                 });
@@ -104,12 +104,20 @@
 
                 m.forEach(function (curr, i, arr) {
 
+                    // Missed a case here...doh!
                     if (curr.stop <= marker) {
                         dayGroups[dayGroups.length - 1]["sessions"].push(curr);
+                    } else if (curr.start > marker) {
+                        dayGroups.push({
+                            "date": marker.clone().add(1, 'day'),
+                            "sessions": [curr]
+                        });
+
+                        marker.add(1, 'day');
                     } else {
 
                         dayGroups[dayGroups.length - 1]["sessions"].push({
-                            "start": curr.start,
+                            "start": curr.start.clone(),
                             "stop": marker.clone(),
                             "subject": curr.subject
                         });
@@ -118,7 +126,7 @@
                             "date": marker.clone().add(1, 'day'),
                             "sessions": [{
                                 "start": marker.clone(),
-                                "stop": curr.stop,
+                                "stop": curr.stop.clone(),
                                 "subject": curr.subject
                             }]
                         });
@@ -131,6 +139,14 @@
                 });
 
                 return dayGroups;
+            }
+
+            function todaysTotal(dayGroups) {
+                return sumSessions(dayGroups[dayGroups.length - 1]['sessions']);
+            }
+
+            function todaysSessions(dayGroups) {
+                return dayGroups[dayGroups.length - 1]['sessions'];
             }
 
             function sumSessions(sessions) {
@@ -198,7 +214,9 @@
                 return {
                     "cumulative": res,
                     "total": total,
-                    "dailyAverage": dailyAverage(dayGroups)
+                    "dailyAverage": dailyAverage(dayGroups),
+                    "todaysSessions": todaysSessions(dayGroups),
+                    "todaysTotal": todaysTotal(dayGroups)
                 }
             }
 
@@ -233,19 +251,19 @@
             // Writes values currently computed on the backend
             function writeSummaryData(stats) {
 
-                //document.getElementById("average-value").textContent = stats.dailyAverage.toFixed(2).toString();
-
                 document.getElementById("streak-value").textContent = stats.currentStreak.toString();
 
-                document.getElementById("today-value").textContent = stats.todaysTotal.toFixed(2).toString();
+                //document.getElementById("today-value").textContent = stats.todaysTotal.toFixed(2).toString();
             }
 
-            //
+
             function writeIntroMessageJS(stats) {
 
                 document.getElementById("average-value").textContent = stats.dailyAverage.toFixed(2).toString();
 
                 document.getElementById("total-value").textContent = Math.round(stats.total).toString();
+
+                document.getElementById("today-value").textContent = stats.todaysTotal.toFixed(2).toString();
             }
 
 
@@ -535,11 +553,7 @@
                     });
                 }
 
-                console.log(data.sessions);
-
                 console.log(splitDays(data.sessions));
-
-                console.log(data.sessions);
 
                 var s1 = stats1(data.sessions, 100);
                 var s2 = stats2(data.sessions);
