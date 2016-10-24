@@ -1,7 +1,3 @@
-function splitSessions(sessions, numGroups) {
-
-}
-
 // TODO: Probability distribution of session length (total and per-subject)
 // TODO: Probability distribution of daily total (total and per-subject)
 
@@ -14,46 +10,6 @@ function stdevOfSessionLength(sessions) {
     });
 
     return Math.pow(sse / (sessions.length - 1), 0.5);
-}
-
-// TODO: Comment this function
-function stats1(sessions, numLevels) {
-
-    var diff;
-    var cumul = 0;
-
-    // Total duration of completed sessions
-    var total = sumSessions(sessions);
-
-    var levelSize = total / numLevels;
-
-    var level = 1;
-    var res = [[new Date(sessions[0].startTime), 0]];
-
-    sessions.forEach(function (curr, i, arr) {
-        diff = (curr.endTime - curr.startTime) / (3600 * 1000);
-
-        cumul += diff;
-
-        if (cumul >= level * levelSize) {
-
-            // How much the session extends past the level boundary
-            var t = (cumul - level * levelSize) * 3600 * 1000;
-
-            res.push([new Date(curr.endTime - t), level * levelSize]);
-            level += 1;
-        }
-    });
-
-    // Last item in cumuls
-    if (res.length < numLevels + 1) {
-        res.push([new Date(sessions[sessions.length - 1].endTime), cumul]);
-    }
-
-    return {
-        "cumulative": res,
-        "total": total
-    }
 }
 
 
@@ -137,7 +93,7 @@ function durationInHours(session) {
 }
 
 // Compute the total duration, in seconds, of a group of sessions.
-function sumSessions(sessions) {
+function sumRawSessions(sessions) {
 
     var total = 0;
 
@@ -183,8 +139,4 @@ function averageSessionDuration(sessions) {
     }, 0);
 
     return total / sessions.length;
-}
-
-function todaysSessions(sessions) {
-
 }

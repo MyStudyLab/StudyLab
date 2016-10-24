@@ -75,7 +75,135 @@
     </div>
 
     <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
+    <script src="@routes.Assets.at("/javascripts/moment.js")"></script>
+    <script src="@routes.Assets.at("/javascripts/moment-timezone-10-20.js")"></script>
     <script src="@routes.Assets.at("/javascripts/stats.js")"></script>
+
+    <script>
+            //
+            // Does not handle sessions longer than 24 hours
+            function splitDays(sessions) {
+
+                // Trivial case
+                if (sessions.length === 0) {
+                    return [];
+                }
+
+                var m = sessions.map(function (curr, i, arr) {
+                    return {
+                        "start": moment.tz(curr.startTime, "America/Chicago"),
+                        "stop": moment.tz(curr.endTime, "America/Chicago"),
+                        "subject": curr.subject
+                    }
+                });
+
+                // The end of the day being handled
+                var marker = m[0].start.clone().endOf('day');
+
+                var dayGroups = [{"date": marker.clone(), "sessions": []}];
+
+                m.forEach(function (curr, i, arr) {
+
+                    if (curr.stop <= marker) {
+                        dayGroups[dayGroups.length - 1]["sessions"].push(curr);
+                    } else {
+
+                        dayGroups[dayGroups.length - 1]["sessions"].push({
+                            "start": curr.start,
+                            "stop": marker.clone(),
+                            "subject": curr.subject
+                        });
+
+                        dayGroups.push({
+                            "date": marker.clone().add(1, 'day'),
+                            "sessions": [{
+                                "start": marker.clone(),
+                                "stop": curr.stop,
+                                "subject": curr.subject
+                            }]
+                        });
+
+                        // Move to the next day
+                        marker.add(1, 'day');
+                    }
+
+
+                });
+
+                return dayGroups;
+            }
+
+            function sumSessions(sessions) {
+
+                return sessions.reduce(function (acc, curr, i) {
+                    return acc + ((curr.stop - curr.start) / 3600000);
+                }, 0);
+
+            }
+
+            function sumArray(arr) {
+                return arr.reduce(function (acc, curr, i) {
+                    return acc + curr;
+                }, 0);
+            }
+
+            function dailyAverage(dayGroups) {
+
+                var dailies = dayGroups.map(function (curr, i, arr) {
+                    return sumSessions(curr.sessions);
+                });
+
+                console.log("dailies" + dailies.toString());
+
+                return sumArray(dailies) / dailies.length;
+            }
+
+
+            // TODO: Comment this function
+            function stats1(sessions, numLevels) {
+
+                var dayGroups = splitDays(sessions);
+
+                var diff;
+                var cumul = 0;
+
+                // Total duration of completed sessions
+                var total = sumRawSessions(sessions);
+
+                var levelSize = total / numLevels;
+
+                var level = 1;
+                var res = [[new Date(sessions[0].startTime), 0]];
+
+                sessions.forEach(function (curr, i, arr) {
+                    diff = (curr.endTime - curr.startTime) / (3600 * 1000);
+
+                    cumul += diff;
+
+                    if (cumul >= level * levelSize) {
+
+                        // How much the session extends past the level boundary
+                        var t = (cumul - level * levelSize) * 3600 * 1000;
+
+                        res.push([new Date(curr.endTime - t), level * levelSize]);
+                        level += 1;
+                    }
+                });
+
+                // Last item in cumuls
+                if (res.length < numLevels + 1) {
+                    res.push([new Date(sessions[sessions.length - 1].endTime), cumul]);
+                }
+
+                return {
+                    "cumulative": res,
+                    "total": total,
+                    "dailyAverage": dailyAverage(dayGroups)
+                }
+            }
+
+    </script>
+
     <script>
 
             // Load the  charts
@@ -105,7 +233,7 @@
             // Writes values currently computed on the backend
             function writeSummaryData(stats) {
 
-                document.getElementById("average-value").textContent = stats.dailyAverage.toFixed(2).toString();
+                //document.getElementById("average-value").textContent = stats.dailyAverage.toFixed(2).toString();
 
                 document.getElementById("streak-value").textContent = stats.currentStreak.toString();
 
@@ -114,6 +242,8 @@
 
             //
             function writeIntroMessageJS(stats) {
+
+                document.getElementById("average-value").textContent = stats.dailyAverage.toFixed(2).toString();
 
                 document.getElementById("total-value").textContent = Math.round(stats.total).toString();
             }
@@ -405,8 +535,16 @@
                     });
                 }
 
+                console.log(data.sessions);
+
+                console.log(splitDays(data.sessions));
+
+                console.log(data.sessions);
+
                 var s1 = stats1(data.sessions, 100);
                 var s2 = stats2(data.sessions);
+
+                console.log(s1);
 
                 writeIntroMessageJS(s1);
 
