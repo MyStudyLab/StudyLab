@@ -39,6 +39,11 @@ object ResultInfo {
     */
   def badUsernameOrPass = failWithMessage("Incorrect username or password")
 
+  /**
+    *
+    * @return
+    */
+  def invalidUsername = failWithMessage("Invalid Username")
 
   /**
     * A result indicating that the user was already studying.

@@ -80,6 +80,7 @@
 .raised-element {
     box-shadow: 0 1px 3px #242424;
     background-color: #f8f5f0;
+    border-radius: 8px;
 }
 
 .padded-plot {

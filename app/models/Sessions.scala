@@ -82,7 +82,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     userData[StatusSubjects](username).flatMap(optStatsSubs =>
 
       // TODO: Change the error message here. Username and pass will have been checked already.
-      optStatsSubs.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
+      optStatsSubs.fold(Future(ResultInfo.invalidUsername))(statsAndSubs => {
 
         if (statsAndSubs.status.isStudying) Future(ResultInfo.alreadyStudying)
         else if (!statsAndSubs.subjects.map(_.name).contains(subject)) Future(ResultInfo.invalidSubject)
@@ -121,7 +121,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     userData[StatusSubjects](username).flatMap(opt =>
 
-      opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
+      opt.fold(Future(ResultInfo.invalidUsername))(statsAndSubs => {
 
         if (!statsAndSubs.status.isStudying) Future(ResultInfo.notStudying)
         else {
@@ -161,7 +161,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
     userData[StatusSubjects](username).flatMap(opt =>
 
-      opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
+      opt.fold(Future(ResultInfo.invalidUsername))(statsAndSubs => {
 
         if (!statsAndSubs.status.isStudying) Future(ResultInfo.notStudying)
         else {
@@ -198,7 +198,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     userData[StatusSubjects](username).flatMap(opt =>
 
       // Check the success of the query
-      opt.fold(Future(ResultInfo.badUsernameOrPass))(statsAndSubs => {
+      opt.fold(Future(ResultInfo.invalidUsername))(statsAndSubs => {
 
         if (statsAndSubs.subjects.map(_.name).contains(subject)) {
 
@@ -235,7 +235,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     userData[StatusSubjectsSessions](username).flatMap(opt =>
 
       // Check the success of the query
-      opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
+      opt.fold(Future(ResultInfo.invalidUsername))(sessionData => {
 
         if (!sessionData.subjects.map(_.name).contains(subject)) {
           Future(ResultInfo.failWithMessage("Invalid subject"))
@@ -277,7 +277,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     userData[StatusSubjectsSessions](username).flatMap(opt =>
 
       // Check the success of the query
-      opt.fold(Future(ResultInfo.badUsernameOrPass))(sessionData => {
+      opt.fold(Future(ResultInfo.invalidUsername))(sessionData => {
 
 
         if (sessionData.status.isStudying) {
@@ -335,7 +335,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
     userData[StatusSubjectsSessions](username).flatMap(opt =>
 
       // Check the success of the query
-      opt.fold(Future(ResultInfo.badUsernameOrPass))(data => {
+      opt.fold(Future(ResultInfo.invalidUsername))(data => {
 
         // Refactor this if-else sequence using find to get references to the two subjects
         if (data.status.isStudying) Future(ResultInfo.failWithMessage("Can't merge while studying"))
