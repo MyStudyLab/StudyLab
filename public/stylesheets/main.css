@@ -54,27 +54,35 @@
 }
 
 .navbar-nav > li:hover {
-    background-color: #373737;
+    color: #fff;
 }
 
-#nav-github-link {
+#nav-github-link:hover {
     color: #44a340;
 }
 
-#nav-twitter-link {
+#nav-twitter-link:hover {
     color: #55acee;
 }
 
-#nav-linkedin-link {
+#nav-linkedin-link:hover {
     color: #0077b5;
 }
 
-#nav-stackexchange-link {
+#nav-stackexchange-link:hover {
     color: #46A2D9;
 }
 
-#nav-hackernews-link {
+#nav-hackernews-link:hover {
     color: #e95b00;
+}
+
+#nav-goodreads-link:hover {
+    color: #f4f1ea;
+}
+
+#nav-codewars-link:hover {
+    color: #bb432c;
 }
 
 .raised-element {
