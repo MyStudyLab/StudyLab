@@ -2,14 +2,13 @@ package models
 
 import java.time
 import java.time.temporal.ChronoUnit
-import java.time.{ZoneId, ZonedDateTime}
+import java.time.ZoneId
 
 import constructs.{Session, Status}
 import play.api.libs.json._
 
 
-case class Stats(currentStreak: Int, todayStart: Long, todaysSessions: Vector[Session], probability: Vector[Double],
-                 movingAverage: Vector[(Long, Double)])
+case class Stats(probability: Vector[Double], movingAverage: Vector[(Long, Double)])
 
 object Stats {
 
@@ -17,9 +16,6 @@ object Stats {
   implicit object StatsWrites extends Writes[Stats] {
 
     def writes(stats: Stats): JsValue = Json.obj(
-      "currentStreak" -> stats.currentStreak,
-      "todayStart" -> stats.todayStart,
-      "todaysSessions" -> stats.todaysSessions,
       "probability" -> stats.probability,
       "movingAverage" -> stats.movingAverage.map(p => JsArray(Seq(JsNumber(p._1), JsNumber(p._2))))
     )
@@ -33,24 +29,7 @@ object Stats {
     */
   def compute(sessions: Vector[Session], status: Status): Stats = {
 
-    val currTimeMillis = System.currentTimeMillis()
-
-    val zone = ZoneId.of("America/Chicago")
-
-    val todayStart = ZonedDateTime.now(zone).truncatedTo(ChronoUnit.DAYS).toInstant.toEpochMilli
-
-    val streak = currentStreak(sessions)
-
-    // TODO: Bug!!! Must split the current session (in case it spans midnight)
-    // Actually must check if current session is the only one for today
-    val todaysSessionsVec = if (status.isStudying) {
-      todaysSessions(zone)(sessions) :+ Session(status.subject, status.start, currTimeMillis, "")
-    } else {
-      todaysSessions(zone)(sessions)
-    }
-
-    Stats(streak, todayStart, todaysSessionsVec,
-      probability(144)(sessions), movingAverage(15)(sessions)
+    Stats(probability(144)(sessions), movingAverage(15)(sessions)
     )
   }
 
@@ -65,42 +44,6 @@ object Stats {
     sessions.foldLeft(0L)((total: Long, session: Session) => {
       total + session.durationMillis()
     }).toDouble / (3600 * 1000)
-  }
-
-
-  /**
-    * The length of the user's current streak
-    *
-    * @param sessions The user's session list.
-    * @return
-    */
-  private def currentStreak(sessions: Vector[Session]): Int = {
-
-    val zone = ZoneId.of("America/Chicago")
-
-    var current: Int = 0
-
-    // The last element of dailyTotals always holds today's total
-    val dTotals = dailyTotals(zone)(sessions)
-
-    // We don't analyze today's total until later
-    for (dailyTotal <- dTotals.dropRight(1)) {
-      if (dailyTotal > 0.0) {
-        current += 1
-      } else {
-        current = 0
-      }
-    }
-
-    // Increment the last (current) streak if the user has programmed today
-    dTotals.lastOption.fold(current)(last => {
-
-      if (last > 0) {
-        current += 1
-      }
-
-      current
-    })
   }
 
 
@@ -169,31 +112,6 @@ object Stats {
       )).toVector
 
     (bounds :+ (endDayZDT.toInstant.toEpochMilli, endInstant.toEpochMilli)).zip(groupSessions(sessions, dayMarks))
-  }
-
-
-  private def dailyTotals(zone: ZoneId)(sessions: Vector[Session]): Vector[Double] = {
-
-    groupDays(zone)(sessions).map(s => total(s._2))
-  }
-
-  private def todaysSessions(zone: ZoneId)(sessions: Vector[Session]): Vector[Session] = {
-
-    val startOfToday = ZonedDateTime.now(zone).truncatedTo(ChronoUnit.DAYS).toInstant.toEpochMilli
-
-    sessionsSince(startOfToday)(sessions)
-  }
-
-
-  private def sessionsSince(since: Long)(sessions: Vector[Session]): Vector[Session] = {
-
-    // Call reverse to get sessions back in chronological order
-    val unsplitSessions = sessions.reverseIterator.takeWhile(s => s.endTime > since).toVector
-
-    // Handle the case where a session spans midnight
-    val first = unsplitSessions.lastOption.map(s => Session(s.subject, math.max(s.startTime, since), s.endTime, s.message))
-
-    first.toVector ++ unsplitSessions.dropRight(1).reverse
   }
 
 

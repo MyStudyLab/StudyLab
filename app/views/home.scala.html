@@ -84,61 +84,82 @@
             // Does not handle sessions longer than 24 hours
             function splitDays(sessions) {
 
+                var tz = "America/Chicago";
+
                 // Trivial case
                 if (sessions.length === 0) {
                     return [];
                 }
 
-                var m = sessions.map(function (curr, i, arr) {
+                var m_sessions = sessions.map(function (curr, i, arr) {
                     return {
-                        "start": moment(curr.startTime).tz("America/Chicago"),
-                        "stop": moment(curr.endTime).tz("America/Chicago"),
+                        "start": moment(curr.startTime).tz(tz),
+                        "stop": moment(curr.endTime).tz(tz),
                         "subject": curr.subject
                     }
                 });
 
+
                 // The end of the day being handled
-                var marker = m[0].start.clone().endOf('day');
+                var marker = m_sessions[0].start.clone().endOf('day');
 
-                var dayGroups = [{"date": marker.clone(), "sessions": []}];
+                var todayMarker = moment().tz(tz).endOf('day');
 
-                m.forEach(function (curr, i, arr) {
+                var dayMarks = [];
 
-                    // Missed a case here...doh!
-                    if (curr.stop <= marker) {
-                        dayGroups[dayGroups.length - 1]["sessions"].push(curr);
-                    } else if (curr.start > marker) {
-                        dayGroups.push({
-                            "date": marker.clone().add(1, 'day'),
-                            "sessions": [curr]
-                        });
+                while (marker <= todayMarker) {
+                    dayMarks.push(marker.clone());
+                    marker.add(1, 'day');
+                }
 
-                        marker.add(1, 'day');
-                    } else {
+                // Session index
+                var sess_ind = 0;
 
-                        dayGroups[dayGroups.length - 1]["sessions"].push({
-                            "start": curr.start.clone(),
-                            "stop": marker.clone(),
-                            "subject": curr.subject
-                        });
+                var carryOver = [];
 
-                        dayGroups.push({
-                            "date": marker.clone().add(1, 'day'),
-                            "sessions": [{
-                                "start": marker.clone(),
-                                "stop": curr.stop.clone(),
-                                "subject": curr.subject
-                            }]
-                        });
+                var dayGroups = [];
 
-                        // Move to the next day
-                        marker.add(1, 'day');
+                dayMarks.forEach(function (dayMark, i, arr) {
+
+                    //
+                    var today = {"date": dayMark, "sessions": carryOver};
+
+                    // Get all sessions that fall within the current day
+                    while (sess_ind < m_sessions.length && m_sessions[sess_ind].stop < dayMark) {
+                        today["sessions"].push(m_sessions[sess_ind]);
+                        sess_ind++;
                     }
 
+                    // Check for a session that crosses the dayMark
+                    if (sess_ind < m_sessions.length && m_sessions[sess_ind].start < dayMark) {
+
+                        today['sessions'].push({
+                            "start": m_sessions[sess_ind].start.clone(),
+                            "stop": dayMark.clone(),
+                            "subject": m_sessions[sess_ind].subject
+                        });
+
+                        carryOver = [{
+                            "start": dayMark.clone(),
+                            "stop": m_sessions[sess_ind].stop.clone(),
+                            "subject": m_sessions[sess_ind].subject
+                        }];
+
+                        sess_ind++;
+                    } else {
+                        carryOver = [];
+                    }
+
+                    //
+                    dayGroups.push(today);
 
                 });
 
                 return dayGroups;
+            }
+
+            function daysSinceStart(dayGroups) {
+                return dayGroups.length;
             }
 
             function todaysTotal(dayGroups) {
@@ -161,6 +182,21 @@
                 return arr.reduce(function (acc, curr, i) {
                     return acc + curr;
                 }, 0);
+            }
+
+            function currentStreak(dayGroups) {
+
+                if (dayGroups.length == 0) {
+                    return 0;
+                }
+
+                var i = dayGroups.length - 1;
+
+                while (i >= 0 && dayGroups[i]['sessions'].length > 0) {
+                    i--;
+                }
+
+                return dayGroups.length - 1 - i;
             }
 
             function dailyAverage(dayGroups) {
@@ -216,7 +252,9 @@
                     "total": total,
                     "dailyAverage": dailyAverage(dayGroups),
                     "todaysSessions": todaysSessions(dayGroups),
-                    "todaysTotal": todaysTotal(dayGroups)
+                    "todaysTotal": todaysTotal(dayGroups),
+                    "currentStreak": currentStreak(dayGroups),
+                    "daysSinceStart": daysSinceStart(dayGroups)
                 }
             }
 
@@ -248,15 +286,6 @@
             var vAxisFontSize = 20;
 
 
-            // Writes values currently computed on the backend
-            function writeSummaryData(stats) {
-
-                document.getElementById("streak-value").textContent = stats.currentStreak.toString();
-
-                //document.getElementById("today-value").textContent = stats.todaysTotal.toFixed(2).toString();
-            }
-
-
             function writeIntroMessageJS(stats) {
 
                 document.getElementById("average-value").textContent = stats.dailyAverage.toFixed(2).toString();
@@ -264,6 +293,8 @@
                 document.getElementById("total-value").textContent = Math.round(stats.total).toString();
 
                 document.getElementById("today-value").textContent = stats.todaysTotal.toFixed(2).toString();
+
+                document.getElementById("streak-value").textContent = stats.currentStreak.toString();
             }
 
 
@@ -290,7 +321,7 @@
 
 
                     var rows = sessions.map(function (elem, i, self) {
-                        return ["What I've Done Today", elem.subject, elem.startTime, elem.endTime];
+                        return ["What I've Done Today", elem.subject, elem.start.valueOf(), elem.stop.valueOf()];
                     });
 
                     table.addRows(rows);
@@ -553,14 +584,19 @@
                     });
                 }
 
-                console.log(splitDays(data.sessions));
-
                 var s1 = stats1(data.sessions, 100);
                 var s2 = stats2(data.sessions);
 
                 console.log(s1);
 
                 writeIntroMessageJS(s1);
+
+                // Only show the current day's overview if the user has studied today.
+                if (s1.todaysSessions.length > 0) {
+                    google.charts.setOnLoadCallback(getTodaysSessionsPlotDrawer(s1.todaysSessions, "todaysSessionsPlot"));
+                } else {
+                    document.getElementById("widt-row").style.display = "none";
+                }
 
                 google.charts.setOnLoadCallback(getCumulativePlotDrawer(s1.cumulative, "cumulativePlot"));
                 google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(s2.subjectTotals, "subjectTotalsPlot"));
@@ -569,18 +605,7 @@
             // Load the chart data and setup callbacks to draw plots when we have it.
             loadJSONFile("/json/stats/jgdodson", function (data) {
 
-                // Fill values in the data blocks.
-                writeSummaryData(data);
-
-
                 // - - - Set up call-backs to draw the plots - - - - - - - - - -
-
-                // Only show the current day's overview if the user has studied today.
-                if (data.todaysSessions.length > 0) {
-                    google.charts.setOnLoadCallback(getTodaysSessionsPlotDrawer(data.todaysSessions, "todaysSessionsPlot"));
-                } else {
-                    document.getElementById("widt-row").style.display = "none";
-                }
 
                 google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(data.movingAverage, "movingAveragePlot"));
                 google.charts.setOnLoadCallback(getProbabilityPlotDrawer(data.probability, "probabilityPlot"));
