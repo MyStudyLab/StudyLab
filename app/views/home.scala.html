@@ -184,6 +184,28 @@
                 }, 0);
             }
 
+            function monthsSessions(dayGroups) {
+
+                var startOfMonth = dayGroups[dayGroups.length - 1]['date'].clone().startOf('month');
+
+                var i = dayGroups.length - 1;
+
+                while (i >= 0 && dayGroups[i]['date'] > startOfMonth) {
+                    i--;
+                }
+
+                var res = [];
+
+                // The original array is not modified
+                dayGroups.slice(i + 1).forEach(function (dayGroup, i, arr) {
+                    dayGroup['sessions'].forEach(function (curr, i, arr) {
+                        res.push(curr);
+                    });
+                });
+
+                return res;
+            }
+
             function currentStreak(dayGroups) {
 
                 if (dayGroups.length == 0) {
@@ -312,6 +334,7 @@
                     "total": total,
                     "dailyAverage": dailyAverage(dayGroups),
                     "todaysSessions": todaysSessions(dayGroups),
+                    "monthsSessions": monthsSessions(dayGroups),
                     "todaysTotal": todaysTotal(dayGroups),
                     "currentStreak": currentStreak(dayGroups),
                     "daysSinceStart": daysSinceStart(dayGroups),
@@ -346,6 +369,12 @@
             var titleFontSize = 32;
             var hAxisFontSize = 20;
             var vAxisFontSize = 20;
+            var hAxisOptionsDefault = {
+                title: "",
+                textStyle: {
+                    fontSize: hAxisFontSize
+                }
+            };
 
 
             function writeIntroMessageJS(stats) {
@@ -411,12 +440,7 @@
                         fontSize: titleFontSize,
                         bold: titleIsBold
                     },
-                    hAxis: {
-                        title: "",
-                        textStyle: {
-                            fontSize: hAxisFontSize
-                        }
-                    },
+                    hAxis: hAxisOptionsDefault,
                     vAxis: {
                         textStyle: {
                             fontSize: vAxisFontSize
@@ -461,12 +485,7 @@
                         fontSize: titleFontSize,
                         bold: titleIsBold
                     },
-                    hAxis: {
-                        title: "",
-                        textStyle: {
-                            fontSize: hAxisFontSize
-                        }
-                    },
+                    hAxis: hAxisOptionsDefault,
                     vAxis: {
                         textStyle: {
                             fontSize: vAxisFontSize
@@ -514,12 +533,7 @@
                     legend: {
                         position: 'none'
                     },
-                    hAxis: {
-                        title: "",
-                        textStyle: {
-                            fontSize: hAxisFontSize
-                        }
-                    },
+                    hAxis: hAxisOptionsDefault,
                     vAxis: {
                         textStyle: {
                             fontSize: vAxisFontSize
@@ -665,14 +679,6 @@
                 google.charts.setOnLoadCallback(getProbabilityPlotDrawer(s1.probability, "probabilityPlot"));
                 google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(s1.movingAverage, "movingAveragePlot"));
             });
-
-            // Load the chart data and setup callbacks to draw plots when we have it.
-            loadJSONFile("/json/stats/jgdodson", function (data) {
-
-                // - - - Set up call-backs to draw the plots - - - - - - - - - -
-
-                //google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(data.movingAverage, "movingAveragePlot"));
-            })
     </script>
 
 }
