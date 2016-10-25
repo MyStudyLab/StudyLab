@@ -152,20 +152,6 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
 
   /**
-    * Retrieve the stats for the given username
-    *
-    * @param username The username for which to retrieve stats
-    * @return
-    */
-  def statsForUsername(username: String) = Action.async { implicit request =>
-
-    // Return the result with the current time in the users timezone
-    sessions.getStats(username).map(optStats => optStats.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve stats"))))(stats =>
-      Ok(Json.toJson(stats))))
-  }
-
-
-  /**
     * Retrieve the session and status data for the given username
     *
     * @param username The username for which to retrieve session data

@@ -43,20 +43,6 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
   }
 
-  /**
-    * Get study stats as JSON.
-    *
-    * Will eventually be removed -> All stat computation moving to JS
-    *
-    * @param username The username for which to get study stats.
-    * @return
-    */
-  def getStats(username: String): Future[Option[Stats]] = {
-
-    userData[StatusSubjectsSessions](username)
-      .map(_.map(sessionData => Stats.compute(sessionData.sessions, sessionData.status)))
-  }
-
 
   /**
     * Return session data for the given user.

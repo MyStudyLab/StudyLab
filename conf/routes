@@ -11,9 +11,6 @@ GET         /about                          controllers.Application.about
 # Go to the quotes page
 GET         /quotes                         controllers.Application.quotes
 
-# Get stats as JSON for the user id
-GET         /json/stats/:username           controllers.Sessions.statsForUsername(username: String)
-
 # Get sessions as JSON for the user id
 GET         /json/sessions/:username        controllers.Sessions.sessionsForUsername(username: String)
 

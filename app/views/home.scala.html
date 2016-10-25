@@ -242,6 +242,35 @@
                 return bins;
             }
 
+
+            function movingAverage(dayGroups, radius) {
+
+                if (dayGroups.length < radius) {
+                    return [];
+                }
+
+                var dailyTotals = dayGroups.map(function (curr, i, arr) {
+                    return {
+                        "date": curr['date'],
+                        "total": sumSessions(curr['sessions'])
+                    }
+                });
+
+                var windowTotal = sumArray(dailyTotals.slice(0, radius).map(function (curr, i, arr) {
+                    return curr['total'];
+                }));
+
+                var res = [[dayGroups[radius - 1]['date'].valueOf(), windowTotal / radius]];
+
+                for (var i = radius; i < dayGroups.length; i++) {
+                    windowTotal -= dailyTotals[i - radius]['total'];
+                    windowTotal += dailyTotals[i]['total'];
+                    res.push([dailyTotals[i]['date'].valueOf(), windowTotal / radius]);
+                }
+
+                return res;
+            }
+
             // TODO: Comment this function
             function stats1(sessions, numLevels) {
 
@@ -286,7 +315,8 @@
                     "todaysTotal": todaysTotal(dayGroups),
                     "currentStreak": currentStreak(dayGroups),
                     "daysSinceStart": daysSinceStart(dayGroups),
-                    "probability": probability(100, dayGroups)
+                    "probability": probability(100, dayGroups),
+                    "movingAverage": movingAverage(dayGroups, 56)
                 }
             }
 
@@ -633,6 +663,7 @@
                 google.charts.setOnLoadCallback(getCumulativePlotDrawer(s1.cumulative, "cumulativePlot"));
                 google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(s2.subjectTotals, "subjectTotalsPlot"));
                 google.charts.setOnLoadCallback(getProbabilityPlotDrawer(s1.probability, "probabilityPlot"));
+                google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(s1.movingAverage, "movingAveragePlot"));
             });
 
             // Load the chart data and setup callbacks to draw plots when we have it.
@@ -640,7 +671,7 @@
 
                 // - - - Set up call-backs to draw the plots - - - - - - - - - -
 
-                google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(data.movingAverage, "movingAveragePlot"));
+                //google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(data.movingAverage, "movingAveragePlot"));
             })
     </script>
 
