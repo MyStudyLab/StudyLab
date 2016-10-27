@@ -206,19 +206,26 @@
                 return res;
             }
 
+            // Return the length of the current streak
             function currentStreak(dayGroups) {
 
                 if (dayGroups.length == 0) {
                     return 0;
                 }
 
-                var i = dayGroups.length - 1;
+                var i = dayGroups.length - 2;
 
                 while (i >= 0 && dayGroups[i]['sessions'].length > 0) {
                     i--;
                 }
 
-                return dayGroups.length - 1 - i;
+                var pre = dayGroups.length - i - 2;
+
+                if (dayGroups[dayGroups.length - 1]['sessions'].length > 0) {
+                    pre += 1;
+                }
+
+                return pre;
             }
 
             function dailyAverage(dayGroups) {
@@ -226,8 +233,6 @@
                 var dailies = dayGroups.map(function (curr, i, arr) {
                     return sumSessions(curr.sessions);
                 });
-
-                console.log("dailies" + dailies.toString());
 
                 return sumArray(dailies) / dailies.length;
             }
@@ -369,11 +374,22 @@
             var titleFontSize = 32;
             var hAxisFontSize = 20;
             var vAxisFontSize = 20;
+
             var hAxisOptionsDefault = {
                 title: "",
                 textStyle: {
                     fontSize: hAxisFontSize
                 }
+            };
+
+            var vAxisOptionsDefault = {
+                textStyle: {
+                    fontSize: vAxisFontSize
+                }
+            };
+
+            var legendOptionsDefault = {
+                position: 'none'
             };
 
 
@@ -432,20 +448,14 @@
                     chart: {
                         title: "Cumulative Hours Studied"
                     },
-                    legend: {
-                        position: 'none'
-                    },
+                    legend: legendOptionsDefault,
                     colors: ['green'],
                     titleTextStyle: {
                         fontSize: titleFontSize,
                         bold: titleIsBold
                     },
                     hAxis: hAxisOptionsDefault,
-                    vAxis: {
-                        textStyle: {
-                            fontSize: vAxisFontSize
-                        }
-                    },
+                    vAxis: vAxisOptionsDefault,
                     backgroundColor: "transparent",
                     chartArea: {
                         backgroundColor: "transparent"
@@ -477,9 +487,7 @@
                         title: "Hours Studied Per Day",
                         subtitle: "Sliding average - 31 day window"
                     },
-                    legend: {
-                        position: 'none'
-                    },
+                    legend: legendOptionsDefault,
                     colors: ['green'],
                     titleTextStyle: {
                         fontSize: titleFontSize,
@@ -530,15 +538,9 @@
                         fontSize: titleFontSize,
                         bold: titleIsBold
                     },
-                    legend: {
-                        position: 'none'
-                    },
+                    legend: legendOptionsDefault,
                     hAxis: hAxisOptionsDefault,
-                    vAxis: {
-                        textStyle: {
-                            fontSize: vAxisFontSize
-                        }
-                    },
+                    vAxis: vAxisOptionsDefault,
                     backgroundColor: "transparent",
                     chartArea: {
                         backgroundColor: "transparent"
@@ -574,22 +576,15 @@
                         fontSize: titleFontSize,
                         bold: titleIsBold
                     },
-                    legend: {
-                        position: 'none'
-                    },
+                    legend: legendOptionsDefault,
                     hAxis: {
                         title: "",
                         textStyle: {
                             fontSize: hAxisFontSize
                         },
-                        // The format string is based on ICU pattern set
                         format: "h a"
                     },
-                    vAxis: {
-                        textStyle: {
-                            fontSize: vAxisFontSize
-                        }
-                    },
+                    vAxis: vAxisOptionsDefault,
                     backgroundColor: "transparent",
                     chartArea: {
                         backgroundColor: "transparent"

@@ -10,9 +10,7 @@ object ResultInfo {
   // Implicitly convert to JSON
   implicit val ResultInfoWriter = Json.writes[ResultInfo]
 
-  /*
-   * All of the following helpers are functions so that the timestamp will be generated at the proper time
-   */
+  // All of the following helpers are functions so that the timestamp will be generated at the proper time
 
   /**
     * Indicate a failed operation with the given message.
