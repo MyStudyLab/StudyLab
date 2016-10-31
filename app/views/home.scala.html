@@ -237,6 +237,16 @@
                 return sumArray(dailies) / dailies.length;
             }
 
+            function dailyStdev(dayGroups) {
+
+                var mu = dailyAverage(dayGroups);
+
+                var sse = dayGroups.reduce(function (acc, curr, ind) {
+                    return acc + Math.pow(sumSessions(curr.sessions) - mu, 2);
+                }, 0);
+
+                return Math.pow(sse / (dayGroups.length - 1), 0.5);
+            }
 
             function probability(numBins, dayGroups) {
 
@@ -303,6 +313,10 @@
 
                 var dayGroups = splitDays(sessions);
 
+                var dailyTotals = dayGroups.map(function (curr, i, arr) {
+                    return sumSessions(curr.sessions);
+                });
+
                 var diff;
                 var cumul = 0;
 
@@ -344,7 +358,9 @@
                     "currentStreak": currentStreak(dayGroups),
                     "daysSinceStart": daysSinceStart(dayGroups),
                     "probability": probability(100, dayGroups),
-                    "movingAverage": movingAverage(dayGroups, 56)
+                    "movingAverage": movingAverage(dayGroups, 56),
+                    "dailyTotals": dailyTotals,
+                    "dailyTotalHistogram": dailyTotalHistogram(dailyTotals)
                 }
             }
 
@@ -402,6 +418,27 @@
                 document.getElementById("today-value").textContent = stats.todaysTotal.toFixed(2).toString();
 
                 document.getElementById("streak-value").textContent = stats.currentStreak.toString();
+            }
+
+
+            /*
+             * Add a parameter to determine the resolution of the bins.
+             */
+            function dailyTotalHistogram(dailyTotals) {
+
+                // Bins are as follows: <=0, <=1, <=2, ...
+                var bins = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+                dailyTotals.forEach(function (curr, i, arr) {
+                    bins[Math.ceil(curr)] += 1;
+                });
+
+                // Normalize the bins
+                bins.forEach(function (curr, i, arr) {
+                    bins[i] = bins[i] / dailyTotals.length;
+                });
+
+                return bins;
             }
 
 
@@ -654,6 +691,9 @@
                         "endTime": new Date().getTime()
                     });
                 }
+
+                console.log("STDDEV of daily total:");
+                console.log(dailyStdev(splitDays(data.sessions)));
 
                 var s1 = stats1(data.sessions, 100);
                 var s2 = stats2(data.sessions);

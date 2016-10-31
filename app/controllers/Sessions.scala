@@ -23,10 +23,10 @@ import forms._
 class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   extends Controller with MongoController with ReactiveMongoComponents {
 
-  // Sessions model
+  // Reference to the sessions model
   protected val sessions = new models.Sessions(reactiveMongoApi)
 
-  // User model
+  // Reference to the users model
   protected val users = new models.Users(reactiveMongoApi)
 
   // Response indicating the request form was invalid.

@@ -13,16 +13,26 @@ import play.modules.reactivemongo.json.collection._
 class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: MessagesApi)
   extends Controller with MongoController with ReactiveMongoComponents with I18nSupport {
 
-  def jsonQuotesCollection: JSONCollection = db.collection[JSONCollection]("quotes")
 
+  protected def jsonQuotesCollection: JSONCollection = db.collection[JSONCollection]("quotes")
+
+  /**
+    *
+    */
   def home = Action {
     Ok(views.html.home())
   }
 
+  /**
+    *
+    */
   def about = Action {
     Ok(views.html.about())
   }
 
+  /**
+    *
+    */
   def quotes = Action {
     Ok(views.html.quotes())
   }
