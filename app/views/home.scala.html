@@ -72,6 +72,15 @@
                 </div>
             </div>
         </div>
+
+            <!-- Day of week averages plot -->
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
+                <div id="dayOfWeekAveragesPlot" class="googlePlotContainer loading-icon">
+                    <span class="fa fa-4x fa-circle-o-notch fa-spin"></span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
@@ -80,7 +89,6 @@
     <script src="@routes.Assets.at("/javascripts/stats.js")"></script>
 
     <script>
-            //
             // Does not handle sessions longer than 24 hours
             function splitDays(sessions) {
 
@@ -158,18 +166,33 @@
                 return dayGroups;
             }
 
+
+            /*
+             * Return the number of days since the first session.
+             */
             function daysSinceStart(dayGroups) {
                 return dayGroups.length;
             }
 
+
+            /*
+             * Return the total duration of today's sessions
+             */
             function todaysTotal(dayGroups) {
                 return sumSessions(dayGroups[dayGroups.length - 1]['sessions']);
             }
 
+            /*
+             * Return the sessions for the current day.
+             */
             function todaysSessions(dayGroups) {
                 return dayGroups[dayGroups.length - 1]['sessions'];
             }
 
+
+            /*
+             * Return the total duration of a sequence of sessions (hours).
+             */
             function sumSessions(sessions) {
 
                 return sessions.reduce(function (acc, curr, i) {
@@ -178,14 +201,23 @@
 
             }
 
+
+            /*
+             * Return the sum of an array.
+             */
             function sumArray(arr) {
                 return arr.reduce(function (acc, curr, i) {
                     return acc + curr;
                 }, 0);
             }
 
+
+            /*
+             * Return the sessions occurring in the current month in chronological order.
+             */
             function monthsSessions(dayGroups) {
 
+                // The moment at which the current month began.
                 var startOfMonth = dayGroups[dayGroups.length - 1]['date'].clone().startOf('month');
 
                 var i = dayGroups.length - 1;
@@ -206,7 +238,10 @@
                 return res;
             }
 
-            // Return the length of the current streak
+
+            /*
+             * Return the length of the current streak (in days)
+             */
             function currentStreak(dayGroups) {
 
                 if (dayGroups.length == 0) {
@@ -228,15 +263,53 @@
                 return pre;
             }
 
-            function dailyAverage(dayGroups) {
 
-                var dailies = dayGroups.map(function (curr, i, arr) {
-                    return sumSessions(curr.sessions);
+            function filterByWeekday(dayGroups, daysOfWeek) {
+
+                return dayGroups.filter(function (curr, i, arr) {
+                    return daysOfWeek.includes(curr.date.day());
                 });
 
-                return sumArray(dailies) / dailies.length;
             }
 
+
+            /*
+             * Return the total hours studied each day
+             */
+            function dailyTotals(dayGroups) {
+                return dayGroups.map(function (curr, i, arr) {
+                    return sumSessions(curr.sessions);
+                })
+            }
+
+            /*
+             * Return the average of the daily totals.
+             */
+            function dailyAverage(dayGroups) {
+
+                return sumArray(dailyTotals(dayGroups)) / dayGroups.length;
+            }
+
+
+            function dayOfWeekAverages(dayGroups) {
+
+                var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                var dayTotals = [0, 0, 0, 0, 0, 0, 0];
+                var counts = [0, 0, 0, 0, 0, 0, 0];
+
+                dayGroups.forEach(function (curr, i, arr) {
+                    dayTotals[curr.date.day()] += sumSessions(curr.sessions);
+                    counts[curr.date.day()] += 1;
+                });
+
+                return dayTotals.map(function (curr, i, arr) {
+                    return [days[i], dayTotals[i] /= counts[i]];
+                });
+            }
+
+            /*
+             * Return the standard deviation of the distribution of daily totals
+             */
             function dailyStdev(dayGroups) {
 
                 var mu = dailyAverage(dayGroups);
@@ -248,6 +321,10 @@
                 return Math.pow(sse / (dayGroups.length - 1), 0.5);
             }
 
+
+            /*
+             * Return the average-day probability vector
+             */
             function probability(numBins, dayGroups) {
 
                 var bins = [];
@@ -259,7 +336,7 @@
                 dayGroups.forEach(function (dayGroup, i, _) {
                     dayGroup['sessions'].forEach(function (session, j, _) {
 
-                        var upperBound = dayGroup['date'].clone() ;
+                        var upperBound = dayGroup['date'].clone();
                         var lowerBound = dayGroup['date'].clone().startOf('day');
 
                         var startBin = Math.floor((session.start - lowerBound) * numBins / (upperBound - lowerBound));
@@ -280,6 +357,34 @@
             }
 
 
+            /*
+             * Compute a histogram of daily totals
+             */
+            function dailyTotalHistogram(dailyTotals, numBins) {
+
+                // Bins are as follows: <=0, <=1, <=2, ..., >=numBins - 1
+                var bins = [];
+
+                for (var i = 0; i < numBins; i++) {
+                    bins.push(0);
+                }
+
+                dailyTotals.forEach(function (curr, i, arr) {
+                    bins[Math.min(Math.ceil(curr), numBins - 1)] += 1;
+                });
+
+                // Normalize the bins
+                bins.forEach(function (curr, i, arr) {
+                    bins[i] = bins[i] / dailyTotals.length;
+                });
+
+                return bins;
+            }
+
+
+            /*
+             * Return an array of moving averages with the given radius.
+             */
             function movingAverage(dayGroups, radius) {
 
                 if (dayGroups.length < radius) {
@@ -293,6 +398,7 @@
                     }
                 });
 
+                // Sum of the initial window
                 var windowTotal = sumArray(dailyTotals.slice(0, radius).map(function (curr, i, arr) {
                     return curr['total'];
                 }));
@@ -308,14 +414,13 @@
                 return res;
             }
 
+
             // TODO: Comment this function
             function stats1(sessions, numLevels) {
 
                 var dayGroups = splitDays(sessions);
 
-                var dailyTotals = dayGroups.map(function (curr, i, arr) {
-                    return sumSessions(curr.sessions);
-                });
+                var dTotals = dailyTotals(dayGroups);
 
                 var diff;
                 var cumul = 0;
@@ -359,8 +464,9 @@
                     "daysSinceStart": daysSinceStart(dayGroups),
                     "probability": probability(100, dayGroups),
                     "movingAverage": movingAverage(dayGroups, 56),
-                    "dailyTotals": dailyTotals,
-                    "dailyTotalHistogram": dailyTotalHistogram(dailyTotals)
+                    "dailyTotals": dTotals,
+                    "dailyTotalHistogram": dailyTotalHistogram(dTotals, 12),
+                    "dayOfWeekAverages": dayOfWeekAverages(dayGroups)
                 }
             }
 
@@ -418,27 +524,6 @@
                 document.getElementById("today-value").textContent = stats.todaysTotal.toFixed(2).toString();
 
                 document.getElementById("streak-value").textContent = stats.currentStreak.toString();
-            }
-
-
-            /*
-             * Add a parameter to determine the resolution of the bins.
-             */
-            function dailyTotalHistogram(dailyTotals) {
-
-                // Bins are as follows: <=0, <=1, <=2, ...
-                var bins = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-                dailyTotals.forEach(function (curr, i, arr) {
-                    bins[Math.ceil(curr)] += 1;
-                });
-
-                // Normalize the bins
-                bins.forEach(function (curr, i, arr) {
-                    bins[i] = bins[i] / dailyTotals.length;
-                });
-
-                return bins;
             }
 
 
@@ -601,6 +686,43 @@
                 return tmp;
             }
 
+            // Returns a function that will draw the dayOfWeekAverages plot
+            function getDayOfWeekAveragesPlotDrawer(dayOfWeekAverages, elementId) {
+
+                var options = {
+                    chart: {
+                        title: "Average Hours Studied Per Weekday",
+                        subtitle: ""
+                    },
+                    titleTextStyle: {
+                        fontSize: titleFontSize,
+                        bold: titleIsBold
+                    },
+                    legend: legendOptionsDefault,
+                    hAxis: hAxisOptionsDefault,
+                    vAxis: vAxisOptionsDefault,
+                    backgroundColor: "transparent",
+                    chartArea: {
+                        backgroundColor: "transparent"
+                    },
+                    bars: 'vertical',
+                    colors: ['green']
+                };
+
+
+                function tmp() {
+
+                    var columnLabels = [["Day Of Week", "Total"]];
+
+                    var chart = new google.charts.Bar(document.getElementById(elementId));
+
+                    var table = google.visualization.arrayToDataTable(columnLabels.concat(dayOfWeekAverages));
+
+                    chart.draw(table, google.charts.Bar.convertOptions(options));
+                }
+
+                return tmp;
+            }
 
             function getProbabilityPlotDrawer(probabilities, elementId) {
 
@@ -692,9 +814,6 @@
                     });
                 }
 
-                console.log("STDDEV of daily total:");
-                console.log(dailyStdev(splitDays(data.sessions)));
-
                 var s1 = stats1(data.sessions, 100);
                 var s2 = stats2(data.sessions);
 
@@ -713,6 +832,7 @@
                 google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(s2.subjectTotals, "subjectTotalsPlot"));
                 google.charts.setOnLoadCallback(getProbabilityPlotDrawer(s1.probability, "probabilityPlot"));
                 google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(s1.movingAverage, "movingAveragePlot"));
+                google.charts.setOnLoadCallback(getDayOfWeekAveragesPlotDrawer(s1.dayOfWeekAverages, "dayOfWeekAveragesPlot"));
             });
     </script>
 
