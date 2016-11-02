@@ -15,7 +15,7 @@ GET         /quotes                         controllers.Application.quotes
 GET         /json/sessions/:username        controllers.Sessions.sessionsForUsername(username: String)
 
 # Get quotes as JSON for the user id
-GET         /json/quotes/:username          controllers.Application.getQuotes(username: String)
+GET         /json/quotes/:username          controllers.Quotes.getQuotes(username: String)
 
 # Start a study session
 POST        /study/start                    controllers.Sessions.startSession()

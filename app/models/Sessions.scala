@@ -40,7 +40,6 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
   protected def userData[T](username: String)(implicit proj: Projector[T], bsonReader: BSONDocumentReader[T]): Future[Option[T]] = {
 
     mongoApi.db.collection[BSONCollection]("sessions").find(usernameSelector(username), proj.projector).one[T]
-
   }
 
 
