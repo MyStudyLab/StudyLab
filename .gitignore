@@ -16,4 +16,4 @@ dist
 /.settings
 
 # My todo files, etc.
-*.txt    
+/*.txt    
