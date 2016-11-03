@@ -8,6 +8,9 @@ GET         /                               controllers.Application.home
 # About page
 GET         /about                          controllers.Application.about
 
+# Link to pdf of resume
+GET         /resume                         controllers.Assets.at(path="/public", file="pdfs/resume.pdf")
+
 # Go to the quotes page
 GET         /quotes                         controllers.Application.quotes
 
@@ -37,8 +40,6 @@ POST        /study/rename                   controllers.Sessions.renameSubject()
 
 # Merge one subject into another
 POST        /study/merge                    controllers.Sessions.mergeSubjects()
-
-#GET         /sitemap.txt                    controllers.Assets.at(path = "/public/txts", file="sitemap.txt")
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                   controllers.Assets.at(path="/public", file)
