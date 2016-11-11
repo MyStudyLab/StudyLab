@@ -73,6 +73,10 @@
     color: #46A2D9;
 }
 
+#nav-googleplus-link:hover {
+    color: #db4437;
+}
+
 #nav-hackernews-link:hover {
     color: #e95b00;
 }
