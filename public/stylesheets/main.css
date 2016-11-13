@@ -121,6 +121,18 @@
     color: #bb432c;
 }
 
+#codecamp-link {
+    color: darkgreen;
+}
+
+#quora-link {
+    color: #b92b27;
+}
+
+#facebook-link {
+    color: #3b5998;
+}
+
 .raised-element {
     box-shadow: 0 1px 3px #242424;
     background-color: #f8f5f0;
@@ -133,7 +145,8 @@
 
 .profile-link {
     text-align: center;
-    font-size: xx-large;
+    font-size: 10em;
+    padding: 10px;
 }
 
 .profile-link-row {
