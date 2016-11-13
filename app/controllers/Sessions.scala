@@ -88,7 +88,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   protected def abort = Action.async { implicit request =>
 
-    SessionStopForm.stopForm.bindFromRequest()(request).fold(
+    PasswordAndUsername.form.bindFromRequest()(request).fold(
       badForm => invalidFormResponse,
       goodForm => sessions.abortSession(goodForm.username).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )

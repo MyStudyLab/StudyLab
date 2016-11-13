@@ -162,7 +162,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // Update the status
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
-            if (result.ok) ResultInfo.succeedWithMessage("Study session aborted")
+            if (result.ok) ResultInfo.succeedWithMessage("Session aborted")
             else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
         }
       })
