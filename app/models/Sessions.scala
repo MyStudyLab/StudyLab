@@ -273,7 +273,7 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
 
           // Check if the new subject name is already in use
           if (sessionData.subjects.map(_.name).contains(newName)) {
-            Future(ResultInfo.failWithMessage(s"Can't rename to $newName: it is an existing subject"))
+            Future(ResultInfo.failWithMessage(s"$newName is an existing subject"))
           } else {
 
             val newSub = Subject(newName, oldSub.added, oldSub.description)
@@ -326,10 +326,10 @@ class Sessions(val mongoApi: ReactiveMongoApi) {
         if (data.status.isStudying) Future(ResultInfo.failWithMessage("Can't merge while studying"))
 
         else data.subjects.find(_.name == absorbed).fold(
-          Future(ResultInfo.failWithMessage(s"Can't merge: $absorbed is an invalid subject"))
+          Future(ResultInfo.failWithMessage(s"$absorbed is an invalid subject"))
         )(absorbedSub => {
           data.subjects.find(_.name == absorbing).fold(
-            Future(ResultInfo.failWithMessage(s"Can't merge: $absorbing is an invalid subject"))
+            Future(ResultInfo.failWithMessage(s"$absorbing is an invalid subject"))
           )(absorbingSub => {
 
             val minAdded = math.min(absorbedSub.added, absorbingSub.added)
