@@ -38,4 +38,8 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
     Ok(views.html.quotes())
   }
 
+  def links = Action {
+    Ok(views.html.links())
+  }
+
 }

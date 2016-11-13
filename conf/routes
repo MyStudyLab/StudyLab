@@ -14,6 +14,9 @@ GET         /resume                         controllers.Assets.at(path="/public"
 # Go to the quotes page
 GET         /quotes                         controllers.Application.quotes
 
+# Go to the links page
+GET         /links                          controllers.Application.links
+
 # Get sessions as JSON for the user id
 GET         /json/sessions/:username        controllers.Sessions.sessionsForUsername(username: String)
 
