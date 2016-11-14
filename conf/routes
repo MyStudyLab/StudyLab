@@ -9,7 +9,7 @@ GET         /                               controllers.Application.home
 GET         /about                          controllers.Application.about
 
 # Link to pdf of resume
-GET         /resume                         controllers.Assets.at(path="/public", file="pdfs/resume.pdf")
+GET         /resume                         controllers.Application.resume
 
 # Go to the quotes page
 GET         /quotes                         controllers.Application.quotes

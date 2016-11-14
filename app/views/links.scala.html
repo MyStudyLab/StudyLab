@@ -72,11 +72,15 @@ Links to profiles on other sites.
         </div>
 
 
+            <!-- Script with a function for AJAX-->
         <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
+
+            <!-- Load the profile links and add them to the page-->
         <script>
 
-                loadJSONFile("/json/profiles/jgdodson", function (profiles) {
+                loadJSONFile("/json/profiles/jgdodson", function (response) {
 
+                    var profiles = response.profiles;
 
                     // TODO: Display only those links that the user actually has
                     for (var key in profiles) {

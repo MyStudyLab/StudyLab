@@ -24,6 +24,14 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
     Ok(views.html.home())
   }
 
+
+  /**
+    * My resume as a PDF
+    *
+    * @return
+    */
+  def resume = controllers.Assets.at(path = "/public", file = "pdfs/resume.pdf")
+
   /**
     * The About Page
     */

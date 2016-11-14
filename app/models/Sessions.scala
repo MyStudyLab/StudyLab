@@ -1,6 +1,8 @@
 package models
 
 // Standard Library
+import constructs.responses.{StatusSubjects, StatusSubjectsSessions}
+
 import scala.concurrent.Future
 
 // Play Framework

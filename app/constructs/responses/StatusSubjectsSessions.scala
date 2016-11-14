@@ -1,5 +1,6 @@
-package constructs
+package constructs.responses
 
+import constructs.{Projector, Session, Status, Subject}
 import play.api.libs.json.Json
 import reactivemongo.bson.BSONDocument
 

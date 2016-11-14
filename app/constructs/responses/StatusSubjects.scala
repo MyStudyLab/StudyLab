@@ -1,5 +1,6 @@
-package constructs
+package constructs.responses
 
+import constructs.{Projector, Status, Subject}
 import reactivemongo.bson.BSONDocument
 
 /**

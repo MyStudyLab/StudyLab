@@ -45,33 +45,26 @@
             <div class="container-fluid">
 
                 <div class="navbar-header">
-                    <a href="/" class="navbar-brand" hreflang="en">Jordan G. Dodson</a>
+                    <a href="@routes.Application.home()" class="navbar-brand" hreflang="en">Jordan G. Dodson</a>
                 </div>
 
                 <div class="collapse navbar-collapse">
 
                         <!-- Links to other pages on the site-->
                     <ul class="nav navbar-nav navbar-right">
-                        <li>
-                            <a href="@routes.Assets.at("pdfs/resume.pdf")" hreflang="en">Resume</a>
-                        </li>
+                        <li><a href="@routes.Application.resume()" hreflang="en">Resume</a></li>
 
-                        <li>
-                            <a href="/quotes" hreflang="en">Quotes</a>
-                        </li>
+                        <li><a href="@routes.Application.quotes()" hreflang="en">Quotes</a></li>
 
-                        <li>
-                            <a href="/links" hreflang="en">Links</a>
-                        </li>
+                        <li><a href="@routes.Application.links()" hreflang="en">Links</a></li>
 
-                        <li>
-                            <a href="/about" hreflang="en">About</a>
-                        </li>
+                        <li><a href="@routes.Application.about()" hreflang="en">About</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
 
+            <!-- Primary page content -->
         @content
 
         <footer>

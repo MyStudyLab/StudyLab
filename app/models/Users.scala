@@ -12,7 +12,8 @@ import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.BSONDocument
 
 // Project
-import constructs.{User, ProfilePortfolio}
+import constructs.{User, User2}
+import constructs.responses.ProfilesOnly
 import helpers.Selectors.{emailSelector, usernameSelector}
 
 /**
@@ -22,10 +23,26 @@ import helpers.Selectors.{emailSelector, usernameSelector}
   */
 class Users(val api: ReactiveMongoApi) {
 
-
   // Connection to the user collection
   protected def usersCollectionBSON: BSONCollection = api.db.collection[BSONCollection]("users")
 
+  // The new users collection
+  protected def users2: BSONCollection = api.db.collection[BSONCollection]("users_two")
+
+
+  /**
+    * Add a new user to the database.
+    *
+    * @param newUser The user being added.
+    * @return
+    */
+  def addNewUser2(newUser: User2): Future[Boolean] = {
+
+    users2.insert(newUser).map(result => {
+      result.ok
+    })
+
+  }
 
   /**
     * Get the social profiles for the user.
@@ -33,9 +50,9 @@ class Users(val api: ReactiveMongoApi) {
     * @param username The username for which to retrieve data.
     * @return
     */
-  def socialProfiles(username: String): Future[Option[ProfilePortfolio]] = {
+  def socialProfiles(username: String): Future[Option[ProfilesOnly]] = {
 
-    usersCollectionBSON.find(usernameSelector(username), ProfilePortfolio.projector).one[ProfilePortfolio]
+    users2.find(usernameSelector(username), ProfilesOnly.projector).one[ProfilesOnly]
   }
 
   /**
@@ -46,7 +63,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def usernameInUse(username: String): Future[Boolean] = {
 
-    usersCollectionBSON.count(Some(usernameSelector(username)), limit = 1).map(count => count != 0)
+    users2.count(Some(usernameSelector(username)), limit = 1).map(count => count != 0)
   }
 
   /**
@@ -57,7 +74,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def emailInUse(email: String): Future[Boolean] = {
 
-    usersCollectionBSON.count(Some(emailSelector(email)), limit = 1).map(count => count != 0)
+    users2.count(Some(emailSelector(email)), limit = 1).map(count => count != 0)
   }
 
   /**
