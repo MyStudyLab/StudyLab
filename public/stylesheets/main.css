@@ -222,7 +222,9 @@ body {
 
 .saving span {
 
-    font-size: 4em;
+    font-size: 13px;
+
+    margin: 0 5px;
 
     animation-name: blink;
 

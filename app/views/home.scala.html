@@ -1,8 +1,12 @@
 @()(implicit messages: Messages)
 
-@siteTemplate("Homepage") {
+@loadingDots() = {
+    <p class="saving"><span>&#11044</span><span>&#11044</span><span>&#11044</span><span>&#11044</span></p>
+}
 
-    <!-- Contains all raised elements-->
+@siteTemplate("Home") {
+
+        <!-- Contains all raised elements-->
     <div class="container-fluid">
 
             <!-- Summary data -->
@@ -11,20 +15,25 @@
                 <!-- Total hours studied -->
             <div class="col-sm-offset-1 col-sm-2 raised-element">
                 <u class="data-block-title">Total</u><br>
-                <span id="total-value" class="introMessageValue"></span> hours
+                <div id="total-hours">
+                @loadingDots()
+                </div>
             </div>
 
                 <!-- Hours studied today vs. average -->
             <div class=" col-sm-offset-1 col-sm-4 raised-element">
                 <u class="data-block-title">Today / Average</u><br>
-                <span id="today-value" class="introMessageValue"></span>
-                / <span id="average-value" class="introMessageValue"></span>
+                <div id="today-vs-average">
+                @loadingDots()
+                </div>
             </div>
 
                 <!-- Length of the current streak -->
             <div class=" col-sm-offset-1 col-sm-2 raised-element">
                 <u class="data-block-title">Current Streak</u><br>
-                <span id="streak-value" class="introMessageValue"></span> days
+                <div id="current-streak">
+                @loadingDots()
+                </div>
             </div>
         </div>
 
@@ -32,7 +41,7 @@
         <div id="widt-row" class="row small-margin-bottom">
             <div id="widt" class="col-sm-offset-1 col-sm-10 raised-element">
                 <div id="todaysSessionsPlot" class="loading-icon">
-                    <p class="saving"><span>.</span><span>.</span><span>.</span><span>.</span></p>
+                @loadingDots()
                 </div>
             </div>
         </div>
@@ -41,7 +50,7 @@
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="cumulativePlot" class="googlePlotContainer loading-icon">
-                    <p class="saving"><span>.</span><span>.</span><span>.</span><span>.</span></p>
+                @loadingDots()
                 </div>
             </div>
         </div>
@@ -50,7 +59,7 @@
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="subjectTotalsPlot" class="googlePlotContainer loading-icon">
-                    <p class="saving"><span>.</span><span>.</span><span>.</span><span>.</span></p>
+                @loadingDots()
                 </div>
             </div>
         </div>
@@ -59,7 +68,7 @@
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="probabilityPlot" class="googlePlotContainer loading-icon">
-                    <p class="saving"><span>.</span><span>.</span><span>.</span><span>.</span></p>
+                @loadingDots()
                 </div>
             </div>
         </div>
@@ -68,7 +77,7 @@
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="movingAveragePlot" class="googlePlotContainer loading-icon">
-                    <p class="saving"><span>.</span><span>.</span><span>.</span><span>.</span></p>
+                @loadingDots()
                 </div>
             </div>
         </div>
@@ -77,7 +86,7 @@
         <div class="row">
             <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
                 <div id="dayOfWeekAveragesPlot" class="googlePlotContainer loading-icon">
-                    <p class="saving"><span>.</span><span>.</span><span>.</span><span>.</span></p>
+                    <p class="saving"><span>&middot</span><span>&middot</span><span>&middot</span><span>&middot</span></p>
                 </div>
             </div>
         </div>
@@ -517,13 +526,17 @@
 
             function writeIntroMessageJS(stats) {
 
-                document.getElementById("average-value").textContent = stats.dailyAverage.toFixed(2).toString();
+                var n1 = stats.dailyAverage.toFixed(2).toString();
 
-                document.getElementById("total-value").textContent = Math.round(stats.total).toString();
+                var n2 = stats.todaysTotal.toFixed(2).toString();
 
-                document.getElementById("today-value").textContent = stats.todaysTotal.toFixed(2).toString();
+                var inner1 = "<span class='introMessageValue'>" + n1 + "</span> / <span class='introMessageValue'>" + n2 + "</span>";
 
-                document.getElementById("streak-value").textContent = stats.currentStreak.toString();
+                document.getElementById("total-hours").innerHTML = "<span class='introMessageValue'>" + Math.round(stats.total).toString() + "</span> hours";
+
+                document.getElementById("today-vs-average").innerHTML = inner1;
+
+                document.getElementById("current-streak").innerHTML = "<span class='introMessageValue'>" + stats.currentStreak.toString() + "</span> days";
             }
 
 

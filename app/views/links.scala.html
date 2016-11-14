@@ -1,8 +1,6 @@
 @()(implicit messages: Messages)
 
-@siteTemplate("Links") {
-
-    <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
+@siteTemplate("My Profiles On Other Sites") {
 
     <div class="container-fluid">
         <div class="row profile-link-row">
@@ -57,21 +55,21 @@
 
                 <!-- Link to my Goodreads profile.-->
             <div class="col-md-2 col-md-offset-2 raised-element profile-link">
-                <a id="goodreads-link" href="http://www.goodreads.com/PilgrimShadow" title="Goodreads Profile" target="_blank">
+                <a id="goodreads-link" href="#" title="Goodreads Profile" target="_blank">
                     <span class="fa fa-book" aria-hidden="true"></span>
                 </a>
             </div>
 
                 <!-- Link to my Codewars profile.-->
             <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="codewars-link" href="http://www.codewars.com/users/PilgrimShadow" title="Codewars Profile" target="_blank">
+                <a id="codewars-link" href="#" title="Codewars Profile" target="_blank">
                     <span class="fa fa-code" aria-hidden="true"></span>
                 </a>
             </div>
 
                 <!-- Link to my Codewars profile.-->
             <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="codecamp-link" href="https://www.freecodecamp.com/pilgrimshadow" title="Codecamp Profile" target="_blank">
+                <a id="codecamp-link" href="#" title="Codecamp Profile" target="_blank">
                     <span class="fa fa-free-code-camp" aria-hidden="true"></span>
                 </a>
             </div>
@@ -81,21 +79,21 @@
 
                 <!-- Link to my Quora profile.-->
             <div class="col-md-2 col-md-offset-2 raised-element profile-link">
-                <a id="quora-link" href="https://www.quora.com/profile/Jordan-Dodson-3" title="Quora Profile" target="_blank">
+                <a id="quora-link" href="#" title="Quora Profile" target="_blank">
                     <span class="fa fa-quora" aria-hidden="true"></span>
                 </a>
             </div>
 
                 <!-- Link to my Pinterest profile.-->
             <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="pinterest-link" href="https://www.pinterest.com/jgd2x/" title="Pinterest Profile" target="_blank">
+                <a id="pinterest-link" href="#" title="Pinterest Profile" target="_blank">
                     <span class="fa fa-pinterest" aria-hidden="true"></span>
                 </a>
             </div>
 
                 <!-- Link to my Facebook profile.-->
             <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="facebook-link" href="https://www.facebook.com/jordan.dodson.372" title="Facebook Profile" target="_blank">
+                <a id="facebook-link" href="#" title="Facebook Profile" target="_blank">
                     <span class="fa fa-facebook-square" aria-hidden="true"></span>
                 </a>
             </div>
@@ -106,20 +104,21 @@
 
                 <!-- Link to my Codecademy profile.-->
             <div class="col-md-2 col-md-offset-2 raised-element profile-link">
-                <a id="codecademy-link" href="https://www.codecademy.com/JordanDodson" title="Codecademy Profile" target="_blank">
+                <a id="codecademy-link" href="#" title="Codecademy Profile" target="_blank">
                     <span class="fa fa-cube" aria-hidden="true"></span>
                 </a>
             </div>
 
                 <!-- Link to my Coursera profile.-->
             <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="coursera-link" href="https://www.coursera.org/user/i/39fb2cc77f2a3100e88de5f97f3b8b87" title="Coursera Profile" target="_blank">
+                <a id="coursera-link" href="#" title="Coursera Profile" target="_blank">
                     <span class="fa fa-coffee" aria-hidden="true"></span>
                 </a>
             </div>
         </div>
 
 
+        <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
         <script>
 
                 loadJSONFile("/json/profiles/jgdodson", function (profiles) {

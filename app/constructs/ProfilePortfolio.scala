@@ -5,7 +5,10 @@ import reactivemongo.bson.{BSONDocument, BSONDocumentReader}
 
 
 case class ProfilePortfolio(github: String, twitter: String, linkedin: String,
-                            stackexchange: String, googleplus: String, ycombinator: String)
+                            stackexchange: String, googleplus: String, ycombinator: String,
+                            goodreads: String, codewars: String, codecamp: String,
+                            quora: String, pinterest: String, facebook: String,
+                            codecademy: String, coursera: String)
 
 object ProfilePortfolio {
 
@@ -21,7 +24,16 @@ object ProfilePortfolio {
         stackexchange <- profiles.getAs[String]("stackexchange")
         googleplus <- profiles.getAs[String]("googleplus")
         ycombinator <- profiles.getAs[String]("ycombinator")
-      } yield new ProfilePortfolio(github, twitter, linkedin, stackexchange, googleplus, ycombinator)
+        goodreads <- profiles.getAs[String]("goodreads")
+        codewars <- profiles.getAs[String]("codewars")
+        codecamp <- profiles.getAs[String]("codecamp")
+        quora <- profiles.getAs[String]("quora")
+        pinterest <- profiles.getAs[String]("pinterest")
+        facebook <- profiles.getAs[String]("facebook")
+        codecademy <- profiles.getAs[String]("codecademy")
+        coursera <- profiles.getAs[String]("coursera")
+      } yield new ProfilePortfolio(github, twitter, linkedin, stackexchange, googleplus, ycombinator,
+        goodreads, codewars, codecamp, quora, pinterest, facebook, codecademy, coursera)
 
       // Will throw an error if format is invalid
       opt.get
