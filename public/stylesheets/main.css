@@ -40,53 +40,12 @@
     box-shadow: 0 2px 3px #242424;
 }
 
-#nav-social-glyph-links {
-    font-size: large;
-}
-
-#nav-social-glyph-links > li {
-    height: 50px;
-    width: 50px;
-}
-
 .navbar-nav {
     color: #f9f9fd;
 }
 
 .navbar-nav > li:hover {
     color: #fff;
-}
-
-#nav-github-link:hover {
-    color: #44a340;
-}
-
-#nav-twitter-link:hover {
-    color: #55acee;
-}
-
-#nav-linkedin-link:hover {
-    color: #0077b5;
-}
-
-#nav-stackexchange-link:hover {
-    color: #46A2D9;
-}
-
-#nav-googleplus-link:hover {
-    color: #db4437;
-}
-
-#nav-hackernews-link:hover {
-    color: #e95b00;
-}
-
-#nav-goodreads-link:hover {
-    color: #f4f1ea;
-}
-
-#nav-codewars-link:hover {
-    color: #bb432c;
 }
 
 #github-link {
@@ -121,7 +80,7 @@
     color: #bb432c;
 }
 
-#codecamp-link {
+#freecodecamp-link {
     color: darkgreen;
 }
 
@@ -134,7 +93,7 @@
 }
 
 .raised-element {
-    box-shadow: 0 1px 3px #242424;
+    box-shadow: 0 2px 3px #242424;
     background-color: #f8f5f0;
     border-radius: 8px;
 }

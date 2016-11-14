@@ -1,7 +1,15 @@
-@*******************8
+@***********************************
 Links to profiles on other sites.
-*******************@
+***********************************@
 @()(implicit messages: Messages)
+
+@profileLink(profile: String, offset: Int, width: Int, faGlyph: String) = {
+    <div class="col-md-@width col-md-offset-@offset raised-element profile-link">
+        <a id="@profile.toLowerCase()-link" href="#" title="@profile Profile" target="_blank">
+            <span class="fa @faGlyph" aria-hidden="true"></span>
+        </a>
+    </div>
+}
 
 @siteTemplate("My Profiles On Other Sites") {
 
@@ -9,115 +17,58 @@ Links to profiles on other sites.
         <div class="row profile-link-row">
 
                 <!-- Link to my Github profile.-->
-            <div class="col-md-2 col-md-offset-2 raised-element profile-link">
-                <a id="github-link" href="#" title="Github Profile" target="_blank">
-                    <span class="fa fa-github" aria-hidden="true"></span>
-                </a>
-            </div>
+            @profileLink("Github", 2, 2, "fa-github")
 
                 <!-- Link to my Twitter profile.-->
-            <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="twitter-link" href="#" title="Twitter Profile" target="_blank">
-                    <span class="fa fa-twitter" aria-hidden="true"></span>
-                </a>
-            </div>
+            @profileLink("Twitter", 1, 2, "fa-twitter")
 
                 <!-- Link to my LinkedIn profile.-->
-            <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="linkedin-link" href="#" title="LinkedIn Profile" target="_blank">
-                    <span class="fa fa-linkedin" aria-hidden="true"></span>
-                </a>
-            </div>
+            @profileLink("LinkedIn", 1, 2, "fa-linkedin")
         </div>
 
         <div class="row profile-link-row">
 
                 <!-- Link to my Stack Exchange profile.-->
-            <div class="col-md-2 col-md-offset-2 raised-element profile-link">
-                <a id="stackexchange-link" href="#" title="StackExchange Profile" target="_blank">
-                    <span class="fa fa-stack-exchange" aria-hidden="true"></span>
-                </a>
-            </div>
+            @profileLink("StackExchange", 2, 2, "fa-stack-exchange")
 
                 <!-- Link to my Google Plus profile.-->
-            <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="googleplus-link" href="#" title="Google+ Profile" target="_blank">
-                    <span class="fa fa-google-plus-circle" aria-hidden="true"></span>
-                </a>
-            </div>
+            @profileLink("GooglePlus", 1, 2, "fa-google-plus-circle")
 
                 <!-- Link to my Hackernews profile.-->
-            <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="ycombinator-link" href="#" title="HackerNews Profile" target="_blank">
-                    <span class="fa fa-y-combinator-square" aria-hidden="true"></span>
-                </a>
-            </div>
+            @profileLink("YCombinator", 1, 2, "fa-y-combinator-square")
         </div>
 
         <div class="row profile-link-row">
 
                 <!-- Link to my Goodreads profile.-->
-            <div class="col-md-2 col-md-offset-2 raised-element profile-link">
-                <a id="goodreads-link" href="#" title="Goodreads Profile" target="_blank">
-                    <span class="fa fa-book" aria-hidden="true"></span>
-                </a>
-            </div>
+            @profileLink("Goodreads", 2, 2, "fa-book")
 
                 <!-- Link to my Codewars profile.-->
-            <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="codewars-link" href="#" title="Codewars Profile" target="_blank">
-                    <span class="fa fa-code" aria-hidden="true"></span>
-                </a>
-            </div>
+            @profileLink("Codewars", 1, 2, "fa-code")
 
-                <!-- Link to my Codewars profile.-->
-            <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="codecamp-link" href="#" title="Codecamp Profile" target="_blank">
-                    <span class="fa fa-free-code-camp" aria-hidden="true"></span>
-                </a>
-            </div>
+                <!-- Link to my FreeCodeCamp profile.-->
+            @profileLink("FreeCodeCamp", 1, 2, "fa-free-code-camp")
         </div>
 
         <div class="row profile-link-row">
 
                 <!-- Link to my Quora profile.-->
-            <div class="col-md-2 col-md-offset-2 raised-element profile-link">
-                <a id="quora-link" href="#" title="Quora Profile" target="_blank">
-                    <span class="fa fa-quora" aria-hidden="true"></span>
-                </a>
-            </div>
+            @profileLink("Quora", 2, 2, "fa-quora")
 
                 <!-- Link to my Pinterest profile.-->
-            <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="pinterest-link" href="#" title="Pinterest Profile" target="_blank">
-                    <span class="fa fa-pinterest" aria-hidden="true"></span>
-                </a>
-            </div>
+            @profileLink("Pinterest", 1, 2, "fa-pinterest")
 
                 <!-- Link to my Facebook profile.-->
-            <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="facebook-link" href="#" title="Facebook Profile" target="_blank">
-                    <span class="fa fa-facebook-square" aria-hidden="true"></span>
-                </a>
-            </div>
-
+            @profileLink("Facebook", 1, 2, "fa-facebook-square")
         </div>
 
         <div class="row profile-link-row">
 
                 <!-- Link to my Codecademy profile.-->
-            <div class="col-md-2 col-md-offset-2 raised-element profile-link">
-                <a id="codecademy-link" href="#" title="Codecademy Profile" target="_blank">
-                    <span class="fa fa-cube" aria-hidden="true"></span>
-                </a>
-            </div>
+            @profileLink("Codecademy", 2, 2, "fa-cube")
 
                 <!-- Link to my Coursera profile.-->
-            <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="coursera-link" href="#" title="Coursera Profile" target="_blank">
-                    <span class="fa fa-coffee" aria-hidden="true"></span>
-                </a>
-            </div>
+            @profileLink("Coursera", 1, 2, "fa-coffee")
         </div>
 
 
