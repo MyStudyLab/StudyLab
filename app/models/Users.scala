@@ -12,7 +12,7 @@ import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.BSONDocument
 
 // Project
-import constructs.User
+import constructs.{User, ProfilePortfolio}
 import helpers.Selectors.{emailSelector, usernameSelector}
 
 /**
@@ -26,6 +26,17 @@ class Users(val api: ReactiveMongoApi) {
   // Connection to the user collection
   protected def usersCollectionBSON: BSONCollection = api.db.collection[BSONCollection]("users")
 
+
+  /**
+    * Get the social profiles for the user.
+    *
+    * @param username The username for which to retrieve data.
+    * @return
+    */
+  def socialProfiles(username: String): Future[Option[ProfilePortfolio]] = {
+
+    usersCollectionBSON.find(usernameSelector(username), ProfilePortfolio.projector).one[ProfilePortfolio]
+  }
 
   /**
     * Return true iff the username is already in the database.

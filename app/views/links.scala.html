@@ -2,26 +2,28 @@
 
 @siteTemplate("Links") {
 
+    <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
+
     <div class="container-fluid">
         <div class="row profile-link-row">
 
                 <!-- Link to my Github profile.-->
             <div class="col-md-2 col-md-offset-2 raised-element profile-link">
-                <a id="github-link" href="https://www.github.com/pilgrimshadow" title="Github Profile" target="_blank">
+                <a id="github-link" href="#" title="Github Profile" target="_blank">
                     <span class="fa fa-github" aria-hidden="true"></span>
                 </a>
             </div>
 
                 <!-- Link to my Twitter profile.-->
             <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="twitter-link" href="https://www.twitter.com/jgdodson_" title="Twitter Profile" target="_blank">
+                <a id="twitter-link" href="#" title="Twitter Profile" target="_blank">
                     <span class="fa fa-twitter" aria-hidden="true"></span>
                 </a>
             </div>
 
                 <!-- Link to my LinkedIn profile.-->
             <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="linkedin-link" href="https://www.linkedin.com/in/jgdodson" title="LinkedIn Profile" target="_blank">
+                <a id="linkedin-link" href="#" title="LinkedIn Profile" target="_blank">
                     <span class="fa fa-linkedin" aria-hidden="true"></span>
                 </a>
             </div>
@@ -31,21 +33,21 @@
 
                 <!-- Link to my Stack Exchange profile.-->
             <div class="col-md-2 col-md-offset-2 raised-element profile-link">
-                <a id="stackexchange-link" href="http://www.stackexchange.com/users/3733943/pilgrimshadow" title="StackExchange Profile" target="_blank">
+                <a id="stackexchange-link" href="#" title="StackExchange Profile" target="_blank">
                     <span class="fa fa-stack-exchange" aria-hidden="true"></span>
                 </a>
             </div>
 
                 <!-- Link to my Google Plus profile.-->
             <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="googleplus-link" href="https://plus.google.com/u/0/102056157755029758599" title="Google+ Profile" target="_blank">
+                <a id="googleplus-link" href="#" title="Google+ Profile" target="_blank">
                     <span class="fa fa-google-plus-circle" aria-hidden="true"></span>
                 </a>
             </div>
 
                 <!-- Link to my Hackernews profile.-->
             <div class="col-md-2 col-md-offset-1 raised-element profile-link">
-                <a id="hackernews-link" href="https://news.ycombinator.com/user?id=jgdodson" title="HackerNews Profile" target="_blank">
+                <a id="ycombinator-link" href="#" title="HackerNews Profile" target="_blank">
                     <span class="fa fa-y-combinator-square" aria-hidden="true"></span>
                 </a>
             </div>
@@ -94,11 +96,45 @@
                 <!-- Link to my Facebook profile.-->
             <div class="col-md-2 col-md-offset-1 raised-element profile-link">
                 <a id="facebook-link" href="https://www.facebook.com/jordan.dodson.372" title="Facebook Profile" target="_blank">
-                    <span class="fa fa-facebook-official" aria-hidden="true"></span>
+                    <span class="fa fa-facebook-square" aria-hidden="true"></span>
                 </a>
             </div>
 
         </div>
+
+        <div class="row profile-link-row">
+
+                <!-- Link to my Codecademy profile.-->
+            <div class="col-md-2 col-md-offset-2 raised-element profile-link">
+                <a id="codecademy-link" href="https://www.codecademy.com/JordanDodson" title="Codecademy Profile" target="_blank">
+                    <span class="fa fa-cube" aria-hidden="true"></span>
+                </a>
+            </div>
+
+                <!-- Link to my Coursera profile.-->
+            <div class="col-md-2 col-md-offset-1 raised-element profile-link">
+                <a id="coursera-link" href="https://www.coursera.org/user/i/39fb2cc77f2a3100e88de5f97f3b8b87" title="Coursera Profile" target="_blank">
+                    <span class="fa fa-coffee" aria-hidden="true"></span>
+                </a>
+            </div>
+        </div>
+
+
+        <script>
+
+                loadJSONFile("/json/profiles/jgdodson", function (profiles) {
+
+
+                    // TODO: Display only those links that the user actually has
+                    for (var key in profiles) {
+                        if (profiles.hasOwnProperty(key)) {
+                            document.getElementById(key + "-link").setAttribute("href", profiles[key]);
+                        }
+                    }
+
+                });
+
+        </script>
 
     </div>
 }
