@@ -1,7 +1,29 @@
+@*******************
+Home page.
+*******************@
 @()(implicit messages: Messages)
 
 @loadingDots() = {
     <p class="saving"><span>&#11044</span><span>&#11044</span><span>&#11044</span><span>&#11044</span></p>
+}
+
+@dataBlock(title: String, id: String, offset: Int, width: Int) = {
+    <div class="col-sm-offset-@offset col-sm-@width raised-element">
+        <u class="data-block-title">@title</u><br>
+        <div id="@id">
+        @loadingDots()
+        </div>
+    </div>
+}
+
+@plotHolder(id: String) = {
+    <div class="row">
+        <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
+            <div id="@id" class="googlePlotContainer loading-icon">
+            @loadingDots()
+            </div>
+        </div>
+    </div>
 }
 
 @siteTemplate("Home") {
@@ -13,28 +35,13 @@
         <div class="row small-margin-bottom data-blocks">
 
                 <!-- Total hours studied -->
-            <div class="col-sm-offset-1 col-sm-2 raised-element">
-                <u class="data-block-title">Total</u><br>
-                <div id="total-hours">
-                @loadingDots()
-                </div>
-            </div>
+            @dataBlock("Total", "total-hours", 1, 2)
 
                 <!-- Hours studied today vs. average -->
-            <div class=" col-sm-offset-1 col-sm-4 raised-element">
-                <u class="data-block-title">Today / Average</u><br>
-                <div id="today-vs-average">
-                @loadingDots()
-                </div>
-            </div>
+            @dataBlock("Today / Average", "today-vs-average", 1, 4)
 
                 <!-- Length of the current streak -->
-            <div class=" col-sm-offset-1 col-sm-2 raised-element">
-                <u class="data-block-title">Current Streak</u><br>
-                <div id="current-streak">
-                @loadingDots()
-                </div>
-            </div>
+            @dataBlock("Current Streak", "current-streak", 1, 2)
         </div>
 
             <!-- Today's sessions plot -->
@@ -47,49 +54,20 @@
         </div>
 
             <!-- Cumulative hours studied plot-->
-        <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
-                <div id="cumulativePlot" class="googlePlotContainer loading-icon">
-                @loadingDots()
-                </div>
-            </div>
-        </div>
+        @plotHolder("cumulativePlot")
 
             <!-- Subject totals plot-->
-        <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
-                <div id="subjectTotalsPlot" class="googlePlotContainer loading-icon">
-                @loadingDots()
-                </div>
-            </div>
-        </div>
+        @plotHolder("subjectTotalsPlot")
 
             <!-- Average-day probability plot -->
-        <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
-                <div id="probabilityPlot" class="googlePlotContainer loading-icon">
-                @loadingDots()
-                </div>
-            </div>
-        </div>
+        @plotHolder("probabilityPlot")
 
             <!-- Moving-average plot -->
-        <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
-                <div id="movingAveragePlot" class="googlePlotContainer loading-icon">
-                @loadingDots()
-                </div>
-            </div>
-        </div>
+        @plotHolder("movingAveragePlot")
 
             <!-- Day of week averages plot -->
-        <div class="row">
-            <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
-                <div id="dayOfWeekAveragesPlot" class="googlePlotContainer loading-icon">
-                    <p class="saving"><span>&middot</span><span>&middot</span><span>&middot</span><span>&middot</span></p>
-                </div>
-            </div>
-        </div>
+        @plotHolder("dayOfWeekAveragesPlot")
+
     </div>
 
     <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
@@ -526,9 +504,9 @@
 
             function writeIntroMessageJS(stats) {
 
-                var n1 = stats.dailyAverage.toFixed(2).toString();
+                var n1 = stats.todaysTotal.toFixed(2).toString();
 
-                var n2 = stats.todaysTotal.toFixed(2).toString();
+                var n2 = stats.dailyAverage.toFixed(2).toString();
 
                 var inner1 = "<span class='introMessageValue'>" + n1 + "</span> / <span class='introMessageValue'>" + n2 + "</span>";
 
