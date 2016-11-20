@@ -14,8 +14,8 @@ GET         /resume                         controllers.Application.resume
 # Go to the quotes page
 GET         /quotes                         controllers.Application.quotes
 
-# Go to the links page
-GET         /links                          controllers.Application.links
+# Go to the profiles page
+GET         /profiles                       controllers.Application.profiles
 
 # Get sessions as JSON for the username
 GET         /json/sessions/:username        controllers.Sessions.sessionsForUsername(username: String)
