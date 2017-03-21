@@ -180,13 +180,13 @@ Home page.
                 // The end of the day being handled
                 var marker = m_sessions[0].start.clone().endOf('day');
 
-                // The current moment
-                var todayMarker = moment().tz(tz).endOf('day');
+                // The end of the current day
+                const endOfToday = moment().tz(tz).endOf('day');
 
-                // An array of moments indicating the end a day
+                // An array of objects to hold the sessions of successive day
                 var days = [];
 
-                while (marker <= todayMarker) {
+                while (marker <= endOfToday) {
                     days.push({"date": marker.clone(), "sessions": []});
                     marker.add(1, 'day');
                 }
@@ -324,7 +324,7 @@ Home page.
 
 
             /*
-             *
+             * Filter day groups by the given day(s) of the week
              */
             function filterByWeekday(dayGroups, daysOfWeek) {
 
