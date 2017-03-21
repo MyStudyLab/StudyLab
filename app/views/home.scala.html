@@ -77,6 +77,9 @@ Home page.
 
     <script>
 
+            const movingAverageRadius = 90;
+
+            // Convert a moment object to use moment.js moments for the start and end times
             function convertTimestampsToMoments(sessions, tz) {
                 return sessions.map(function (curr, i, arr) {
                     return {
@@ -356,11 +359,11 @@ Home page.
              * Return the yearly totals.
              */
             function yearlyTotals(dayGroups) {
-                var m = new Map();
+                let m = new Map();
 
                 dayGroups.forEach(function (curr, i, arr) {
 
-                    var y = curr.date.year();
+                    const y = curr.date.year();
 
                     if (m.has(y)) {
                         m.set(y, m.get(y) + sumSessions(curr.sessions));
@@ -385,8 +388,8 @@ Home page.
             function dayOfWeekAverages(dayGroups) {
 
                 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-                var dayTotals = [0, 0, 0, 0, 0, 0, 0];
-                var counts = [0, 0, 0, 0, 0, 0, 0];
+                let dayTotals = [0, 0, 0, 0, 0, 0, 0];
+                let counts = [0, 0, 0, 0, 0, 0, 0];
 
                 dayGroups.forEach(function (curr, i, arr) {
                     dayTotals[curr.date.day()] += sumSessions(curr.sessions);
@@ -403,9 +406,9 @@ Home page.
              */
             function dailyStdev(dayGroups) {
 
-                var mu = dailyAverage(dayGroups);
+                const mu = dailyAverage(dayGroups);
 
-                var sse = dayGroups.reduce(function (acc, curr, ind) {
+                const sse = dayGroups.reduce(function (acc, curr, ind) {
                     return acc + Math.pow(sumSessions(curr.sessions) - mu, 2);
                 }, 0);
 
@@ -418,7 +421,7 @@ Home page.
              */
             function probability(numBins, dayGroups) {
 
-                var bins = [];
+                let bins = [];
 
                 for (let i = 0; i < numBins; i++) {
                     bins.push(0);
@@ -454,9 +457,9 @@ Home page.
             function dailyTotalHistogram(dailyTotals, numBins) {
 
                 // Bins are as follows: <=0, <=1, <=2, ..., >=numBins - 1
-                var bins = [];
+                let bins = [];
 
-                for (var i = 0; i < numBins; i++) {
+                for (let i = 0; i < numBins; i++) {
                     bins.push(0);
                 }
 
@@ -475,28 +478,30 @@ Home page.
 
             /*
              * Return an array of moving averages with the given radius.
+             *
+             * TODO: Use stepSize to determine how many days separate consecutive data points
              */
-            function movingAverage(dayGroups, radius) {
+            function movingAverage(dayGroups, radius, stepSize) {
 
                 if (dayGroups.length < radius) {
                     return [];
                 }
 
-                var dailyTotals = dayGroups.map(function (curr, i, arr) {
+                const dailyTotals = dayGroups.map(function (curr, i, arr) {
                     return {
                         "date": curr['date'],
                         "total": sumSessions(curr['sessions'])
                     }
                 });
 
-                // Sum of the initial window
-                var windowTotal = sumArray(dailyTotals.slice(0, radius).map(function (curr, i, arr) {
+                // Sum of study time for the window being analyzed
+                let windowTotal = sumArray(dailyTotals.slice(0, radius).map(function (curr, i, arr) {
                     return curr['total'];
                 }));
 
-                var res = [[dayGroups[radius - 1]['date'].valueOf(), windowTotal / radius]];
+                let res = [[dayGroups[radius - 1]['date'].valueOf(), windowTotal / radius]];
 
-                for (var i = radius; i < dayGroups.length; i++) {
+                for (let i = radius; i < dayGroups.length; i++) {
                     windowTotal -= dailyTotals[i - radius]['total'];
                     windowTotal += dailyTotals[i]['total'];
                     res.push([dailyTotals[i]['date'].valueOf(), windowTotal / radius]);
@@ -554,7 +559,7 @@ Home page.
                     "currentStreak": currentStreak(dayGroups),
                     "daysSinceStart": daysSinceStart(dayGroups),
                     "probability": probability(100, dayGroups),
-                    "movingAverage": movingAverage(dayGroups, 56),
+                    "movingAverage": movingAverage(dayGroups, movingAverageRadius),
                     "dailyTotals": dTotals,
                     "dailyTotalHistogram": dailyTotalHistogram(dTotals, 12),
                     "dayOfWeekAverages": dayOfWeekAverages(dayGroups),
@@ -703,7 +708,7 @@ Home page.
                 var options = {
                     chart: {
                         title: "Hours Studied Per Day",
-                        subtitle: "Sliding average - 31 day window"
+                        subtitle: "Sliding average - " + movingAverageRadius.toString() + " day window"
                     },
                     legend: legendOptionsDefault,
                     colors: ['green'],
@@ -886,8 +891,8 @@ Home page.
                     });
                 }
 
-                var s1 = stats1(data.sessions, 100);
-                var s2 = stats2(data.sessions);
+                const s1 = stats1(data.sessions, 100);
+                const s2 = stats2(data.sessions);
 
                 writeIntroMessageJS(s1);
 
