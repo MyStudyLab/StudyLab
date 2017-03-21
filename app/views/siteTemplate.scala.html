@@ -1,7 +1,6 @@
 @(pageTitle: String)(content: Html)
 
 <!DOCTYPE html>
-
 <html lang="en">
     <head>
         <title>Jordan G. Dodson - @pageTitle</title>
@@ -10,7 +9,7 @@
 
         <meta name="description" content="The digital home of Jordan G. Dodson.">
 
-        <meta name="keywords" content="Blog, Programming, Informatics, Machine Learning, Computer Science">
+        <meta name="keywords" content="Blog, Programming, Informatics, Analytics, Computer Science">
 
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -39,11 +38,12 @@
     </head>
     <body>
 
-            <!-- Navbar with profiles to other profiles-->
+            <!-- Navbar with links to other pages on the site-->
         <nav class="navbar navbar-inverse navbar-margin-bottom">
 
             <div class="container-fluid">
 
+                    <!-- Link to the homepage -->
                 <div class="navbar-header">
                     <a href="@routes.Application.home()" class="navbar-brand" hreflang="en">Jordan G. Dodson</a>
                 </div>
@@ -60,13 +60,16 @@
 
                         <li><a href="@routes.Application.about()" hreflang="en">About</a></li>
                     </ul>
+
                 </div>
+
             </div>
         </nav>
 
             <!-- Primary page content -->
         @content
 
+            <!-- Footer with the guiding quote of this site-->
         <footer>
             <div class="footer-quote">
                 The unexamined life is not worth living

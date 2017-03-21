@@ -167,7 +167,7 @@ Home page.
             // Does not handle sessions longer than 24 hours
             function splitDays(sessions) {
 
-                var tz = "America/Chicago";
+                const tz = "America/Chicago";
 
                 // Trivial case
                 if (sessions.length === 0) {
@@ -271,13 +271,14 @@ Home page.
             /*
              * Return the sessions occurring in the current month in chronological order.
              */
-            function monthsSessions(dayGroups) {
+            function currentMonthSessions(dayGroups) {
 
                 // The moment at which the current month began.
-                var startOfMonth = dayGroups[dayGroups.length - 1]['date'].clone().startOf('month');
+                const startOfMonth = dayGroups[dayGroups.length - 1]['date'].clone().startOf('month');
 
                 var i = dayGroups.length - 1;
 
+                // Iterate in reverse until encountering a day not in this month
                 while (i >= 0 && dayGroups[i]['date'] > startOfMonth) {
                     i--;
                 }
@@ -304,19 +305,21 @@ Home page.
                     return 0;
                 }
 
-                var i = dayGroups.length - 2;
+                let i = dayGroups.length - 2;
+                let streak = 0;
 
+                // Count days in the streak, not including today
                 while (i >= 0 && dayGroups[i]['sessions'].length > 0) {
                     i--;
+                    streak++;
                 }
 
-                var pre = dayGroups.length - i - 2;
-
+                // If the user has programmed today, add it to the streak
                 if (dayGroups[dayGroups.length - 1]['sessions'].length > 0) {
-                    pre += 1;
+                    streak += 1;
                 }
 
-                return pre;
+                return streak;
             }
 
 
@@ -381,7 +384,7 @@ Home page.
 
             function dayOfWeekAverages(dayGroups) {
 
-                var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
                 var dayTotals = [0, 0, 0, 0, 0, 0, 0];
                 var counts = [0, 0, 0, 0, 0, 0, 0];
 
@@ -417,20 +420,20 @@ Home page.
 
                 var bins = [];
 
-                for (var i = 0; i < numBins; i++) {
+                for (let i = 0; i < numBins; i++) {
                     bins.push(0);
                 }
 
                 dayGroups.forEach(function (dayGroup, i, arr) {
                     dayGroup['sessions'].forEach(function (session, j, arr) {
 
-                        var upperBound = dayGroup['date'].clone();
-                        var lowerBound = dayGroup['date'].clone().startOf('day');
+                        const upperBound = dayGroup['date'].clone();
+                        const lowerBound = dayGroup['date'].clone().startOf('day');
 
-                        var startBin = Math.floor((session.start - lowerBound) * numBins / (upperBound - lowerBound));
-                        var stopBin = Math.floor((session.stop - lowerBound) * numBins / (upperBound - lowerBound));
+                        const startBin = Math.floor((session.start - lowerBound) * numBins / (upperBound - lowerBound));
+                        const stopBin = Math.floor((session.stop - lowerBound) * numBins / (upperBound - lowerBound));
 
-                        for (var b = startBin; b < stopBin; b++) {
+                        for (let b = startBin; b < stopBin; b++) {
                             bins[b] += 1;
                         }
                     });
@@ -546,7 +549,7 @@ Home page.
                     "total": total,
                     "dailyAverage": dailyAverage(dayGroups),
                     "todaysSessions": todaysSessions(dayGroups),
-                    "monthsSessions": monthsSessions(dayGroups),
+                    "monthsSessions": currentMonthSessions(dayGroups),
                     "todaysTotal": todaysTotal(dayGroups),
                     "currentStreak": currentStreak(dayGroups),
                     "daysSinceStart": daysSinceStart(dayGroups),
