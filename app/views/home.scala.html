@@ -77,7 +77,7 @@ Home page.
 
     <script>
 
-            const movingAverageRadius = 90;
+            const slidingAverageRadius = 90;
 
             // Convert a moment object to use moment.js moments for the start and end times
             function convertTimestampsToMoments(sessions, tz) {
@@ -93,7 +93,7 @@ Home page.
             // Does not handle sessions longer than 24 hours
             function splitDays_old(sessions) {
 
-                var tz = "America/Chicago";
+                const tz = "America/Chicago";
 
                 // Trivial case
                 if (sessions.length === 0) {
@@ -101,18 +101,18 @@ Home page.
                 }
 
                 // Get an array of sessions that use moment objects as timestamps
-                var m_sessions = convertTimestampsToMoments(sessions, tz);
+                const m_sessions = convertTimestampsToMoments(sessions, tz);
 
                 // The end of the day being handled
-                var marker = m_sessions[0].start.clone().endOf('day');
+                let marker = m_sessions[0].start.clone().endOf('day');
 
                 // The current moment
-                var todayMarker = moment().tz(tz).endOf('day');
+                const endOfToday = moment().tz(tz).endOf('day');
 
                 // An array of moments indicating the end a day
-                var dayMarks = [];
+                let dayMarks = [];
 
-                while (marker <= todayMarker) {
+                while (marker <= endOfToday) {
                     dayMarks.push(marker.clone());
                     marker.add(1, 'day');
                 }
@@ -279,14 +279,14 @@ Home page.
                 // The moment at which the current month began.
                 const startOfMonth = dayGroups[dayGroups.length - 1]['date'].clone().startOf('month');
 
-                var i = dayGroups.length - 1;
+                let i = dayGroups.length - 1;
 
                 // Iterate in reverse until encountering a day not in this month
                 while (i >= 0 && dayGroups[i]['date'] > startOfMonth) {
                     i--;
                 }
 
-                var res = [];
+                let res = [];
 
                 // The original array is not modified
                 dayGroups.slice(i + 1).forEach(function (dayGroup, i, arr) {
@@ -559,7 +559,7 @@ Home page.
                     "currentStreak": currentStreak(dayGroups),
                     "daysSinceStart": daysSinceStart(dayGroups),
                     "probability": probability(100, dayGroups),
-                    "movingAverage": movingAverage(dayGroups, movingAverageRadius),
+                    "movingAverage": movingAverage(dayGroups, slidingAverageRadius),
                     "dailyTotals": dTotals,
                     "dailyTotalHistogram": dailyTotalHistogram(dTotals, 12),
                     "dayOfWeekAverages": dayOfWeekAverages(dayGroups),
@@ -632,7 +632,7 @@ Home page.
 
                 function tmp() {
 
-                    var options = {
+                    const options = {
                         height: 95,
                         hAxis: {
                             title: "",
@@ -642,7 +642,7 @@ Home page.
                         groupByRowLabel: false
                     };
 
-                    var table = new google.visualization.DataTable();
+                    let table = new google.visualization.DataTable();
 
                     table.addColumn({type: "string", id: "Role"});
                     table.addColumn({type: "string", id: "Subject"});
@@ -650,13 +650,13 @@ Home page.
                     table.addColumn({type: "number", id: "End"});
 
 
-                    var rows = sessions.map(function (elem, i, self) {
+                    const rows = sessions.map(function (elem, i, self) {
                         return ["What I've Done Today", elem.subject, elem.start.valueOf(), elem.stop.valueOf()];
                     });
 
                     table.addRows(rows);
 
-                    var chart = new google.visualization.Timeline(document.getElementById(elementId));
+                    let chart = new google.visualization.Timeline(document.getElementById(elementId));
 
                     chart.draw(table, options);
                 }
@@ -667,7 +667,7 @@ Home page.
 
             function getCumulativePlotDrawer(cumulativeData, elementId) {
 
-                var options = {
+                const options = {
                     chart: {
                         title: "Cumulative Hours Studied"
                     },
@@ -691,11 +691,11 @@ Home page.
 
                 function tmp() {
 
-                    var columnLabels = [["Date", "Cumulative Hours Studied"]];
+                    const columnLabels = [["Date", "Cumulative Hours Studied"]];
 
-                    var chart = new google.charts.Line(document.getElementById(elementId));
+                    let chart = new google.charts.Line(document.getElementById(elementId));
 
-                    var table = google.visualization.arrayToDataTable(columnLabels.concat(cumulativeData));
+                    const table = google.visualization.arrayToDataTable(columnLabels.concat(cumulativeData));
 
                     chart.draw(table, google.charts.Line.convertOptions(options));
                 }
@@ -705,10 +705,10 @@ Home page.
 
             function getSlidingAveragePlotDrawer(slidingAverageData, elementId) {
 
-                var options = {
+                const options = {
                     chart: {
                         title: "Hours Studied Per Day",
-                        subtitle: "Sliding average - " + movingAverageRadius.toString() + " day window"
+                        subtitle: "Sliding average - " + slidingAverageRadius.toString() + " day window"
                     },
                     legend: legendOptionsDefault,
                     colors: ['green'],
@@ -736,11 +736,11 @@ Home page.
 
                 function tmp() {
 
-                    var columnLabels = [["Date", "Average Hours Studied"]];
+                    const columnLabels = [["Date", "Average Hours Studied"]];
 
-                    var chart = new google.charts.Line(document.getElementById(elementId));
+                    let chart = new google.charts.Line(document.getElementById(elementId));
 
-                    var table = google.visualization.arrayToDataTable(columnLabels.concat(slidingAverageData));
+                    const table = google.visualization.arrayToDataTable(columnLabels.concat(slidingAverageData));
 
                     chart.draw(table, google.charts.Line.convertOptions(options));
                 }
@@ -752,7 +752,7 @@ Home page.
             // Returns a function that will draw the SubjectTotals plot
             function getSubjectTotalsPlotDrawer(subjectTotals, elementId) {
 
-                var options = {
+                const options = {
                     chart: {
                         title: "Total Hours Studied Per Subject",
                         subtitle: "10 most studied subjects"
@@ -775,11 +775,11 @@ Home page.
 
                 function tmp() {
 
-                    var columnLabels = [["Subject", "Total"]];
+                    const columnLabels = [["Subject", "Total"]];
 
-                    var chart = new google.charts.Bar(document.getElementById(elementId));
+                    let chart = new google.charts.Bar(document.getElementById(elementId));
 
-                    var table = google.visualization.arrayToDataTable(columnLabels.concat(subjectTotals));
+                    const table = google.visualization.arrayToDataTable(columnLabels.concat(subjectTotals));
 
                     chart.draw(table, google.charts.Bar.convertOptions(options));
                 }
@@ -790,7 +790,7 @@ Home page.
             // Returns a function that will draw the dayOfWeekAverages plot
             function getDayOfWeekAveragesPlotDrawer(dayOfWeekAverages, elementId) {
 
-                var options = {
+                const options = {
                     chart: {
                         title: "Average Hours Studied Per Weekday",
                         subtitle: ""
@@ -813,11 +813,11 @@ Home page.
 
                 function tmp() {
 
-                    var columnLabels = [["Day Of Week", "Total"]];
+                    const columnLabels = [["Day Of Week", "Total"]];
 
-                    var chart = new google.charts.Bar(document.getElementById(elementId));
+                    let chart = new google.charts.Bar(document.getElementById(elementId));
 
-                    var table = google.visualization.arrayToDataTable(columnLabels.concat(dayOfWeekAverages));
+                    const table = google.visualization.arrayToDataTable(columnLabels.concat(dayOfWeekAverages));
 
                     chart.draw(table, google.charts.Bar.convertOptions(options));
                 }
@@ -827,7 +827,7 @@ Home page.
 
             function getProbabilityPlotDrawer(probabilities, elementId) {
 
-                var options = {
+                const options = {
                     chart: {
                         title: "Probability That I'm Programming",
                         subtitle: "at a certain hour of the day"
@@ -856,15 +856,15 @@ Home page.
 
                 function tmp() {
 
-                    var columnLabels = [["Time", "Probability"]];
+                    const columnLabels = [["Time", "Probability"]];
 
-                    var dataArray = probabilities.map(function (elem, i, self) {
+                    const dataArray = probabilities.map(function (elem, i, self) {
                         return [(i / self.length) * 24, elem];
                     });
 
-                    var chart = new google.charts.Line(document.getElementById(elementId));
+                    let chart = new google.charts.Line(document.getElementById(elementId));
 
-                    var table = google.visualization.arrayToDataTable(columnLabels.concat(dataArray));
+                    const table = google.visualization.arrayToDataTable(columnLabels.concat(dataArray));
 
                     chart.draw(table, google.charts.Line.convertOptions(options));
                 }
