@@ -47,6 +47,9 @@ POST        /study/rename                   controllers.Sessions.renameSubject()
 # Merge one subject into another
 POST        /study/merge                    controllers.Sessions.mergeSubjects()
 
+# Add a journal entry
+POST        /journal/add                    controllers.Default.todo()
+
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                   controllers.Assets.at(path="/public", file)
 
