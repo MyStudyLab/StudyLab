@@ -1,8 +1,12 @@
 package controllers
 
+// Standard Library
 import javax.inject.Inject
 
+// Project
 import constructs.ResultInfo
+
+// Play Framework
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
@@ -28,7 +32,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     * @param username The username for which to retrieve data
     * @return
     */
-  def profilesForUsername(username: String) = Action.async { implicit request =>
+  def profilesForUsername(username: String): Action[AnyContent] = Action.async { implicit request =>
 
     users.socialProfiles(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve profiles"))))(data => Ok(Json.toJson(data))))
   }

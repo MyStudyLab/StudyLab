@@ -69,6 +69,9 @@ Links to profiles on other sites.
 
                 <!-- Link to my Coursera profile.-->
             @profileLink("Coursera", 1, 2, "fa-coffee")
+
+                <!-- Link to my IMDb profile.-->
+            @profileLink("IMDb", 1, 2, "fa-imdb")
         </div>
 
 
@@ -80,7 +83,7 @@ Links to profiles on other sites.
 
                 loadJSONFile("/json/profiles/jgdodson", function (response) {
 
-                    const profiles = response.profiles;
+                    const profiles = response['profiles'];
 
                     // TODO: Display only those profiles that the user actually has
                     for (let key in profiles) {

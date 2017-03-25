@@ -1,7 +1,12 @@
 package constructs.responses
 
+// Project
 import constructs.Profiles
-import play.api.libs.json.Json
+
+// Play Framework
+import play.api.libs.json.{Json, Writes}
+
+// Reactive Mongo
 import reactivemongo.bson.{BSONDocument, BSONDocumentReader}
 
 case class ProfilesOnly(profiles: Profiles)
@@ -24,7 +29,7 @@ object ProfilesOnly {
   }
 
   // Implicitly convert to JSON
-  implicit val ProfilesOnlyWriter = Json.writes[ProfilesOnly]
+  implicit val ProfilesOnlyWriter: Writes[ProfilesOnly] = Json.writes[ProfilesOnly]
 
   val projector = BSONDocument("contactInfo.profiles" -> 1, "_id" -> 0)
 }

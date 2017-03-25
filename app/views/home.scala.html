@@ -881,7 +881,8 @@ Home page.
 
             loadJSONFile("/json/sessions/jgdodson", function (data) {
 
-                // The current time could come from the timestamp in the ResultInfo...
+                // TODO: The current time could come from the timestamp in the ResultInfo...
+
                 // Add the current session to the session array
                 if (data.status.isStudying) {
                     data.sessions.push({
@@ -894,6 +895,7 @@ Home page.
                 const s1 = stats1(data.sessions, 100);
                 const s2 = stats2(data.sessions);
 
+                // Fill values at top of page
                 writeIntroMessageJS(s1);
 
                 // Only show the current day's overview if the user has studied today.
