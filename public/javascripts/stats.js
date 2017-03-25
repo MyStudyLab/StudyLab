@@ -1,6 +1,39 @@
 // TODO: Probability distribution of session length (total and per-subject)
 // TODO: Probability distribution of daily total (total and per-subject)
 
+/*
+ * Return the total duration of a sequence of sessions (hours).
+ */
+function sumSessions(sessions) {
+
+    return sessions.reduce(function (acc, curr, i) {
+        return acc + ((curr.stop - curr.start) / 3600000);
+    }, 0);
+
+}
+
+/*
+ * Return the number of days since the first session.
+ */
+function daysSinceStart(dayGroups) {
+    return dayGroups.length;
+}
+
+
+/*
+ * Return the total duration of today's sessions
+ */
+function todaysTotal(dayGroups) {
+    return sumSessions(dayGroups[dayGroups.length - 1]['sessions']);
+}
+
+/*
+ * Return the sessions for the current day.
+ */
+function todaysSessions(dayGroups) {
+    return dayGroups[dayGroups.length - 1]['sessions'];
+}
+
 // TODO: Should simply use a library stdev function on session duration input
 function stdevOfSessionLength(sessions) {
 
@@ -11,6 +44,81 @@ function stdevOfSessionLength(sessions) {
     });
 
     return Math.pow(sse / (sessions.length - 1), 0.5);
+}
+
+
+/*
+ * Return an array of moving averages with the given radius.
+ *
+ * TODO: Use stepSize to determine how many days separate consecutive data points
+ */
+function movingAverage(dayGroups, radius, stepSize) {
+
+    if (dayGroups.length < radius) {
+        return [];
+    }
+
+    const dailyTotals = dayGroups.map(function (curr, i, arr) {
+        return {
+            "date": curr['date'],
+            "total": sumSessions(curr['sessions'])
+        }
+    });
+
+    // Sum of study time for the window being analyzed
+    let windowTotal = sumArray(dailyTotals.slice(0, radius).map(function (curr, i, arr) {
+        return curr['total'];
+    }));
+
+    let res = [[dayGroups[radius - 1]['date'].valueOf(), windowTotal / radius]];
+
+    for (let i = radius; i < dayGroups.length; i++) {
+        windowTotal -= dailyTotals[i - radius]['total'];
+        windowTotal += dailyTotals[i]['total'];
+        res.push([dailyTotals[i]['date'].valueOf(), windowTotal / radius]);
+    }
+
+    return res;
+}
+
+
+// Compute a list of cumulative study totals
+function cumulative(sessions, numLevels) {
+
+    // A running total of the hours studied
+    let cumul = 0;
+
+    // Total duration of completed sessions
+    const total = sumRawSessions(sessions);
+
+    const levelSize = total / numLevels;
+
+    let level = 1;
+
+    // List of timestamped cumulative totals
+    let res = [[new Date(sessions[0].startTime), 0]];
+
+    sessions.forEach(function (curr, i, arr) {
+
+        // Add the session's duration to the cumulative total
+        cumul += (curr.endTime - curr.startTime) / (3600 * 1000);
+
+        if (cumul >= level * levelSize) {
+
+            // How much the session extends past the level boundary
+            const t = (cumul - level * levelSize) * 3600 * 1000;
+
+            res.push([new Date(curr.endTime - t), level * levelSize]);
+            level += 1;
+        }
+    });
+
+    // Add the last item in cumuls if needed
+    if (res.length < numLevels + 1) {
+        res.push([new Date(sessions[sessions.length - 1].endTime), cumul]);
+    }
+
+    return res;
 }
 
 // TODO: Consolidate with the other stats function
@@ -67,35 +175,6 @@ function stats2(sessions) {
     }
 }
 
-
-function moving_average(sessions, radius, n) {
-
-    const s = sessions[0].startTime + radius;
-    const e = sessions[sessions.length - 1].endTime;
-
-    const diff = (e - s) / n;
-
-    let res = [];
-    let t = 0;
-    let p = s;
-
-    // this loop is wrong. when window overlaps occur, a session
-    // should be included in both
-    sessions.forEach(function (curr, i, arr) {
-
-        // Will split sessions here in final version
-        if (curr.endTime <= p) {
-            t += curr.endTime - curr.startTime;
-        } else {
-            res.push([new Date(p), t / (3600 * 1000)]);
-            t = curr.endTime - curr.startTime;
-            p += diff;
-        }
-    });
-
-    return res;
-}
-
 function durationInHours(session) {
     return (session.endTime - session.startTime) / 3600000;
 }
@@ -140,6 +219,7 @@ function sessionsSince(t, sessions) {
     return result;
 }
 
+// TODO: Use a mean function from a library
 function averageSessionDuration(sessions) {
 
     const total = sessions.reduce(function (acc, curr, ind) {
