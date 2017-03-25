@@ -115,8 +115,8 @@ class Users(val api: ReactiveMongoApi) {
   /**
     *
     *
-    * @param query
-    * @param limit
+    * @param query The search text
+    * @param limit The maximum number of results to return
     * @return
     */
   def searchUsername(query: String, limit: Int = Int.MaxValue): Future[List[User]] = {

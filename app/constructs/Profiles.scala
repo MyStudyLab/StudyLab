@@ -1,32 +1,37 @@
 package constructs
 
+// Play Framework
 import play.api.libs.json.Json
 
 /**
   *
-  * @param github
-  * @param twitter
-  * @param linkedin
-  * @param stackexchange
-  * @param googleplus
-  * @param ycombinator
-  * @param goodreads
-  * @param codewars
-  * @param freecodecamp
-  * @param quora
-  * @param pinterest
-  * @param facebook
-  * @param codecademy
-  * @param coursera
+  * Encoder/Decoder case class for user profile data
+  *
+  * @param github        Url of github profile
+  * @param twitter       Url of twitter profile
+  * @param linkedin      Url of linkedin profile
+  * @param stackexchange Url of Stack Exchange profile
+  * @param googleplus    Url of google+ profile
+  * @param ycombinator   Url of Hacker News profile
+  * @param goodreads     Url of goodreads profile
+  * @param codewars      Url of codewars profile
+  * @param freecodecamp  Url of Free Code Camp profile
+  * @param quora         Url of quora profile
+  * @param pinterest     Url of pinterest profile
+  * @param facebook      Url of facebook profile
+  * @param codecademy    Url of Codecademy profile
+  * @param coursera      Url of Coursera profile
+  * @param imdb          Url of IMDb profile
+  * @param gyroscope     Url of Gyroscope profile
   */
 case class Profiles(github: String, twitter: String, linkedin: String,
                     stackexchange: String, googleplus: String, ycombinator: String,
                     goodreads: String, codewars: String, freecodecamp: String,
                     quora: String, pinterest: String, facebook: String,
-                    codecademy: String, coursera: String)
+                    codecademy: String, coursera: String, imdb: String, gyroscope: String)
 
 /**
-  *
+  * Companion object where handlers and writers are defined
   */
 object Profiles {
 

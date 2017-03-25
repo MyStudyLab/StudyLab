@@ -9,6 +9,10 @@ import play.api.libs.json.{Json, Writes}
 // Reactive Mongo
 import reactivemongo.bson.{BSONDocument, BSONDocumentReader}
 
+/**
+  *
+  * @param profiles
+  */
 case class ProfilesOnly(profiles: Profiles)
 
 object ProfilesOnly {

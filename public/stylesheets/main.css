@@ -96,6 +96,10 @@
     color: #e6be00;
 }
 
+#gyroscope-link {
+    color: #44436a;
+}
+
 .raised-element {
     box-shadow: 0 2px 3px #242424;
     background-color: #f8f5f0;
