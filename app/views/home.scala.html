@@ -118,18 +118,18 @@ Home page.
                 }
 
                 // Session index
-                var sess_ind = 0;
+                let sess_ind = 0;
 
                 // Sessions from one day that spill over into the next
-                var carryOver = [];
+                let carryOver = [];
 
                 // The array of session groups for each day
-                var dayGroups = [];
+                let dayGroups = [];
 
                 dayMarks.forEach(function (dayMark, i, arr) {
 
                     // The object for the day being handled
-                    var today = {"date": dayMark, "sessions": carryOver};
+                    let today = {"date": dayMark, "sessions": carryOver};
 
                     // Get all sessions that fall within the current day
                     while (sess_ind < m_sessions.length && m_sessions[sess_ind].stop < dayMark) {
@@ -178,16 +178,16 @@ Home page.
                 }
 
                 // Get an array of sessions that use moment objects as timestamps
-                var m_sessions = convertTimestampsToMoments(sessions, tz);
+                let m_sessions = convertTimestampsToMoments(sessions, tz);
 
                 // The end of the day being handled
-                var marker = m_sessions[0].start.clone().endOf('day');
+                let marker = m_sessions[0].start.clone().endOf('day');
 
                 // The end of the current day
                 const endOfToday = moment().tz(tz).endOf('day');
 
                 // An array of objects to hold the sessions of successive day
-                var days = [];
+                let days = [];
 
                 while (marker <= endOfToday) {
                     days.push({"date": marker.clone(), "sessions": []});
@@ -195,7 +195,7 @@ Home page.
                 }
 
                 // Day index
-                var day_ind = 0;
+                let day_ind = 0;
 
                 m_sessions.forEach(function (session, i, arr) {
 
@@ -359,6 +359,8 @@ Home page.
              * Return the yearly totals.
              */
             function yearlyTotals(dayGroups) {
+
+                // A map in which keys are years and values are the number of hours studied in a year
                 let m = new Map();
 
                 dayGroups.forEach(function (curr, i, arr) {
@@ -514,30 +516,28 @@ Home page.
             // TODO: Comment this function
             function stats1(sessions, numLevels) {
 
-                var dayGroups = splitDays(sessions);
+                const dayGroups = splitDays(sessions);
 
-                var dTotals = dailyTotals(dayGroups);
+                const dTotals = dailyTotals(dayGroups);
 
-                var diff;
-                var cumul = 0;
+                let cumul = 0;
 
                 // Total duration of completed sessions
-                var total = sumRawSessions(sessions);
+                const total = sumRawSessions(sessions);
 
-                var levelSize = total / numLevels;
+                const levelSize = total / numLevels;
 
-                var level = 1;
-                var res = [[new Date(sessions[0].startTime), 0]];
+                let level = 1;
+                let res = [[new Date(sessions[0].startTime), 0]];
 
                 sessions.forEach(function (curr, i, arr) {
-                    diff = (curr.endTime - curr.startTime) / (3600 * 1000);
 
-                    cumul += diff;
+                    cumul += (curr.endTime - curr.startTime) / (3600 * 1000);
 
                     if (cumul >= level * levelSize) {
 
                         // How much the session extends past the level boundary
-                        var t = (cumul - level * levelSize) * 3600 * 1000;
+                        const t = (cumul - level * levelSize) * 3600 * 1000;
 
                         res.push([new Date(curr.endTime - t), level * levelSize]);
                         level += 1;
@@ -576,11 +576,11 @@ Home page.
 
             // Get a duration as [hh, mm, ss] from seconds
             function hms(sec) {
-                var h = Math.floor(sec / 3600);
+                const h = Math.floor(sec / 3600);
 
                 sec -= 3600 * h;
 
-                var m = Math.floor(sec / 60);
+                const m = Math.floor(sec / 60);
 
                 sec -= 60 * m;
 
@@ -589,36 +589,36 @@ Home page.
 
 
             // Global plot properties
-            var titleIsBold = true;
-            var titleFontSize = 32;
-            var hAxisFontSize = 20;
-            var vAxisFontSize = 20;
+            const titleIsBold = true;
+            const titleFontSize = 32;
+            const hAxisFontSize = 20;
+            const vAxisFontSize = 20;
 
-            var hAxisOptionsDefault = {
+            const hAxisOptionsDefault = {
                 title: "",
                 textStyle: {
                     fontSize: hAxisFontSize
                 }
             };
 
-            var vAxisOptionsDefault = {
+            const vAxisOptionsDefault = {
                 textStyle: {
                     fontSize: vAxisFontSize
                 }
             };
 
-            var legendOptionsDefault = {
+            const legendOptionsDefault = {
                 position: 'none'
             };
 
 
             function writeIntroMessageJS(stats) {
 
-                var n1 = stats.todaysTotal.toFixed(2).toString();
+                const n1 = stats.todaysTotal.toFixed(2).toString();
 
-                var n2 = stats.dailyAverage.toFixed(2).toString();
+                const n2 = stats.dailyAverage.toFixed(2).toString();
 
-                var inner1 = "<span class='introMessageValue'>" + n1 + "</span> / <span class='introMessageValue'>" + n2 + "</span>";
+                const inner1 = "<span class='introMessageValue'>" + n1 + "</span> / <span class='introMessageValue'>" + n2 + "</span>";
 
                 document.getElementById("total-hours").innerHTML = "<span class='introMessageValue'>" + Math.round(stats.total).toString() + "</span> hours";
 

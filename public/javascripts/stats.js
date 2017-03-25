@@ -1,30 +1,40 @@
 // TODO: Probability distribution of session length (total and per-subject)
 // TODO: Probability distribution of daily total (total and per-subject)
 
+// TODO: Should simply use a library stdev function on session duration input
 function stdevOfSessionLength(sessions) {
 
-    var mu = averageSessionDuration(sessions);
+    const mu = averageSessionDuration(sessions);
 
-    var sse = sessions.reduce(function (acc, curr, ind) {
+    const sse = sessions.reduce(function (acc, curr, ind) {
         return acc + Math.pow(durationInHours(curr) - mu, 2);
     });
 
     return Math.pow(sse / (sessions.length - 1), 0.5);
 }
 
-
+// TODO: Consolidate with the other stats function
 function stats2(sessions) {
 
-    var diff = 0;
-    var total = 0;
-    var count = 0;
-    var subTotals = new Map();
-    var counts = new Map();
-    var diffs = [];
+    // The total number of hours studied
+    let total = 0;
 
+    // The total number of sessions logged
+    let count = 0;
+
+    // Keys are subject names, values are the times spent studying that subject
+    let subTotals = new Map();
+
+    // Keys are subject names, values are the number of sessions studied
+    let counts = new Map();
+
+    // A list of sessions durations
+    let diffs = [];
+
+    // Compute the time spent studying each subject
     sessions.forEach(function (curr, i, arr) {
 
-        diff = (curr.endTime - curr.startTime) / (3600 * 1000);
+        const diff = (curr.endTime - curr.startTime) / (3600 * 1000);
 
         if (subTotals.has(curr.subject)) {
             counts.set(curr.subject, counts.get(curr.subject) + 1);
@@ -52,24 +62,22 @@ function stats2(sessions) {
         return 0;
     }
 
-    var a = Array.from(subTotals.entries());
-
     return {
-        "subjectTotals": a.sort(cmp).slice(0, 10)
+        "subjectTotals": Array.from(subTotals.entries()).sort(cmp).slice(0, 10)
     }
 }
 
 
 function moving_average(sessions, radius, n) {
 
-    s = sessions[0].startTime + radius;
-    e = sessions[sessions.length - 1].endTime;
+    const s = sessions[0].startTime + radius;
+    const e = sessions[sessions.length - 1].endTime;
 
-    diff = (e - s) / n;
+    const diff = (e - s) / n;
 
-    res = [];
-    t = 0;
-    p = s;
+    let res = [];
+    let t = 0;
+    let p = s;
 
     // this loop is wrong. when window overlaps occur, a session
     // should be included in both
@@ -95,7 +103,7 @@ function durationInHours(session) {
 // Compute the total duration, in seconds, of a group of sessions.
 function sumRawSessions(sessions) {
 
-    var total = 0;
+    let total = 0;
 
     sessions.forEach(function (curr, i, arr) {
         total += curr.endTime - curr.startTime;
@@ -109,9 +117,9 @@ function sumRawSessions(sessions) {
 // TODO: Check that we are not modifying the original sessions array
 function sessionsSince(t, sessions) {
 
-    var result = [];
+    let result = [];
 
-    for (var i = sessions.length - 1; i >= 0; i--) {
+    for (let i = sessions.length - 1; i >= 0; i--) {
 
         if (sessions[i].endTime > t) {
             result.push(sessions[i]);
@@ -134,7 +142,7 @@ function sessionsSince(t, sessions) {
 
 function averageSessionDuration(sessions) {
 
-    var total = sessions.reduce(function (acc, curr, ind) {
+    const total = sessions.reduce(function (acc, curr, ind) {
         return acc + durationInHours(curr)
     }, 0);
 

@@ -80,10 +80,10 @@ Links to profiles on other sites.
 
                 loadJSONFile("/json/profiles/jgdodson", function (response) {
 
-                    var profiles = response.profiles;
+                    const profiles = response.profiles;
 
                     // TODO: Display only those profiles that the user actually has
-                    for (var key in profiles) {
+                    for (let key in profiles) {
                         if (profiles.hasOwnProperty(key)) {
                             document.getElementById(key + "-link").setAttribute("href", profiles[key]);
                         }
