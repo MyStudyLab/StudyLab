@@ -1,14 +1,22 @@
 package constructs
 
-import play.api.libs.json.Json
+// Play Framework
+import play.api.libs.json.{Json, Writes}
 
 // TODO: How to add a payload field? Type parameter with implicit Json.Writer?
+/**
+  * Defines the structure of responses to API calls
+  *
+  * @param success   Indicates whether the operation succeeded
+  * @param message   A message regarding the success/failure of the operation
+  * @param timestamp A timestamp of the response
+  */
 case class ResultInfo(success: Boolean, message: String, timestamp: Long)
 
 object ResultInfo {
 
   // Implicitly convert to JSON
-  implicit val ResultInfoWriter = Json.writes[ResultInfo]
+  implicit val ResultInfoWriter: Writes[ResultInfo] = Json.writes[ResultInfo]
 
   // All of the following helpers are functions so that the timestamp will be generated at the proper time
 
@@ -18,7 +26,7 @@ object ResultInfo {
     * @param message A message describing the result
     * @return
     */
-  def failWithMessage(message: String) = ResultInfo(success = false, message, System.currentTimeMillis())
+  def failWithMessage(message: String): ResultInfo = ResultInfo(success = false, message, System.currentTimeMillis())
 
 
   /**
@@ -27,7 +35,7 @@ object ResultInfo {
     * @param message A message describing the result
     * @return
     */
-  def succeedWithMessage(message: String) = ResultInfo(success = true, message, System.currentTimeMillis())
+  def succeedWithMessage(message: String): ResultInfo = ResultInfo(success = true, message, System.currentTimeMillis())
 
 
   /**
@@ -35,20 +43,20 @@ object ResultInfo {
     *
     * @return
     */
-  def badUsernameOrPass = failWithMessage("Incorrect username or password")
+  def badUsernameOrPass: ResultInfo = failWithMessage("Incorrect username or password")
 
   /**
     *
     * @return
     */
-  def invalidUsername = failWithMessage("Invalid Username")
+  def invalidUsername: ResultInfo = failWithMessage("Invalid Username")
 
   /**
     * A result indicating that the user was already studying.
     *
     * @return
     */
-  def alreadyStudying = failWithMessage("Already studying")
+  def alreadyStudying: ResultInfo = failWithMessage("Already studying")
 
 
   /**
@@ -56,7 +64,7 @@ object ResultInfo {
     *
     * @return
     */
-  def notStudying = failWithMessage("Not studying")
+  def notStudying: ResultInfo = failWithMessage("Not studying")
 
 
   /**
@@ -64,11 +72,11 @@ object ResultInfo {
     *
     * @return
     */
-  def invalidSubject = failWithMessage("Invalid subject")
+  def invalidSubject: ResultInfo = failWithMessage("Invalid subject")
 
   /**
     *
     * @return
     */
-  def invalidForm = failWithMessage("Invalid form")
+  def invalidForm: ResultInfo = failWithMessage("Invalid form")
 }

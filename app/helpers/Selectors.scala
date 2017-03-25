@@ -1,8 +1,12 @@
 package helpers
 
+// Reactive Mongo
 import reactivemongo.bson.BSONDocument
 
 
+/**
+  * A collection of helper functions to generate BSON selectors
+  */
 object Selectors {
 
   /**
@@ -13,6 +17,12 @@ object Selectors {
     */
   def usernameSelector(username: String) = BSONDocument("username" -> username)
 
+  /**
+    * Get a selector for the given value of the "email" field
+    *
+    * @param email The email by which to select.
+    * @return
+    */
   def emailSelector(email: String) = BSONDocument("contactInfo.email" -> email)
 
 }
