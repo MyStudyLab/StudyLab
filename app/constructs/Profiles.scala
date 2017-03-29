@@ -23,12 +23,14 @@ import play.api.libs.json.Json
   * @param coursera      Url of Coursera profile
   * @param imdb          Url of IMDb profile
   * @param gyroscope     Url of Gyroscope profile
+  * @param duolingo      Url of Duolingo profile
   */
 case class Profiles(github: String, twitter: String, linkedin: String,
                     stackexchange: String, googleplus: String, ycombinator: String,
                     goodreads: String, codewars: String, freecodecamp: String,
                     quora: String, pinterest: String, facebook: String,
-                    codecademy: String, coursera: String, imdb: String, gyroscope: String)
+                    codecademy: String, coursera: String, imdb: String,
+                    gyroscope: String, duolingo: String)
 
 /**
   * Companion object where handlers and writers are defined

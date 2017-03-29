@@ -100,6 +100,10 @@
     color: #44436a;
 }
 
+#duolingo-link {
+    color: #75ca00;
+}
+
 .raised-element {
     box-shadow: 0 2px 3px #242424;
     background-color: #f8f5f0;
