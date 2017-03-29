@@ -12,7 +12,7 @@ import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.BSONDocument
 
 // Project
-import constructs.{User, User2}
+import constructs.User
 import constructs.responses.{ProfilesOnly, AboutMessage}
 import helpers.Selectors.{emailSelector, usernameSelector}
 
@@ -23,11 +23,8 @@ import helpers.Selectors.{emailSelector, usernameSelector}
   */
 class Users(val api: ReactiveMongoApi) {
 
-  // Connection to the user collection
-  protected def usersCollectionBSON: BSONCollection = api.db.collection[BSONCollection]("users")
-
-  // The new users collection
-  protected def users2: BSONCollection = api.db.collection[BSONCollection]("users_two")
+  // The users collection
+  protected def users: BSONCollection = api.db.collection[BSONCollection]("users")
 
 
   /**
@@ -36,9 +33,9 @@ class Users(val api: ReactiveMongoApi) {
     * @param newUser The user being added.
     * @return
     */
-  def addNewUser2(newUser: User2): Future[Boolean] = {
+  def addNewUser(newUser: User): Future[Boolean] = {
 
-    users2.insert(newUser).map(result => {
+    users.insert(newUser).map(result => {
       result.ok
     })
 
@@ -52,7 +49,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def aboutMessage(username: String): Future[Option[AboutMessage]] = {
 
-    users2.find(usernameSelector(username), AboutMessage.projector).one[AboutMessage]
+    users.find(usernameSelector(username), AboutMessage.projector).one[AboutMessage]
   }
 
   /**
@@ -63,7 +60,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def socialProfiles(username: String): Future[Option[ProfilesOnly]] = {
 
-    users2.find(usernameSelector(username), ProfilesOnly.projector).one[ProfilesOnly]
+    users.find(usernameSelector(username), ProfilesOnly.projector).one[ProfilesOnly]
   }
 
   /**
@@ -74,7 +71,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def usernameInUse(username: String): Future[Boolean] = {
 
-    users2.count(Some(usernameSelector(username)), limit = 1).map(count => count != 0)
+    users.count(Some(usernameSelector(username)), limit = 1).map(count => count != 0)
   }
 
   /**
@@ -85,23 +82,9 @@ class Users(val api: ReactiveMongoApi) {
     */
   def emailInUse(email: String): Future[Boolean] = {
 
-    users2.count(Some(emailSelector(email)), limit = 1).map(count => count != 0)
+    users.count(Some(emailSelector(email)), limit = 1).map(count => count != 0)
   }
 
-  /**
-    * Add a new user to the database.
-    *
-    * @param newUser The user being added.
-    * @return
-    */
-  def addNewUser(newUser: User): Future[Boolean] = {
-
-    usersCollectionBSON.insert(newUser).map(result => {
-      result.ok
-    })
-
-    // TODO: Add a corresponding document to the sessions collection
-  }
 
   /**
     * Check a string against a user's password
@@ -112,7 +95,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def checkCredentials(username: String, given: String): Future[Boolean] = {
 
-    usersCollectionBSON.find(usernameSelector(username), User.projector).one[User].map(optUser =>
+    users.find(usernameSelector(username), User.projector).one[User].map(optUser =>
 
       optUser.fold(false)(user => user.password == given)
     )
@@ -120,11 +103,11 @@ class Users(val api: ReactiveMongoApi) {
 
 
   def getUserByUsername(username: String): Future[Option[User]] = {
-    usersCollectionBSON.find(usernameSelector(username), User.projector).one[User]
+    users.find(usernameSelector(username), User.projector).one[User]
   }
 
   /**
-    *
+    * Search for a particular username
     *
     * @param query The search text
     * @param limit The maximum number of results to return
@@ -135,9 +118,15 @@ class Users(val api: ReactiveMongoApi) {
     // ALl usernames which contain the query
     val selector = BSONDocument("username" -> BSONDocument("$regex" -> query))
 
-    usersCollectionBSON.find(selector).cursor[User]().collect[List](upTo = limit)
+    users.find(selector).cursor[User]().collect[List](upTo = limit)
   }
 
+  /**
+    * Find a user by their actual name
+    *
+    * @param name
+    * @return
+    */
   def findByName(name: String): Future[Option[Int]] = {
     ???
   }
