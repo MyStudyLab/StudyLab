@@ -1,1 +1,1 @@
-A Play Framework application 
+A tool for tracking and analyzing how you study.
