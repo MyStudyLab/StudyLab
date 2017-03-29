@@ -152,9 +152,10 @@
 .footer-quote {
     text-align: center;
     font-size: medium;
-    border-top: 1px solid #d5d5d9;
     padding: 15px 0;
     color: #8f8f8f;
+    background: #333;
+    box-shadow: 0 -2px 3px #242424;
 }
 
 .small-margin-bottom {
