@@ -11,7 +11,7 @@ import reactivemongo.bson.{BSONDocument, BSONDocumentReader}
 
 /**
   *
-  * @param profiles
+  * @param profiles The profiles for a user
   */
 case class ProfilesOnly(profiles: Profiles)
 

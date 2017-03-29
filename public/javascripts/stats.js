@@ -82,6 +82,69 @@ function movingAverage(dayGroups, radius, stepSize) {
 }
 
 
+// Does not handle sessions longer than 24 hours
+function splitDays(sessions) {
+
+    // TODO: How should we generalize to allow users to change timezones?
+    const tz = "America/Chicago";
+
+    // Trivial case
+    if (sessions.length === 0) {
+        return [];
+    }
+
+    // Get an array of sessions that use moment objects as timestamps
+    let m_sessions = convertTimestampsToMoments(sessions, tz);
+
+    // The end of the day being handled
+    let marker = m_sessions[0].start.clone().endOf('day');
+
+    // The end of the current day
+    const endOfToday = moment().tz(tz).endOf('day');
+
+    // An array of objects to hold the sessions of successive day
+    let days = [];
+
+    while (marker <= endOfToday) {
+        days.push({"date": marker.clone(), "sessions": []});
+        marker.add(1, 'day');
+    }
+
+    // Day index
+    let day_ind = 0;
+
+    m_sessions.forEach(function (session, i, arr) {
+
+        // Skip any empty days
+        while (session.start > days[day_ind].date) {
+            day_ind += 1;
+        }
+
+        // Add this session to the current day. Split if necessary.
+        if (session.stop < days[day_ind].date) {
+            days[day_ind].sessions.push(session)
+        } else {
+
+            // TODO: To fix the 24 hour bug, we would use some kind of loop here
+
+            days[day_ind].sessions.push({
+                "start": session.start.clone(),
+                "stop": days[day_ind].date.clone(),
+                "subject": session.subject
+            });
+
+            days[day_ind + 1].sessions.push({
+                "start": days[day_ind].date.clone().add(1, 'day').startOf('day'),
+                "stop": session.stop.clone(),
+                "subject": session.subject
+            });
+        }
+    });
+
+    return days;
+}
+
+
 // Compute a list of cumulative study totals
 function cumulative(sessions, numLevels) {
 
@@ -121,8 +184,8 @@ function cumulative(sessions, numLevels) {
     return res;
 }
 
-// TODO: Consolidate with the other stats function
-function stats2(sessions) {
+
+function subjectTotals(sessions) {
 
     // The total number of hours studied
     let total = 0;
@@ -170,9 +233,8 @@ function stats2(sessions) {
         return 0;
     }
 
-    return {
-        "subjectTotals": Array.from(subTotals.entries()).sort(cmp).slice(0, 10)
-    }
+
+    return Array.from(subTotals.entries()).sort(cmp).slice(0, 10);
 }
 
 function durationInHours(session) {
@@ -227,4 +289,132 @@ function averageSessionDuration(sessions) {
     }, 0);
 
     return total / sessions.length;
+}
+
+/*
+ * Return the yearly totals.
+ */
+function yearlyTotals(dayGroups) {
+
+    // A map in which keys are years and values are the number of hours studied in a year
+    let m = new Map();
+
+    dayGroups.forEach(function (curr, i, arr) {
+
+        const y = curr.date.year();
+
+        if (m.has(y)) {
+            m.set(y, m.get(y) + sumSessions(curr.sessions));
+        } else {
+            m.set(y, sumSessions(curr.sessions));
+        }
+    });
+
+    return m;
+}
+
+
+/*
+ * Compute the length of the current streak (in days)
+ */
+function currentStreak(dayGroups) {
+
+    if (dayGroups.length == 0) {
+        return 0;
+    }
+
+    let i = dayGroups.length - 2;
+    let streak = 0;
+
+    // Count days in the streak, not including today
+    while (i >= 0 && dayGroups[i]['sessions'].length > 0) {
+        i--;
+        streak++;
+    }
+
+    // If the user has programmed today, add it to the streak
+    if (dayGroups[dayGroups.length - 1]['sessions'].length > 0) {
+        streak += 1;
+    }
+
+    return streak;
+}
+
+/*
+ * Compute the average number of hours studied on each weekday
+ */
+function dayOfWeekAverages(dayGroups) {
+
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    let dayTotals = [0, 0, 0, 0, 0, 0, 0];
+    let counts = [0, 0, 0, 0, 0, 0, 0];
+
+    dayGroups.forEach(function (curr, i, arr) {
+        dayTotals[curr.date.day()] += sumSessions(curr.sessions);
+        counts[curr.date.day()] += 1;
+    });
+
+    return dayTotals.map(function (curr, i, arr) {
+        return [days[i], dayTotals[i] /= counts[i]];
+    });
+}
+
+
+/*
+ * Compute a histogram of daily totals
+ */
+function dailyTotalHistogram(dailyTotals, numBins) {
+
+    // Bins are as follows: <=0, <=1, <=2, ..., >=numBins - 1
+    let bins = [];
+
+    for (let i = 0; i < numBins; i++) {
+        bins.push(0);
+    }
+
+    dailyTotals.forEach(function (curr, i, arr) {
+        bins[Math.min(Math.ceil(curr), numBins - 1)] += 1;
+    });
+
+    // Normalize the bins
+    bins.forEach(function (curr, i, arr) {
+        bins[i] = bins[i] / dailyTotals.length;
+    });
+
+    return bins;
+}
+
+
+/*
+ * Return the average-day probability vector
+ */
+function probability(numBins, dayGroups) {
+
+    let bins = [];
+
+    for (let i = 0; i < numBins; i++) {
+        bins.push(0);
+    }
+
+    dayGroups.forEach(function (dayGroup, i, arr) {
+        dayGroup['sessions'].forEach(function (session, j, arr) {
+
+            const upperBound = dayGroup['date'].clone();
+            const lowerBound = dayGroup['date'].clone().startOf('day');
+
+            const startBin = Math.floor((session.start - lowerBound) * numBins / (upperBound - lowerBound));
+            const stopBin = Math.floor((session.stop - lowerBound) * numBins / (upperBound - lowerBound));
+
+            for (let b = startBin; b < stopBin; b++) {
+                bins[b] += 1;
+            }
+        });
+    });
+
+    // Normalize
+    bins.forEach(function (curr, i, arr) {
+        bins[i] = curr / dayGroups.length;
+    });
+
+    return bins;
 }

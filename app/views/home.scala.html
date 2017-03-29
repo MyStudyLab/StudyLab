@@ -3,822 +3,562 @@ Home page.
 **************@
 @()(implicit messages: Messages)
 
-@loadingDots() = {
-    <p class="saving"><span>&#11044</span><span>&#11044</span><span>&#11044</span><span>&#11044</span></p>
-}
+    @loadingDots() = {
+        <p class="saving"><span>&#11044</span><span>&#11044</span><span>&#11044</span><span>&#11044</span></p>
+    }
 
-@dataBlock(title: String, id: String, offset: Int, width: Int) = {
-    <div class="col-sm-offset-@offset col-sm-@width raised-element">
-        <u class="data-block-title">@title</u><br>
-        <div id="@id">
-        @loadingDots()
-        </div>
-    </div>
-}
-
-@plotHolder(id: String) = {
-    <div class="row">
-        <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
-            <div id="@id" class="googlePlotContainer loading-icon">
+    @dataBlock(title: String, id: String, offset: Int, width: Int) = {
+        <div class="col-sm-offset-@offset col-sm-@width raised-element">
+            <u class="data-block-title">@title</u><br>
+            <div id="@id">
             @loadingDots()
             </div>
         </div>
-    </div>
-}
+    }
 
-@siteTemplate("Home") {
-
-        <!-- Contains all raised elements-->
-    <div class="container-fluid">
-
-            <!-- Summary data -->
-        <div class="row small-margin-bottom data-blocks">
-
-                <!-- Total hours studied -->
-            @dataBlock("Total", "total-hours", 1, 2)
-
-                <!-- Hours studied today vs. average -->
-            @dataBlock("Today / Average", "today-vs-average", 1, 4)
-
-                <!-- Length of the current streak -->
-            @dataBlock("Current Streak", "current-streak", 1, 2)
-        </div>
-
-            <!-- Today's sessions plot -->
-        <div id="widt-row" class="row small-margin-bottom">
-            <div id="widt" class="col-sm-offset-1 col-sm-10 raised-element">
-                <div id="todaysSessionsPlot" class="loading-icon">
+    @plotHolder(id: String) = {
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-10 raised-element padded-plot spaced-plot">
+                <div id="@id" class="googlePlotContainer loading-icon">
                 @loadingDots()
                 </div>
             </div>
         </div>
+    }
 
-            <!-- Cumulative hours studied plot-->
-        @plotHolder("cumulativePlot")
+    @siteTemplate("Home") {
 
-            <!-- Subject totals plot-->
-        @plotHolder("subjectTotalsPlot")
+            <!-- Contains all raised elements-->
+        <div class="container-fluid">
 
-            <!-- Average-day probability plot -->
-        @plotHolder("probabilityPlot")
+                <!-- Summary data -->
+            <div class="row small-margin-bottom data-blocks">
 
-            <!-- Moving-average plot -->
-        @plotHolder("movingAveragePlot")
+                    <!-- Total hours studied -->
+                @dataBlock("Total", "total-hours", 1, 2)
 
-            <!-- Day of week averages plot -->
-        @plotHolder("dayOfWeekAveragesPlot")
+                    <!-- Hours studied today vs. average -->
+                @dataBlock("Today / Average", "today-vs-average", 1, 4)
 
-    </div>
+                    <!-- Length of the current streak -->
+                @dataBlock("Current Streak", "current-streak", 1, 2)
+            </div>
 
-    <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
-    <script src="@routes.Assets.at("/javascripts/moment.js")"></script>
-    <script src="@routes.Assets.at("/javascripts/moment-timezone-10-20.js")"></script>
-    <script src="@routes.Assets.at("/javascripts/stats.js")"></script>
+                <!-- Today's sessions plot -->
+            <div id="widt-row" class="row small-margin-bottom">
+                <div id="widt" class="col-sm-offset-1 col-sm-10 raised-element">
+                    <div id="todaysSessionsPlot" class="loading-icon">
+                    @loadingDots()
+                    </div>
+                </div>
+            </div>
 
-    <script>
+                <!-- Cumulative hours studied plot-->
+            @plotHolder("cumulativePlot")
 
-            const slidingAverageRadius = 90;
+                <!-- Subject totals plot-->
+            @plotHolder("subjectTotalsPlot")
 
-            // Convert a moment object to use moment.js moments for the start and end times
-            function convertTimestampsToMoments(sessions, tz) {
-                return sessions.map(function (curr, i, arr) {
-                    return {
-                        "start": moment(curr.startTime).tz(tz),
-                        "stop": moment(curr.endTime).tz(tz),
-                        "subject": curr.subject
-                    }
-                })
-            }
+                <!-- Average-day probability plot -->
+            @plotHolder("probabilityPlot")
 
-            // Does not handle sessions longer than 24 hours
-            function splitDays_old(sessions) {
+                <!-- Moving-average plot -->
+            @plotHolder("movingAveragePlot")
 
-                const tz = "America/Chicago";
+                <!-- Day of week averages plot -->
+            @plotHolder("dayOfWeekAveragesPlot")
 
-                // Trivial case
-                if (sessions.length === 0) {
-                    return [];
-                }
+        </div>
 
-                // Get an array of sessions that use moment objects as timestamps
-                const m_sessions = convertTimestampsToMoments(sessions, tz);
+        <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
+        <script src="@routes.Assets.at("/javascripts/moment.js")"></script>
+        <script src="@routes.Assets.at("/javascripts/moment-timezone-10-20.js")"></script>
+        <script src="@routes.Assets.at("/javascripts/stats.js")"></script>
 
-                // The end of the day being handled
-                let marker = m_sessions[0].start.clone().endOf('day');
+        <script>
 
-                // The current moment
-                const endOfToday = moment().tz(tz).endOf('day');
+                const slidingAverageRadius = 90;
 
-                // An array of moments indicating the end a day
-                let dayMarks = [];
-
-                while (marker <= endOfToday) {
-                    dayMarks.push(marker.clone());
-                    marker.add(1, 'day');
-                }
-
-                // Session index
-                let sess_ind = 0;
-
-                // Sessions from one day that spill over into the next
-                let carryOver = [];
-
-                // The array of session groups for each day
-                let dayGroups = [];
-
-                dayMarks.forEach(function (dayMark, i, arr) {
-
-                    // The object for the day being handled
-                    let today = {"date": dayMark, "sessions": carryOver};
-
-                    // Get all sessions that fall within the current day
-                    while (sess_ind < m_sessions.length && m_sessions[sess_ind].stop < dayMark) {
-                        today["sessions"].push(m_sessions[sess_ind]);
-                        sess_ind++;
-                    }
-
-                    // Check for a session that crosses the dayMark
-                    if (sess_ind < m_sessions.length && m_sessions[sess_ind].start < dayMark) {
-
-                        today['sessions'].push({
-                            "start": m_sessions[sess_ind].start.clone(),
-                            "stop": dayMark.clone(),
-                            "subject": m_sessions[sess_ind].subject
-                        });
-
-                        carryOver = [{
-                            "start": dayMark.clone().add(1, 'day').startOf('day'),
-                            "stop": m_sessions[sess_ind].stop.clone(),
-                            "subject": m_sessions[sess_ind].subject
-                        }];
-
-                        sess_ind++;
-                    } else {
-                        // No session crossed midnight. Nothing to carry over.
-                        carryOver = [];
-                    }
-
-                    // Another day has been processed
-                    dayGroups.push(today);
-
-                });
-
-                return dayGroups;
-            }
-
-
-            // Does not handle sessions longer than 24 hours
-            function splitDays(sessions) {
-
-                const tz = "America/Chicago";
-
-                // Trivial case
-                if (sessions.length === 0) {
-                    return [];
-                }
-
-                // Get an array of sessions that use moment objects as timestamps
-                let m_sessions = convertTimestampsToMoments(sessions, tz);
-
-                // The end of the day being handled
-                let marker = m_sessions[0].start.clone().endOf('day');
-
-                // The end of the current day
-                const endOfToday = moment().tz(tz).endOf('day');
-
-                // An array of objects to hold the sessions of successive day
-                let days = [];
-
-                while (marker <= endOfToday) {
-                    days.push({"date": marker.clone(), "sessions": []});
-                    marker.add(1, 'day');
-                }
-
-                // Day index
-                let day_ind = 0;
-
-                m_sessions.forEach(function (session, i, arr) {
-
-                    // Skip any empty days
-                    while (session.start > days[day_ind].date) {
-                        day_ind += 1;
-                    }
-
-                    // Add this session to the current day. Split if necessary.
-                    if (session.stop < days[day_ind].date) {
-                        days[day_ind].sessions.push(session)
-                    } else {
-
-                        days[day_ind].sessions.push({
-                            "start": session.start.clone(),
-                            "stop": days[day_ind].date.clone(),
-                            "subject": session.subject
-                        });
-
-                        days[day_ind + 1].sessions.push({
-                            "start": days[day_ind].date.clone().add(1, 'day').startOf('day'),
-                            "stop": session.stop.clone(),
-                            "subject": session.subject
-                        });
-                    }
-                });
-
-                return days;
-            }
-
-
-            /*
-             * Return the sum of an array.
-             *
-             * TODO: Find some library function to replace this.
-             */
-            function sumArray(arr) {
-                return arr.reduce(function (acc, curr, i) {
-                    return acc + curr;
-                }, 0);
-            }
-
-
-            /*
-             * Return the sessions occurring in the current month in chronological order.
-             */
-            function currentMonthSessions(dayGroups) {
-
-                // The moment at which the current month began.
-                const startOfMonth = dayGroups[dayGroups.length - 1]['date'].clone().startOf('month');
-
-                let i = dayGroups.length - 1;
-
-                // Iterate in reverse until encountering a day not in this month
-                while (i >= 0 && dayGroups[i]['date'] > startOfMonth) {
-                    i--;
-                }
-
-                let res = [];
-
-                // The original array is not modified
-                dayGroups.slice(i + 1).forEach(function (dayGroup, i, arr) {
-                    dayGroup['sessions'].forEach(function (curr, i, arr) {
-                        res.push(curr);
-                    });
-                });
-
-                return res;
-            }
-
-
-            /*
-             * Return the length of the current streak (in days)
-             */
-            function currentStreak(dayGroups) {
-
-                if (dayGroups.length == 0) {
-                    return 0;
-                }
-
-                let i = dayGroups.length - 2;
-                let streak = 0;
-
-                // Count days in the streak, not including today
-                while (i >= 0 && dayGroups[i]['sessions'].length > 0) {
-                    i--;
-                    streak++;
-                }
-
-                // If the user has programmed today, add it to the streak
-                if (dayGroups[dayGroups.length - 1]['sessions'].length > 0) {
-                    streak += 1;
-                }
-
-                return streak;
-            }
-
-
-            /*
-             * Filter day groups by the given day(s) of the week
-             */
-            function filterByWeekday(dayGroups, daysOfWeek) {
-
-                return dayGroups.filter(function (day, i, arr) {
-                    return daysOfWeek.includes(day.date.day());
-                });
-            }
-
-
-            /*
-             * Return the total hours studied each day
-             */
-            function dailyTotals(dayGroups) {
-                return dayGroups.map(function (curr, i, arr) {
-                    return sumSessions(curr.sessions);
-                })
-            }
-
-
-            /*
-             * Return the duration of a moment-based session.
-             */
-            function duration(session) {
-                return session.end - session.start / 3600000;
-            }
-
-
-            /*
-             * Return the yearly totals.
-             */
-            function yearlyTotals(dayGroups) {
-
-                // A map in which keys are years and values are the number of hours studied in a year
-                let m = new Map();
-
-                dayGroups.forEach(function (curr, i, arr) {
-
-                    const y = curr.date.year();
-
-                    if (m.has(y)) {
-                        m.set(y, m.get(y) + sumSessions(curr.sessions));
-                    } else {
-                        m.set(y, sumSessions(curr.sessions));
-                    }
-                });
-
-                return m;
-            }
-
-
-            /*
-             * Return the average of the daily totals.
-             */
-            function dailyAverage(dayGroups) {
-
-                return sumArray(dailyTotals(dayGroups)) / dayGroups.length;
-            }
-
-
-            function dayOfWeekAverages(dayGroups) {
-
-                const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-                let dayTotals = [0, 0, 0, 0, 0, 0, 0];
-                let counts = [0, 0, 0, 0, 0, 0, 0];
-
-                dayGroups.forEach(function (curr, i, arr) {
-                    dayTotals[curr.date.day()] += sumSessions(curr.sessions);
-                    counts[curr.date.day()] += 1;
-                });
-
-                return dayTotals.map(function (curr, i, arr) {
-                    return [days[i], dayTotals[i] /= counts[i]];
-                });
-            }
-
-            /*
-             * Return the standard deviation of the distribution of daily totals
-             *
-             * TODO: Use a library function
-             */
-            function dailyStdev(dayGroups) {
-
-                const mu = dailyAverage(dayGroups);
-
-                const sse = dayGroups.reduce(function (acc, curr, ind) {
-                    return acc + Math.pow(sumSessions(curr.sessions) - mu, 2);
-                }, 0);
-
-                return Math.pow(sse / (dayGroups.length - 1), 0.5);
-            }
-
-
-            /*
-             * Return the average-day probability vector
-             */
-            function probability(numBins, dayGroups) {
-
-                let bins = [];
-
-                for (let i = 0; i < numBins; i++) {
-                    bins.push(0);
-                }
-
-                dayGroups.forEach(function (dayGroup, i, arr) {
-                    dayGroup['sessions'].forEach(function (session, j, arr) {
-
-                        const upperBound = dayGroup['date'].clone();
-                        const lowerBound = dayGroup['date'].clone().startOf('day');
-
-                        const startBin = Math.floor((session.start - lowerBound) * numBins / (upperBound - lowerBound));
-                        const stopBin = Math.floor((session.stop - lowerBound) * numBins / (upperBound - lowerBound));
-
-                        for (let b = startBin; b < stopBin; b++) {
-                            bins[b] += 1;
+                // Convert a moment object to use moment.js moments for the start and end times
+                function convertTimestampsToMoments(sessions, tz) {
+                    return sessions.map(function (curr, i, arr) {
+                        return {
+                            "start": moment(curr.startTime).tz(tz),
+                            "stop": moment(curr.endTime).tz(tz),
+                            "subject": curr.subject
                         }
+                    })
+                }
+
+
+                /*
+                 * Return the sum of an array.
+                 *
+                 * TODO: Find some library function to replace this.
+                 */
+                function sumArray(arr) {
+                    return arr.reduce(function (acc, curr, i) {
+                        return acc + curr;
+                    }, 0);
+                }
+
+
+                /*
+                 * Return the sessions occurring in the current month in chronological order.
+                 */
+                function currentMonthSessions(dayGroups) {
+
+                    // The moment at which the current month began.
+                    const startOfMonth = dayGroups[dayGroups.length - 1]['date'].clone().startOf('month');
+
+                    let i = dayGroups.length - 1;
+
+                    // Iterate in reverse until encountering a day not in this month
+                    while (i >= 0 && dayGroups[i]['date'] > startOfMonth) {
+                        i--;
+                    }
+
+                    let res = [];
+
+                    // The original array is not modified
+                    dayGroups.slice(i + 1).forEach(function (dayGroup, i, arr) {
+                        dayGroup['sessions'].forEach(function (curr, i, arr) {
+                            res.push(curr);
+                        });
                     });
-                });
 
-                // Normalize
-                bins.forEach(function (curr, i, arr) {
-                    bins[i] = curr / dayGroups.length;
-                });
-
-                return bins;
-            }
-
-
-            /*
-             * Compute a histogram of daily totals
-             */
-            function dailyTotalHistogram(dailyTotals, numBins) {
-
-                // Bins are as follows: <=0, <=1, <=2, ..., >=numBins - 1
-                let bins = [];
-
-                for (let i = 0; i < numBins; i++) {
-                    bins.push(0);
+                    return res;
                 }
 
-                dailyTotals.forEach(function (curr, i, arr) {
-                    bins[Math.min(Math.ceil(curr), numBins - 1)] += 1;
-                });
 
-                // Normalize the bins
-                bins.forEach(function (curr, i, arr) {
-                    bins[i] = bins[i] / dailyTotals.length;
-                });
+                /*
+                 * Filter day groups by the given day(s) of the week
+                 */
+                function filterByWeekday(dayGroups, daysOfWeek) {
 
-                return bins;
-            }
-
-            // TODO: Comment this function
-            function stats1(sessions) {
-
-                const dayGroups = splitDays(sessions);
-
-                const dTotals = dailyTotals(dayGroups);
-
-                return {
-                    "cumulative": cumulative(sessions, 100),
-                    "total": sumRawSessions(sessions),
-                    "dailyAverage": dailyAverage(dayGroups),
-                    "todaysSessions": todaysSessions(dayGroups),
-                    "monthsSessions": currentMonthSessions(dayGroups),
-                    "todaysTotal": todaysTotal(dayGroups),
-                    "currentStreak": currentStreak(dayGroups),
-                    "daysSinceStart": daysSinceStart(dayGroups),
-                    "probability": probability(100, dayGroups),
-                    "movingAverage": movingAverage(dayGroups, slidingAverageRadius),
-                    "dailyTotals": dTotals,
-                    "dailyTotalHistogram": dailyTotalHistogram(dTotals, 12),
-                    "dayOfWeekAverages": dayOfWeekAverages(dayGroups),
-                    "yearlyTotals": yearlyTotals(dayGroups)
+                    return dayGroups.filter(function (day, i, arr) {
+                        return daysOfWeek.includes(day.date.day());
+                    });
                 }
-            }
-
-    </script>
-
-    <script>
-
-            // Load the  charts
-            google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
-
-            // Get a duration as [hh, mm, ss] from seconds
-            function hms(sec) {
-                const h = Math.floor(sec / 3600);
-
-                sec -= 3600 * h;
-
-                const m = Math.floor(sec / 60);
-
-                sec -= 60 * m;
-
-                return [h, m, sec];
-            }
 
 
-            // Global plot properties
-            const titleIsBold = true;
-            const titleFontSize = 32;
-            const hAxisFontSize = 20;
-            const vAxisFontSize = 20;
-
-            const hAxisOptionsDefault = {
-                title: "",
-                textStyle: {
-                    fontSize: hAxisFontSize
+                /*
+                 * Return the total hours studied each day
+                 */
+                function dailyTotals(dayGroups) {
+                    return dayGroups.map(function (curr, i, arr) {
+                        return sumSessions(curr.sessions);
+                    })
                 }
-            };
 
-            const vAxisOptionsDefault = {
-                textStyle: {
-                    fontSize: vAxisFontSize
+
+                /*
+                 * Return the duration of a moment-based session.
+                 */
+                function duration(session) {
+                    return session.end - session.start / 3600000;
                 }
-            };
-
-            const legendOptionsDefault = {
-                position: 'none'
-            };
 
 
-            // TODO: Rename this function
-            function fillSummaryValues(stats) {
+                /*
+                 * Return the average of the daily totals.
+                 */
+                function dailyAverage(dayGroups) {
 
-                const n1 = stats.todaysTotal.toFixed(2).toString();
+                    return sumArray(dailyTotals(dayGroups)) / dayGroups.length;
+                }
 
-                const n2 = stats.dailyAverage.toFixed(2).toString();
+                /*
+                 * Return the standard deviation of the distribution of daily totals
+                 *
+                 * TODO: Use a library function
+                 */
+                function dailyStdev(dayGroups) {
 
-                const inner1 = "<span class='introMessageValue'>" + n1 + "</span> / <span class='introMessageValue'>" + n2 + "</span>";
+                    const mu = dailyAverage(dayGroups);
 
-                document.getElementById("total-hours").innerHTML = "<span class='introMessageValue'>" + Math.round(stats.total).toString() + "</span> hours";
+                    const sse = dayGroups.reduce(function (acc, curr, ind) {
+                        return acc + Math.pow(sumSessions(curr.sessions) - mu, 2);
+                    }, 0);
 
-                document.getElementById("today-vs-average").innerHTML = inner1;
-
-                document.getElementById("current-streak").innerHTML = "<span class='introMessageValue'>" + stats.currentStreak.toString() + "</span> days";
-            }
+                    return Math.pow(sse / (dayGroups.length - 1), 0.5);
+                }
 
 
-            function getTodaysSessionsPlotDrawer(sessions, elementId) {
+                /*
+                 * Compute all of the statistics
+                 */
+                function computeStats(sessions) {
 
-                function tmp() {
+                    const dayGroups = splitDays(sessions);
+
+                    const dTotals = dailyTotals(dayGroups);
+
+                    return {
+                        "cumulative": cumulative(sessions, 100),
+                        "total": sumRawSessions(sessions),
+                        "dailyAverage": dailyAverage(dayGroups),
+                        "todaysSessions": todaysSessions(dayGroups),
+                        "monthsSessions": currentMonthSessions(dayGroups),
+                        "todaysTotal": todaysTotal(dayGroups),
+                        "currentStreak": currentStreak(dayGroups),
+                        "daysSinceStart": daysSinceStart(dayGroups),
+                        "probability": probability(100, dayGroups),
+                        "movingAverage": movingAverage(dayGroups, slidingAverageRadius),
+                        "dailyTotals": dTotals,
+                        "dailyTotalHistogram": dailyTotalHistogram(dTotals, 12),
+                        "dayOfWeekAverages": dayOfWeekAverages(dayGroups),
+                        "yearlyTotals": yearlyTotals(dayGroups),
+                        "subjectTotals": subjectTotals(sessions)
+                    }
+                }
+
+        </script>
+
+        <script>
+
+                // Load the  charts
+                google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
+
+                // Get a duration as [hh, mm, ss] from seconds
+                function hms(sec) {
+                    const h = Math.floor(sec / 3600);
+
+                    sec -= 3600 * h;
+
+                    const m = Math.floor(sec / 60);
+
+                    sec -= 60 * m;
+
+                    return [h, m, sec];
+                }
+
+
+                // Global plot properties
+                const titleIsBold = true;
+                const titleFontSize = 32;
+                const hAxisFontSize = 20;
+                const vAxisFontSize = 20;
+
+                const hAxisOptionsDefault = {
+                    title: "",
+                    textStyle: {
+                        fontSize: hAxisFontSize
+                    }
+                };
+
+                const vAxisOptionsDefault = {
+                    textStyle: {
+                        fontSize: vAxisFontSize
+                    }
+                };
+
+                const legendOptionsDefault = {
+                    position: 'none'
+                };
+
+
+                function fillSummaryValues(stats) {
+
+                    const n1 = stats.todaysTotal.toFixed(2).toString();
+
+                    const n2 = stats.dailyAverage.toFixed(2).toString();
+
+                    const inner1 = "<span class='introMessageValue'>" + n1 + "</span> / <span class='introMessageValue'>" + n2 + "</span>";
+
+                    document.getElementById("total-hours").innerHTML = "<span class='introMessageValue'>" + Math.round(stats.total).toString() + "</span> hours";
+
+                    document.getElementById("today-vs-average").innerHTML = inner1;
+
+                    document.getElementById("current-streak").innerHTML = "<span class='introMessageValue'>" + stats.currentStreak.toString() + "</span> days";
+                }
+
+
+                function getTodaysSessionsPlotDrawer(sessions, elementId) {
+
+                    function tmp() {
+
+                        const options = {
+                            height: 95,
+                            hAxis: {
+                                title: "",
+                                fontSize: 0
+                            },
+                            backgroundColor: "transparent",
+                            groupByRowLabel: false
+                        };
+
+                        let table = new google.visualization.DataTable();
+
+                        table.addColumn({type: "string", id: "Role"});
+                        table.addColumn({type: "string", id: "Subject"});
+                        table.addColumn({type: "number", id: "Start"});
+                        table.addColumn({type: "number", id: "End"});
+
+
+                        const rows = sessions.map(function (elem, i, self) {
+                            return ["What I've Done Today", elem.subject, elem.start.valueOf(), elem.stop.valueOf()];
+                        });
+
+                        table.addRows(rows);
+
+                        let chart = new google.visualization.Timeline(document.getElementById(elementId));
+
+                        chart.draw(table, options);
+                    }
+
+                    return tmp;
+                }
+
+
+                function getCumulativePlotDrawer(cumulativeData, elementId) {
 
                     const options = {
-                        height: 95,
-                        hAxis: {
-                            title: "",
-                            fontSize: 0
+                        chart: {
+                            title: "Cumulative Hours Studied"
                         },
+                        legend: legendOptionsDefault,
+                        colors: ['green'],
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        hAxis: hAxisOptionsDefault,
+                        vAxis: vAxisOptionsDefault,
                         backgroundColor: "transparent",
-                        groupByRowLabel: false
+                        chartArea: {
+                            backgroundColor: "transparent"
+                        },
+                        // Not working
+                        lineWidth: 10,
+                        // Not working
+                        curveType: 'function'
                     };
 
-                    let table = new google.visualization.DataTable();
+                    function tmp() {
 
-                    table.addColumn({type: "string", id: "Role"});
-                    table.addColumn({type: "string", id: "Subject"});
-                    table.addColumn({type: "number", id: "Start"});
-                    table.addColumn({type: "number", id: "End"});
+                        const columnLabels = [["Date", "Cumulative Hours Studied"]];
 
+                        let chart = new google.charts.Line(document.getElementById(elementId));
 
-                    const rows = sessions.map(function (elem, i, self) {
-                        return ["What I've Done Today", elem.subject, elem.start.valueOf(), elem.stop.valueOf()];
-                    });
+                        const table = google.visualization.arrayToDataTable(columnLabels.concat(cumulativeData));
 
-                    table.addRows(rows);
+                        chart.draw(table, google.charts.Line.convertOptions(options));
+                    }
 
-                    let chart = new google.visualization.Timeline(document.getElementById(elementId));
-
-                    chart.draw(table, options);
+                    return tmp;
                 }
 
-                return tmp;
-            }
+                function getSlidingAveragePlotDrawer(slidingAverageData, elementId) {
 
-
-            function getCumulativePlotDrawer(cumulativeData, elementId) {
-
-                const options = {
-                    chart: {
-                        title: "Cumulative Hours Studied"
-                    },
-                    legend: legendOptionsDefault,
-                    colors: ['green'],
-                    titleTextStyle: {
-                        fontSize: titleFontSize,
-                        bold: titleIsBold
-                    },
-                    hAxis: hAxisOptionsDefault,
-                    vAxis: vAxisOptionsDefault,
-                    backgroundColor: "transparent",
-                    chartArea: {
-                        backgroundColor: "transparent"
-                    },
-                    // Not working
-                    lineWidth: 10,
-                    // Not working
-                    curveType: 'function'
-                };
-
-                function tmp() {
-
-                    const columnLabels = [["Date", "Cumulative Hours Studied"]];
-
-                    let chart = new google.charts.Line(document.getElementById(elementId));
-
-                    const table = google.visualization.arrayToDataTable(columnLabels.concat(cumulativeData));
-
-                    chart.draw(table, google.charts.Line.convertOptions(options));
-                }
-
-                return tmp;
-            }
-
-            function getSlidingAveragePlotDrawer(slidingAverageData, elementId) {
-
-                const options = {
-                    chart: {
-                        title: "Hours Studied Per Day",
-                        subtitle: "Sliding average - " + slidingAverageRadius.toString() + " day window"
-                    },
-                    legend: legendOptionsDefault,
-                    colors: ['green'],
-                    titleTextStyle: {
-                        fontSize: titleFontSize,
-                        bold: titleIsBold
-                    },
-                    hAxis: hAxisOptionsDefault,
-                    vAxis: {
-                        textStyle: {
-                            fontSize: vAxisFontSize
-                        }
-                    },
-                    backgroundColor: "transparent",
-                    chartArea: {
-                        backgroundColor: "transparent"
-                    },
-                    // Not working
-                    lineWidth: 10,
-                    // Not working
-                    curveType: 'function'
-                };
-
-                convertDates(slidingAverageData, 0);
-
-                function tmp() {
-
-                    const columnLabels = [["Date", "Average Hours Studied"]];
-
-                    let chart = new google.charts.Line(document.getElementById(elementId));
-
-                    const table = google.visualization.arrayToDataTable(columnLabels.concat(slidingAverageData));
-
-                    chart.draw(table, google.charts.Line.convertOptions(options));
-                }
-
-                return tmp;
-            }
-
-
-            // Returns a function that will draw the SubjectTotals plot
-            function getSubjectTotalsPlotDrawer(subjectTotals, elementId) {
-
-                const options = {
-                    chart: {
-                        title: "Total Hours Studied Per Subject",
-                        subtitle: "10 most studied subjects"
-                    },
-                    titleTextStyle: {
-                        fontSize: titleFontSize,
-                        bold: titleIsBold
-                    },
-                    legend: legendOptionsDefault,
-                    hAxis: hAxisOptionsDefault,
-                    vAxis: vAxisOptionsDefault,
-                    backgroundColor: "transparent",
-                    chartArea: {
-                        backgroundColor: "transparent"
-                    },
-                    bars: 'vertical',
-                    colors: ['green']
-                };
-
-
-                function tmp() {
-
-                    const columnLabels = [["Subject", "Total"]];
-
-                    let chart = new google.charts.Bar(document.getElementById(elementId));
-
-                    const table = google.visualization.arrayToDataTable(columnLabels.concat(subjectTotals));
-
-                    chart.draw(table, google.charts.Bar.convertOptions(options));
-                }
-
-                return tmp;
-            }
-
-            // Returns a function that will draw the dayOfWeekAverages plot
-            function getDayOfWeekAveragesPlotDrawer(dayOfWeekAverages, elementId) {
-
-                const options = {
-                    chart: {
-                        title: "Average Hours Studied Per Weekday",
-                        subtitle: ""
-                    },
-                    titleTextStyle: {
-                        fontSize: titleFontSize,
-                        bold: titleIsBold
-                    },
-                    legend: legendOptionsDefault,
-                    hAxis: hAxisOptionsDefault,
-                    vAxis: vAxisOptionsDefault,
-                    backgroundColor: "transparent",
-                    chartArea: {
-                        backgroundColor: "transparent"
-                    },
-                    bars: 'vertical',
-                    colors: ['green']
-                };
-
-
-                function tmp() {
-
-                    const columnLabels = [["Day Of Week", "Total"]];
-
-                    let chart = new google.charts.Bar(document.getElementById(elementId));
-
-                    const table = google.visualization.arrayToDataTable(columnLabels.concat(dayOfWeekAverages));
-
-                    chart.draw(table, google.charts.Bar.convertOptions(options));
-                }
-
-                return tmp;
-            }
-
-            function getProbabilityPlotDrawer(probabilities, elementId) {
-
-                const options = {
-                    chart: {
-                        title: "Probability That I'm Programming",
-                        subtitle: "at a certain hour of the day"
-                    },
-                    titleTextStyle: {
-                        fontSize: titleFontSize,
-                        bold: titleIsBold
-                    },
-                    legend: legendOptionsDefault,
-                    hAxis: {
-                        title: "",
-                        textStyle: {
-                            fontSize: hAxisFontSize
+                    const options = {
+                        chart: {
+                            title: "Hours Studied Per Day",
+                            subtitle: "Sliding average - " + slidingAverageRadius.toString() + " day window"
                         },
-                        maxValue: 24,
-                        ticks: [10, 12, 14] // not supported for material charts
-                    },
-                    vAxis: vAxisOptionsDefault,
-                    backgroundColor: "transparent",
-                    chartArea: {
-                        backgroundColor: "transparent"
-                    },
-                    lineWidth: 10,
-                    colors: ['green']
-                };
+                        legend: legendOptionsDefault,
+                        colors: ['green'],
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        hAxis: hAxisOptionsDefault,
+                        vAxis: {
+                            textStyle: {
+                                fontSize: vAxisFontSize
+                            }
+                        },
+                        backgroundColor: "transparent",
+                        chartArea: {
+                            backgroundColor: "transparent"
+                        },
+                        // Not working
+                        lineWidth: 10,
+                        // Not working
+                        curveType: 'function'
+                    };
 
-                function tmp() {
+                    convertDates(slidingAverageData, 0);
 
-                    const columnLabels = [["Time", "Probability"]];
+                    function tmp() {
 
-                    const dataArray = probabilities.map(function (elem, i, self) {
-                        return [(i / self.length) * 24, elem];
-                    });
+                        const columnLabels = [["Date", "Average Hours Studied"]];
 
-                    let chart = new google.charts.Line(document.getElementById(elementId));
+                        let chart = new google.charts.Line(document.getElementById(elementId));
 
-                    const table = google.visualization.arrayToDataTable(columnLabels.concat(dataArray));
+                        const table = google.visualization.arrayToDataTable(columnLabels.concat(slidingAverageData));
 
-                    chart.draw(table, google.charts.Line.convertOptions(options));
+                        chart.draw(table, google.charts.Line.convertOptions(options));
+                    }
+
+                    return tmp;
                 }
 
-                return tmp;
-            }
 
-            function convertDates(plotData, column) {
-                plotData.forEach(function (elem, i, self) {
-                    elem[column] = new Date(elem[0]);
+                // Returns a function that will draw the SubjectTotals plot
+                function getSubjectTotalsPlotDrawer(subjectTotals, elementId) {
+
+                    const options = {
+                        chart: {
+                            title: "Total Hours Studied Per Subject",
+                            subtitle: "10 most studied subjects"
+                        },
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        legend: legendOptionsDefault,
+                        hAxis: hAxisOptionsDefault,
+                        vAxis: vAxisOptionsDefault,
+                        backgroundColor: "transparent",
+                        chartArea: {
+                            backgroundColor: "transparent"
+                        },
+                        bars: 'vertical',
+                        colors: ['green']
+                    };
+
+
+                    function tmp() {
+
+                        const columnLabels = [["Subject", "Total"]];
+
+                        let chart = new google.charts.Bar(document.getElementById(elementId));
+
+                        const table = google.visualization.arrayToDataTable(columnLabels.concat(subjectTotals));
+
+                        chart.draw(table, google.charts.Bar.convertOptions(options));
+                    }
+
+                    return tmp;
+                }
+
+                // Returns a function that will draw the dayOfWeekAverages plot
+                function getDayOfWeekAveragesPlotDrawer(dayOfWeekAverages, elementId) {
+
+                    const options = {
+                        chart: {
+                            title: "Average Hours Studied Per Weekday",
+                            subtitle: ""
+                        },
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        legend: legendOptionsDefault,
+                        hAxis: hAxisOptionsDefault,
+                        vAxis: vAxisOptionsDefault,
+                        backgroundColor: "transparent",
+                        chartArea: {
+                            backgroundColor: "transparent"
+                        },
+                        bars: 'vertical',
+                        colors: ['green']
+                    };
+
+
+                    function tmp() {
+
+                        const columnLabels = [["Day Of Week", "Total"]];
+
+                        let chart = new google.charts.Bar(document.getElementById(elementId));
+
+                        const table = google.visualization.arrayToDataTable(columnLabels.concat(dayOfWeekAverages));
+
+                        chart.draw(table, google.charts.Bar.convertOptions(options));
+                    }
+
+                    return tmp;
+                }
+
+                // Returns a function that will draw the study time probability plot
+                function getProbabilityPlotDrawer(probabilities, elementId) {
+
+                    const options = {
+                        chart: {
+                            title: "Probability That I'm Programming",
+                            subtitle: "at a certain hour of the day"
+                        },
+                        titleTextStyle: {
+                            fontSize: titleFontSize,
+                            bold: titleIsBold
+                        },
+                        legend: legendOptionsDefault,
+                        hAxis: {
+                            title: "",
+                            textStyle: {
+                                fontSize: hAxisFontSize
+                            },
+                            maxValue: 24,
+                            ticks: [10, 12, 14] // not supported for material charts
+                        },
+                        vAxis: vAxisOptionsDefault,
+                        backgroundColor: "transparent",
+                        chartArea: {
+                            backgroundColor: "transparent"
+                        },
+                        lineWidth: 10,
+                        colors: ['green']
+                    };
+
+                    function tmp() {
+
+                        const columnLabels = [["Time", "Probability"]];
+
+                        const dataArray = probabilities.map(function (elem, i, self) {
+                            return [(i / self.length) * 24, elem];
+                        });
+
+                        let chart = new google.charts.Line(document.getElementById(elementId));
+
+                        const table = google.visualization.arrayToDataTable(columnLabels.concat(dataArray));
+
+                        chart.draw(table, google.charts.Line.convertOptions(options));
+                    }
+
+                    return tmp;
+                }
+
+                function convertDates(plotData, column) {
+                    plotData.forEach(function (elem, i, self) {
+                        elem[column] = new Date(elem[0]);
+                    });
+                }
+
+
+                // TODO: The user will be a parameter when this is a fully functional app
+                loadJSONFile("/json/sessions/jgdodson", function (data) {
+
+                    // TODO: The current time could come from the timestamp in the ResultInfo...
+
+                    // Add the current session to the session array
+                    if (data.status.isStudying) {
+                        data.sessions.push({
+                            "subject": data.status.subject,
+                            "startTime": data.status.start,
+                            "endTime": new Date().getTime()
+                        });
+                    }
+
+                    const s = computeStats(data.sessions);
+
+                    // Fill summary values at top of page
+                    fillSummaryValues(s);
+
+                    // Only show the current day's overview if the user has studied today.
+                    if (s.todaysSessions.length > 0) {
+                        google.charts.setOnLoadCallback(getTodaysSessionsPlotDrawer(s.todaysSessions, "todaysSessionsPlot"));
+                    } else {
+                        document.getElementById("widt-row").style.display = "none";
+                    }
+
+                    // Set up call-backs to draw all the plots.
+                    google.charts.setOnLoadCallback(getCumulativePlotDrawer(s.cumulative, "cumulativePlot"));
+                    google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(s.subjectTotals, "subjectTotalsPlot"));
+                    google.charts.setOnLoadCallback(getProbabilityPlotDrawer(s.probability, "probabilityPlot"));
+                    google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(s.movingAverage, "movingAveragePlot"));
+                    google.charts.setOnLoadCallback(getDayOfWeekAveragesPlotDrawer(s.dayOfWeekAverages, "dayOfWeekAveragesPlot"));
                 });
-            }
+        </script>
 
-
-            // TODO: The user will be a parameter when this is a fully functional app
-            loadJSONFile("/json/sessions/jgdodson", function (data) {
-
-                // TODO: The current time could come from the timestamp in the ResultInfo...
-
-                // Add the current session to the session array
-                if (data.status.isStudying) {
-                    data.sessions.push({
-                        "subject": data.status.subject,
-                        "startTime": data.status.start,
-                        "endTime": new Date().getTime()
-                    });
-                }
-
-                const s1 = stats1(data.sessions);
-                const s2 = stats2(data.sessions);
-
-                // Fill sumary values at top of page
-                fillSummaryValues(s1);
-
-                // Only show the current day's overview if the user has studied today.
-                if (s1.todaysSessions.length > 0) {
-                    google.charts.setOnLoadCallback(getTodaysSessionsPlotDrawer(s1.todaysSessions, "todaysSessionsPlot"));
-                } else {
-                    document.getElementById("widt-row").style.display = "none";
-                }
-
-                // Set up call-backs to draw all the plots.
-                google.charts.setOnLoadCallback(getCumulativePlotDrawer(s1.cumulative, "cumulativePlot"));
-                google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(s2.subjectTotals, "subjectTotalsPlot"));
-                google.charts.setOnLoadCallback(getProbabilityPlotDrawer(s1.probability, "probabilityPlot"));
-                google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(s1.movingAverage, "movingAveragePlot"));
-                google.charts.setOnLoadCallback(getDayOfWeekAveragesPlotDrawer(s1.dayOfWeekAverages, "dayOfWeekAveragesPlot"));
-            });
-    </script>
-
-}
+    }
