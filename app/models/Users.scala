@@ -13,7 +13,7 @@ import reactivemongo.bson.BSONDocument
 
 // Project
 import constructs.{User, User2}
-import constructs.responses.ProfilesOnly
+import constructs.responses.{ProfilesOnly, AboutMessage}
 import helpers.Selectors.{emailSelector, usernameSelector}
 
 /**
@@ -42,6 +42,17 @@ class Users(val api: ReactiveMongoApi) {
       result.ok
     })
 
+  }
+
+  /**
+    * Get the about message for the user.
+    *
+    * @param username The username for which to retrieve the data.
+    * @return
+    */
+  def aboutMessage(username: String): Future[Option[AboutMessage]] = {
+
+    users2.find(usernameSelector(username), AboutMessage.projector).one[AboutMessage]
   }
 
   /**

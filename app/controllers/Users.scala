@@ -28,6 +28,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
 
   /**
+    * Get the profiles for the given user
     *
     * @param username The username for which to retrieve data
     * @return
@@ -35,6 +36,17 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   def profilesForUsername(username: String): Action[AnyContent] = Action.async { implicit request =>
 
     users.socialProfiles(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve profiles"))))(data => Ok(Json.toJson(data))))
+  }
+
+  /**
+    * Get the about message for the given user
+    *
+    * @param username The username for which to retrieve data
+    * @return
+    */
+  def aboutMessage(username: String): Action[AnyContent] = Action.async { implicit request =>
+
+    users.aboutMessage(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve about message"))))(data => Ok(Json.toJson(data))))
   }
 
 }

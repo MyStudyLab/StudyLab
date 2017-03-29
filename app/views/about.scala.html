@@ -1,16 +1,21 @@
 @()(implicit messages: Messages)
 
-@siteTemplate("About") {
+    @siteTemplate("About") {
 
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-8 col-md-offset-2 raised-element padded-plot text-justify about-para" id="about-para">
-                <div>
-                    This site is an attmept to record and analyze my journey as a programmer. The atom of my analysis
-                    is the study session: a start time, an end time, and a description of what I did in-between. Each
-                    session is like a git commit, except instead of updating my codebase, I'm updating myself.
+        <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2 raised-element padded-plot text-justify about-para" id="about-para">
+                    <div id="aboutMessage"></div>
                 </div>
             </div>
         </div>
-    </div>
-}
+
+        <script>
+                loadJSONFile("/json/about/jgdodson", function (response) {
+
+                    document.getElementById("aboutMessage").textContent = response["about"];
+                });
+        </script>
+    }
