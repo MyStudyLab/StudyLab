@@ -6,6 +6,9 @@ import scala.concurrent.Future
 // Project
 import constructs.{JournalEntry, ResultInfo}
 
+// Play Framework
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
 // Reactive Mongo
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
