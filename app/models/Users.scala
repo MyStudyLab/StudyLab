@@ -1,6 +1,8 @@
 package models
 
 // Standard Library
+import constructs.responses.Credentials
+
 import scala.concurrent.Future
 
 // Play Framework
@@ -24,7 +26,7 @@ import helpers.Selectors.{emailSelector, usernameSelector}
 class Users(val api: ReactiveMongoApi) {
 
   // The users collection
-  protected def users: BSONCollection = api.db.collection[BSONCollection]("users")
+  protected def usersCollection: BSONCollection = api.db.collection[BSONCollection]("users")
 
 
   /**
@@ -35,7 +37,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def addNewUser(newUser: User): Future[Boolean] = {
 
-    users.insert(newUser).map(result => {
+    usersCollection.insert(newUser).map(result => {
       result.ok
     })
 
@@ -49,7 +51,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def aboutMessage(username: String): Future[Option[AboutMessage]] = {
 
-    users.find(usernameSelector(username), AboutMessage.projector).one[AboutMessage]
+    usersCollection.find(usernameSelector(username), AboutMessage.projector).one[AboutMessage]
   }
 
   /**
@@ -60,7 +62,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def socialProfiles(username: String): Future[Option[ProfilesOnly]] = {
 
-    users.find(usernameSelector(username), ProfilesOnly.projector).one[ProfilesOnly]
+    usersCollection.find(usernameSelector(username), ProfilesOnly.projector).one[ProfilesOnly]
   }
 
   /**
@@ -71,7 +73,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def usernameInUse(username: String): Future[Boolean] = {
 
-    users.count(Some(usernameSelector(username)), limit = 1).map(count => count != 0)
+    usersCollection.count(Some(usernameSelector(username)), limit = 1).map(count => count != 0)
   }
 
   /**
@@ -82,7 +84,7 @@ class Users(val api: ReactiveMongoApi) {
     */
   def emailInUse(email: String): Future[Boolean] = {
 
-    users.count(Some(emailSelector(email)), limit = 1).map(count => count != 0)
+    usersCollection.count(Some(emailSelector(email)), limit = 1).map(count => count != 0)
   }
 
 
@@ -95,15 +97,15 @@ class Users(val api: ReactiveMongoApi) {
     */
   def checkCredentials(username: String, given: String): Future[Boolean] = {
 
-    users.find(usernameSelector(username), User.projector).one[User].map(optUser =>
+    usersCollection.find(usernameSelector(username), Credentials.projector).one[Credentials].map(optCredentials =>
 
-      optUser.fold(false)(user => user.password == given)
+      optCredentials.fold(false)(credentials => credentials.password == given)
     )
   }
 
 
   def getUserByUsername(username: String): Future[Option[User]] = {
-    users.find(usernameSelector(username), User.projector).one[User]
+    usersCollection.find(usernameSelector(username), User.projector).one[User]
   }
 
   /**
@@ -118,7 +120,7 @@ class Users(val api: ReactiveMongoApi) {
     // ALl usernames which contain the query
     val selector = BSONDocument("username" -> BSONDocument("$regex" -> query))
 
-    users.find(selector).cursor[User]().collect[List](upTo = limit)
+    usersCollection.find(selector).cursor[User]().collect[List](upTo = limit)
   }
 
   /**
