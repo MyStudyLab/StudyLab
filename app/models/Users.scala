@@ -18,12 +18,13 @@ import constructs.User
 import constructs.responses.{ProfilesOnly, AboutMessage}
 import helpers.Selectors.{emailSelector, usernameSelector}
 
+
 /**
-  * User model class.
+  * Model layer to manage users
   *
   * @param api Holds the reference to the database.
   */
-class Users(val api: ReactiveMongoApi) {
+class Users(protected val api: ReactiveMongoApi) {
 
   // The users collection
   protected def usersCollection: BSONCollection = api.db.collection[BSONCollection]("users")
@@ -43,6 +44,7 @@ class Users(val api: ReactiveMongoApi) {
 
   }
 
+
   /**
     * Get the about message for the user.
     *
@@ -53,6 +55,7 @@ class Users(val api: ReactiveMongoApi) {
 
     usersCollection.find(usernameSelector(username), AboutMessage.projector).one[AboutMessage]
   }
+
 
   /**
     * Get the social profiles for the user.
@@ -65,6 +68,7 @@ class Users(val api: ReactiveMongoApi) {
     usersCollection.find(usernameSelector(username), ProfilesOnly.projector).one[ProfilesOnly]
   }
 
+
   /**
     * Return true iff the username is already in the database.
     *
@@ -75,6 +79,7 @@ class Users(val api: ReactiveMongoApi) {
 
     usersCollection.count(Some(usernameSelector(username)), limit = 1).map(count => count != 0)
   }
+
 
   /**
     * Return true if the email is already in the database.
@@ -104,6 +109,12 @@ class Users(val api: ReactiveMongoApi) {
   }
 
 
+  /**
+    * Retrieve the user with the given username
+    *
+    * @param username The username in question
+    * @return
+    */
   def getUserByUsername(username: String): Future[Option[User]] = {
     usersCollection.find(usernameSelector(username), User.projector).one[User]
   }

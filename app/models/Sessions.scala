@@ -21,7 +21,7 @@ import helpers.Selectors.usernameSelector
   *
   * @param mongoApi Holds the reference to the database.
   */
-class Sessions(val mongoApi: ReactiveMongoApi) {
+class Sessions(protected val mongoApi: ReactiveMongoApi) {
 
   // An interface to the sessions collection as BSON
   protected def bsonSessionsCollection: BSONCollection = mongoApi.db.collection[BSONCollection]("sessions")

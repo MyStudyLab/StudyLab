@@ -12,11 +12,11 @@ import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.play.json._
 
 /**
-  * Interface to the quotes data. Part of the model layer.
+  * Model layer to manage quotes
   *
   * @param mongoApi Reference to the Reactive Mongo API
   */
-class Quotes(val mongoApi: ReactiveMongoApi) {
+class Quotes(protected val mongoApi: ReactiveMongoApi) {
 
   /**
     * A reference to the quotes collection of the database.
