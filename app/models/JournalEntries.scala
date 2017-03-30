@@ -27,12 +27,13 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
   /**
     * Record a journal entry in the database
     *
-    * @param entry The journal entry to be recorded
+    * @param username The username submitting the journal entry
+    * @param text     The journal entry to be recorded
     * @return
     */
-  def addJournalEntry(entry: JournalEntry): Future[ResultInfo] = {
+  def addJournalEntry(username: String, text: String): Future[ResultInfo] = {
 
-    bsonJournalEntriesCollection.insert(entry).map(result =>
+    bsonJournalEntriesCollection.insert(JournalEntry(username, text, System.currentTimeMillis())).map(result =>
       if (result.ok) ResultInfo.succeedWithMessage("Journal entry recorded")
       else ResultInfo.failWithMessage(result.errmsg.getOrElse(ResultInfo.noErrMsg)))
   }

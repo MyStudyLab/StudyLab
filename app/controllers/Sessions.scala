@@ -33,6 +33,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   protected def invalidFormResponse = Future(Ok(Json.toJson(ResultInfo.invalidForm)))
 
 
+  // TODO: Put this method in a helper object or something
   /**
     * Check a username and password before performing the given action.
     *
