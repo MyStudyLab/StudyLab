@@ -9,7 +9,7 @@ import play.api.libs.json.{Json, Writes}
   *
   * @param success   Indicates whether the operation succeeded
   * @param message   A message regarding the success/failure of the operation
-  * @param timestamp A timestamp of the response
+  * @param timestamp When the response was created by the server
   */
 case class ResultInfo(success: Boolean, message: String, timestamp: Long)
 
@@ -17,6 +17,9 @@ object ResultInfo {
 
   // Implicitly convert to JSON
   implicit val ResultInfoWriter: Writes[ResultInfo] = Json.writes[ResultInfo]
+
+  // Message for when Mongo fails without providing one
+  val noErrMsg = "Failed without error message"
 
   // All of the following helpers are functions so that the timestamp will be generated at the proper time
 

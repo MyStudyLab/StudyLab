@@ -7,11 +7,12 @@ import javax.inject.Inject
 import constructs.ResultInfo
 
 // Play Framework
-import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.Json
 
+// Reactive Mongo
+import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 
 /**
   *
@@ -35,7 +36,9 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   def profilesForUsername(username: String): Action[AnyContent] = Action.async { implicit request =>
 
-    usersModel.socialProfiles(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve profiles"))))(data => Ok(Json.toJson(data))))
+    usersModel.socialProfiles(username).map(
+      optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve profiles"))))(data => Ok(Json.toJson(data)))
+    )
   }
 
   /**
@@ -46,7 +49,9 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   def aboutMessage(username: String): Action[AnyContent] = Action.async { implicit request =>
 
-    usersModel.aboutMessage(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve about message"))))(data => Ok(Json.toJson(data))))
+    usersModel.aboutMessage(username).map(
+      optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve about message"))))(data => Ok(Json.toJson(data)))
+    )
   }
 
 }

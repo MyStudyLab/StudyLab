@@ -26,9 +26,6 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
   // An interface to the sessions collection as BSON
   protected def bsonSessionsCollection: BSONCollection = mongoApi.db.collection[BSONCollection]("sessions")
 
-  // ResultInfo message for when Mongo fails without providing one
-  protected val noErrMsg = "Failed without error message"
-
   /**
     * Retrieve data for the given username.
     *
@@ -88,7 +85,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
           // Update the status
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
             if (result.ok) ResultInfo.succeedWithMessage(s"Now studying $subject")
-            else ResultInfo.failWithMessage(message = result.errmsg.getOrElse(noErrMsg))
+            else ResultInfo.failWithMessage(message = result.errmsg.getOrElse(ResultInfo.noErrMsg))
           )
         }
       })
@@ -130,7 +127,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
           // Add the new session and updated stats
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
             if (result.ok) ResultInfo.succeedWithMessage("Finished studying")
-            else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
+            else ResultInfo.failWithMessage(result.errmsg.getOrElse(ResultInfo.noErrMsg)))
         }
       })
     )
@@ -164,7 +161,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
           // Update the status
           bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
             if (result.ok) ResultInfo.succeedWithMessage("Session aborted")
-            else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
+            else ResultInfo.failWithMessage(result.errmsg.getOrElse(ResultInfo.noErrMsg)))
         }
       })
     )
@@ -201,7 +198,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
           // Add the new subject
           bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
             if (result.ok) ResultInfo.succeedWithMessage(s"Added $subject to subject list")
-            else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
+            else ResultInfo.failWithMessage(result.errmsg.getOrElse(ResultInfo.noErrMsg)))
         }
       })
     )
@@ -242,7 +239,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
           // Remove the subject
           bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
             if (result.ok) ResultInfo.succeedWithMessage(s"Removed $subject.")
-            else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
+            else ResultInfo.failWithMessage(result.errmsg.getOrElse(ResultInfo.noErrMsg)))
         }
       })
     )
@@ -299,7 +296,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
             // Add the new subject
             bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
               if (result.ok) ResultInfo.succeedWithMessage(s"Renamed $oldName to $newName")
-              else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
+              else ResultInfo.failWithMessage(result.errmsg.getOrElse(ResultInfo.noErrMsg)))
           }
         })
       })
@@ -357,7 +354,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
             // Merge the subjects
             bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
               if (result.ok) ResultInfo.succeedWithMessage(s"Merged $absorbed into $absorbing")
-              else ResultInfo.failWithMessage(result.errmsg.getOrElse(noErrMsg)))
+              else ResultInfo.failWithMessage(result.errmsg.getOrElse(ResultInfo.noErrMsg)))
           })
         })
       })

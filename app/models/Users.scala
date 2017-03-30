@@ -1,8 +1,6 @@
 package models
 
 // Standard Library
-import constructs.responses.Credentials
-
 import scala.concurrent.Future
 
 // Play Framework
@@ -15,7 +13,7 @@ import reactivemongo.bson.BSONDocument
 
 // Project
 import constructs.User
-import constructs.responses.{ProfilesOnly, AboutMessage}
+import constructs.responses.{ProfilesOnly, AboutMessage, Credentials}
 import helpers.Selectors.{emailSelector, usernameSelector}
 
 
@@ -119,6 +117,7 @@ class Users(protected val api: ReactiveMongoApi) {
     usersCollection.find(usernameSelector(username), User.projector).one[User]
   }
 
+
   /**
     * Search for a particular username
     *
@@ -133,6 +132,7 @@ class Users(protected val api: ReactiveMongoApi) {
 
     usersCollection.find(selector).cursor[User]().collect[List](upTo = limit)
   }
+
 
   /**
     * Find a user by their actual name
