@@ -6,9 +6,10 @@ import scala.concurrent.Future
 // Play Framework
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsObject, Json}
+
+// Reactive Mongo
 import play.modules.reactivemongo.json.collection._
 import play.modules.reactivemongo.ReactiveMongoApi
-
 import reactivemongo.play.json._
 
 /**

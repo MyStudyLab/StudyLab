@@ -6,19 +6,18 @@ import javax.inject.Inject
 // Play Framework
 import play.api.mvc._
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 
 
 /**
   *
-  * @param reactiveMongoApi
   * @param messagesApi
   */
-class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: MessagesApi)
-  extends Controller with MongoController with ReactiveMongoComponents with I18nSupport {
+class Application @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   /**
     * The Home Page
+    *
+    * @return
     */
   def home = Action {
     Ok(views.html.home())
@@ -30,10 +29,12 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
     *
     * @return
     */
-  def resume = controllers.Assets.at(path = "/public", file = "pdfs/resume.pdf")
+  def resume: Action[AnyContent] = controllers.Assets.at(path = "/public", file = "pdfs/resume.pdf")
 
   /**
     * The About Page
+    *
+    * @return
     */
   def about = Action {
     Ok(views.html.about())
@@ -41,11 +42,18 @@ class Application @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messages
 
   /**
     * The Quotes Page
+    *
+    * @return
     */
   def quotes = Action {
     Ok(views.html.quotes())
   }
 
+  /**
+    * The Profiles Page
+    *
+    * @return
+    */
   def profiles = Action {
     Ok(views.html.profiles())
   }
