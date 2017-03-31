@@ -4,7 +4,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 
 
-case class AddJournalEntryForm(username: String, password: String, text: String, timestamp: Long)
+case class AddJournalEntryForm(username: String, password: String, text: String)
 
 
 object AddJournalEntryForm {
@@ -13,8 +13,7 @@ object AddJournalEntryForm {
     mapping(
       "username" -> nonEmptyText,
       "password" -> nonEmptyText,
-      "text" -> nonEmptyText,
-      "timestamp" -> longNumber
+      "text" -> nonEmptyText
     )(AddJournalEntryForm.apply)(AddJournalEntryForm.unapply)
   )
 

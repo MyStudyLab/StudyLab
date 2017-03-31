@@ -29,6 +29,9 @@ GET         /json/profiles/:username        controllers.Users.profilesForUsernam
 # Get the about message as JSON for the username
 GET         /json/about/:username           controllers.Users.aboutMessage(username: String)
 
+# Get the journal entries as JSON for the username
+GET         /json/journal/:username         controllers.JournalEntries.journalEntriesForUsername(username: String)
+
 # Start a study session
 POST        /study/start                    controllers.Sessions.startSession()
 

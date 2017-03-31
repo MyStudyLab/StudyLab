@@ -1,17 +1,21 @@
 package models
 
 // Standard Library
+
 import scala.concurrent.Future
 
 // Project
 import constructs.{JournalEntry, ResultInfo}
 
 // Play Framework
+import play.api.libs.json._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 // Reactive Mongo
+import reactivemongo.play.json._
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
+import play.modules.reactivemongo.json.collection.JSONCollection
 
 /**
   * Model layer to manage journal entries
@@ -23,6 +27,7 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
   // An interface to the journal_entries collection as BSON
   protected def bsonJournalEntriesCollection: BSONCollection = mongoApi.db.collection[BSONCollection]("journal_entries")
 
+  protected def c: JSONCollection = mongoApi.db.collection[JSONCollection]("journal_entries")
 
   /**
     * Record a journal entry in the database
@@ -44,7 +49,12 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
     * @param username The username for which to retrieve data
     * @return
     */
-  def getJournalEntries(username: String): Future[ResultInfo] = {
-    ???
+  def journalEntriesForUsername(username: String): Future[List[JsObject]] = {
+
+    val selector = Json.obj("username" -> username)
+
+    val projector = Json.obj("_id" -> 0)
+
+    c.find(selector, projector).cursor[JsObject]().collect[List]()
   }
 }
