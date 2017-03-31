@@ -2,11 +2,9 @@ package controllers
 
 // Standard Library
 import javax.inject.Inject
-import scala.concurrent.Future
 
 // Project
 import forms.AddJournalEntryForm
-import constructs.{JournalEntry, ResultInfo}
 
 // Play Framework
 import play.api.mvc.{Action, Controller}
@@ -16,7 +14,6 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 // Reactive Mongo
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 
-
 /**
   *
   * @param reactiveMongoApi
@@ -24,12 +21,8 @@ import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMo
 class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   extends Controller with MongoController with ReactiveMongoComponents {
 
-  // Reference to the sessions model
+  // Reference to the Journal Entry model
   protected val journalEntries = new models.JournalEntries(reactiveMongoApi)
-
-  // TODO: Put this method in a helper object or something
-  // Response indicating the request form was invalid.
-  protected def invalidFormResponse = Future(Ok(Json.toJson(ResultInfo.invalidForm)))
 
 
   /**
@@ -37,7 +30,7 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  protected def addJournalEntry = Action.async { implicit request =>
+  protected def add = Action.async { implicit request =>
 
     AddJournalEntryForm.form.bindFromRequest()(request).fold(
       badForm => invalidFormResponse,
@@ -45,4 +38,11 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     )
   }
 
+
+  /**
+    * Add a journal entry after checking user credentials
+    *
+    * @return
+    */
+  def addJournalEntry() = checked(add)(reactiveMongoApi)
 }

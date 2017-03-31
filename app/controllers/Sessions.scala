@@ -2,17 +2,18 @@ package controllers
 
 // Standard Library
 import javax.inject.Inject
-import scala.concurrent.Future
-
-// Play Framework
-import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
-import play.api.mvc._
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.json.Json
 
 // Project
 import constructs.ResultInfo
 import forms._
+
+// Play Framework
+import play.api.mvc._
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json.Json
+
+// Reactive Mongo
+import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 
 
 /**
@@ -25,33 +26,6 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
   // Reference to the sessions model
   protected val sessions = new models.Sessions(reactiveMongoApi)
-
-  // Reference to the users model
-  protected val users = new models.Users(reactiveMongoApi)
-
-  // Response indicating the request form was invalid.
-  protected def invalidFormResponse = Future(Ok(Json.toJson(ResultInfo.invalidForm)))
-
-
-  // TODO: Put this method in a helper object or something
-  /**
-    * Check a username and password before performing the given action.
-    *
-    * @param action The action to perform once the request is authenticated.
-    * @tparam A Type parameter of the Action
-    * @return
-    */
-  protected def checked[A](action: Action[A]) = Action.async(action.parser) { implicit request =>
-
-    PasswordAndUsername.form.bindFromRequest()(request).fold(
-      badForm => invalidFormResponse,
-      goodForm =>
-        users.checkCredentials(goodForm.username, goodForm.password).flatMap(matched =>
-          if (matched) action(request)
-          else Future(Ok(Json.toJson(ResultInfo.badUsernameOrPass)))
-        )
-    )
-  }
 
 
   /**
@@ -169,48 +143,48 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def startSession() = checked(start)
+  def startSession() = checked(start)(reactiveMongoApi)
 
   /**
     * Stop a study session
     *
     * @return
     */
-  def stopSession() = checked(stop)
+  def stopSession() = checked(stop)(reactiveMongoApi)
 
   /**
     * Abort the current study session
     *
     * @return
     */
-  def abortSession() = checked(abort)
+  def abortSession() = checked(abort)(reactiveMongoApi)
 
   /**
     * Add a subject to a user's subject list
     *
     * @return
     */
-  def addSubject() = checked(add)
+  def addSubject() = checked(add)(reactiveMongoApi)
 
   /**
     * Remove a subject from a user's subject list
     *
     * @return
     */
-  def removeSubject() = checked(remove)
+  def removeSubject() = checked(remove)(reactiveMongoApi)
 
   /**
     * Rename one of the subjects in a user's subject list
     *
     * @return
     */
-  def renameSubject() = checked(rename)
+  def renameSubject() = checked(rename)(reactiveMongoApi)
 
   /**
     * Merge two subjects from a user's subject list
     *
     * @return
     */
-  def mergeSubjects() = checked(merge)
+  def mergeSubjects() = checked(merge)(reactiveMongoApi)
 
 }

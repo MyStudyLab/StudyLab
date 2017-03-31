@@ -37,4 +37,14 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
       if (result.ok) ResultInfo.succeedWithMessage("Journal entry recorded")
       else ResultInfo.failWithMessage(result.errmsg.getOrElse(ResultInfo.noErrMsg)))
   }
+
+  /**
+    * Get all of the journal entries for the given username
+    *
+    * @param username The username for which to retrieve data
+    * @return
+    */
+  def getJournalEntries(username: String): Future[ResultInfo] = {
+    ???
+  }
 }
