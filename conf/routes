@@ -50,6 +50,9 @@ POST        /study/abort                    controllers.Sessions.abortSession()
 # Add a study subject
 POST        /study/add                      controllers.Sessions.addSubject()
 
+# Add a study subject via the query string
+GET         /study/queryAdd                 controllers.Sessions.addSubjectFromParams(username: String, subject: String, description: String)
+
 # Remove a study subject
 POST        /study/remove                   controllers.Sessions.removeSubject()
 
@@ -63,7 +66,7 @@ POST        /study/merge                    controllers.Sessions.mergeSubjects()
 POST        /journal/add                    controllers.JournalEntries.addJournalEntry()
 
 # Add a new user via the query string
-GET        /users/queryAdd                 controllers.Users.addNewUserFromParams(username: String, email: String, password: String)
+GET         /users/queryAdd                 controllers.Users.addNewUserFromParams(username: String, email: String, password: String)
 
 # Add a new user via a POSTed form
 POST        /users/add                      controllers.Users.addNewUser()

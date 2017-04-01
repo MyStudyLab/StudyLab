@@ -104,6 +104,18 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     )
   }
 
+  /**
+    * Add a subject via the query string
+    *
+    * @param username
+    * @param subject
+    * @param description
+    * @return
+    */
+  def addSubjectFromParams(username: String, subject: String, description: String) = Action.async { implicit request =>
+
+    sessions.addSubject(username, subject, description).map(resInfo => Ok(Json.toJson(resInfo)))
+  }
 
   /**
     * Invoke the model layer to remove a subject.
