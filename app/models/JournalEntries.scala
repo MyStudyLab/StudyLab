@@ -27,8 +27,6 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
   // An interface to the journal_entries collection as BSON
   protected def bsonJournalEntriesCollection: BSONCollection = mongoApi.db.collection[BSONCollection]("journal_entries")
 
-  protected def c: JSONCollection = mongoApi.db.collection[JSONCollection]("journal_entries")
-
   /**
     * Record a journal entry in the database
     *
@@ -50,6 +48,8 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
     * @return
     */
   def journalEntriesForUsername(username: String): Future[List[JsObject]] = {
+
+    def c: JSONCollection = mongoApi.db.collection[JSONCollection]("journal_entries")
 
     val selector = Json.obj("username" -> username)
 
