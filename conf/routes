@@ -63,7 +63,7 @@ POST        /study/merge                    controllers.Sessions.mergeSubjects()
 POST        /journal/add                    controllers.JournalEntries.addJournalEntry()
 
 # Add a new user via the query string
-POST        /users/queryAdd                 controllers.Users.addNewUserFromParams(username: String, email: String, password: String)
+GET        /users/queryAdd                 controllers.Users.addNewUserFromParams(username: String, email: String, password: String)
 
 # Add a new user via a POSTed form
 POST        /users/add                      controllers.Users.addNewUser()
