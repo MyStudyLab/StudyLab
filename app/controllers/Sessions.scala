@@ -41,6 +41,17 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     )
   }
 
+  /**
+    * Start a study session via the query string
+    *
+    * @param username
+    * @param subject
+    * @return
+    */
+  def startSessionFromParams(username: String, subject: String) = Action.async { implicit request =>
+
+    sessions.startSession(username, subject).map(result => Ok(Json.toJson(result)))
+  }
 
   /**
     * Invoke the model layer to stop the current study session
@@ -55,6 +66,16 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     )
   }
 
+  /**
+    *
+    * @param username
+    * @param message
+    * @return
+    */
+  def stopSessionFromParams(username: String, message: String) = Action.async { implicit request =>
+
+    sessions.stopSession(username, message).map(result => Ok(Json.toJson(result)))
+  }
 
   /**
     * Invoke the model layer to abort the current study session.

@@ -35,8 +35,14 @@ GET         /json/journal/:username         controllers.JournalEntries.journalEn
 # Start a study session
 POST        /study/start                    controllers.Sessions.startSession()
 
+# Start a study session via the query string
+GET         /study/queryStart               controllers.Sessions.startSessionFromParams(username: String, subject: String)
+
 # Stop a study session
 POST        /study/stop                     controllers.Sessions.stopSession()
+
+# Stop a study session via the query string
+GET         /study/queryStop                controllers.Sessions.stopSessionFromParams(username: String, message: String)
 
 # Abort a study session
 POST        /study/abort                    controllers.Sessions.abortSession()
@@ -57,7 +63,7 @@ POST        /study/merge                    controllers.Sessions.mergeSubjects()
 POST        /journal/add                    controllers.JournalEntries.addJournalEntry()
 
 # Add a new user via the query string
-GET         /users/queryAdd                 controllers.Users.addNewUserFromParams(username: String, email: String, password: String)
+POST        /users/queryAdd                 controllers.Users.addNewUserFromParams(username: String, email: String, password: String)
 
 # Add a new user via a POSTed form
 POST        /users/add                      controllers.Users.addNewUser()
