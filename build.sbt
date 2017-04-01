@@ -6,7 +6,10 @@ lazy val `dashboard` = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.7"
 
-libraryDependencies ++= Seq(jdbc, cache, ws, specs2 % Test)
+
+// Enable CORS for the hackathon
+// TODO: remove this once the site is live
+libraryDependencies ++= Seq(filters, jdbc, cache, ws, specs2 % Test)
 
 libraryDependencies ++= Seq(
   "org.reactivemongo" %% "play2-reactivemongo" % "0.11.9"

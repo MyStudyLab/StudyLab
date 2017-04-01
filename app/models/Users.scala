@@ -36,9 +36,9 @@ class Users(protected val api: ReactiveMongoApi) {
   /**
     * Add a new user to the database
     *
-    * @param username
-    * @param email
-    * @param password
+    * @param username The user's username
+    * @param email    The user's email
+    * @param password The user's password
     * @return
     */
   def addNewUser(username: String, email: String, password: String): Future[ResultInfo] = {

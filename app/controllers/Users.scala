@@ -31,7 +31,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
 
   /**
-    *
+    * Add a new user via a POSTed html form
     *
     * @return
     */
@@ -46,9 +46,9 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   /**
     * Add a new user via query parameters
     *
-    * @param username
-    * @param email
-    * @param password
+    * @param username The new user's username
+    * @param email    The new user's email
+    * @param password The new user's password
     * @return
     */
   def addNewUserFromParams(username: String, email: String, password: String) = Action.async { implicit request =>
