@@ -1,6 +1,10 @@
 package models
 
 // Standard Library
+import constructs.{ContactInfo, ResultInfo, Status}
+import play.api.libs.json.Json
+import play.modules.reactivemongo.json.collection.JSONCollection
+
 import scala.concurrent.Future
 
 // Play Framework
@@ -10,9 +14,10 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.BSONDocument
+import reactivemongo.play.json._
 
 // Project
-import constructs.User
+import constructs.{User, Profiles, Subject, Session}
 import constructs.responses.{ProfilesOnly, AboutMessage, Credentials}
 import helpers.Selectors.{emailSelector, usernameSelector}
 
@@ -29,16 +34,34 @@ class Users(protected val api: ReactiveMongoApi) {
 
 
   /**
-    * Add a new user to the database.
+    * Add a new user to the database
     *
-    * @param newUser The user being added.
+    * @param username
+    * @param email
+    * @param password
     * @return
     */
-  def addNewUser(newUser: User): Future[Boolean] = {
+  def addNewUser(username: String, email: String, password: String): Future[ResultInfo] = {
 
-    usersCollection.insert(newUser).map(result => {
+    val sessionsCollection: JSONCollection = api.db.collection[JSONCollection]("sessions")
+
+    val bsonSessions: BSONCollection = api.db.collection[BSONCollection]("sessions")
+
+    // Add document to the users collection
+    usersCollection.insert(User(username, "", ContactInfo.onlyEmail(email), password,
+      System.currentTimeMillis(), Status(false, "", 0), Vector[Subject]())).map(result => {
       result.ok
     })
+
+    val newUserSessionObject = BSONDocument(
+      "username" -> username,
+      "status" -> Status(false, "", 0L),
+      "subjects" -> Vector[Subject](),
+      "sessions" -> Vector[Session]()
+    )
+
+    // Add document to the sessions collection
+    bsonSessions.insert(newUserSessionObject).map(result => ResultInfo(result.ok, result.message, System.currentTimeMillis()))
 
   }
 

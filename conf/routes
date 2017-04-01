@@ -56,6 +56,12 @@ POST        /study/merge                    controllers.Sessions.mergeSubjects()
 # Add a journal entry
 POST        /journal/add                    controllers.JournalEntries.addJournalEntry()
 
+
+GET         /users/queryAdd                 controllers.Users.addNewUserFromParams(username: String, email: String, password: String)
+
+# Add a new user to the database
+POST        /users/add                      controllers.Users.addNewUser()
+
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                   controllers.Assets.at(path="/public", file)
 

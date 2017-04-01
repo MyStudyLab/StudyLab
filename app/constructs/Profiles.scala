@@ -39,6 +39,8 @@ object Profiles {
 
   import reactivemongo.bson.Macros
 
+  val emptyProfiles = Profiles("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "")
+
   // Implicitly convert to/from BSON
   implicit val ProfilesHandler = Macros.handler[Profiles]
 

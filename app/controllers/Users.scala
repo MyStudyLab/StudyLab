@@ -3,6 +3,8 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
+import forms.AddUserForm
+
 // Project
 import constructs.ResultInfo
 
@@ -26,6 +28,33 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     * Instance of the Users model
     */
   protected val usersModel = new models.Users(reactiveMongoApi)
+
+
+  /**
+    *
+    *
+    * @return
+    */
+  def addNewUser = Action.async { implicit request =>
+
+    AddUserForm.form.bindFromRequest()(request).fold(
+      badForm => invalidFormResponse,
+      goodForm => usersModel.addNewUser(goodForm.username, goodForm.email, goodForm.password).map(resultInfo => Ok(Json.toJson(resultInfo)))
+    )
+  }
+
+  /**
+    * Add a new user via query parameters
+    *
+    * @param username
+    * @param email
+    * @param password
+    * @return
+    */
+  def addNewUserFromParams(username: String, email: String, password: String) = Action.async { implicit request =>
+
+    usersModel.addNewUser(username, email, password).map(result => Ok(Json.toJson(result)))
+  }
 
 
   /**

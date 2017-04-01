@@ -1,7 +1,6 @@
 package models
 
 // Standard Library
-
 import scala.concurrent.Future
 
 // Project

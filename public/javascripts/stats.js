@@ -1,6 +1,21 @@
 // TODO: Probability distribution of session length (total and per-subject)
 // TODO: Probability distribution of daily total (total and per-subject)
 
+function probabilityOverlap(user1, user2) {
+
+    var min_sequence = [];
+
+    if (user1.length != user2.length) {
+        //todo
+    }
+
+    for (let i = 0; i < user1.length(); i++) {
+        min_sequence.append(Math.min(user1, user2))
+    }
+
+    return min_sequence;
+}
+
 /*
  * Return the total duration of a sequence of sessions (hours).
  */
@@ -11,6 +26,7 @@ function sumSessions(sessions) {
     }, 0);
 
 }
+
 
 /*
  * Return the number of days since the first session.
