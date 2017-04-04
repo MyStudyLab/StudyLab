@@ -4,12 +4,16 @@ Home page.
 @()(implicit messages: Messages)
 
     @loadingDots() = {
-        <p class="saving"><span>&#11044</span><span>&#11044</span><span>&#11044</span><span>&#11044</span></p>
+        <p class="saving"><span>&#11044</span>
+            <span>&#11044</span>
+            <span>&#11044</span>
+            <span>&#11044</span></p>
     }
 
     @dataBlock(title: String, id: String, offset: Int, width: Int) = {
         <div class="col-sm-offset-@offset col-sm-@width raised-element">
-            <u class="data-block-title">@title</u><br>
+            <u class="data-block-title">@title</u>
+            <br>
             <div id="@id">
             @loadingDots()
             </div>
