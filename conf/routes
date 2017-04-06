@@ -21,7 +21,7 @@ GET         /profiles                       controllers.Application.profiles
 GET         /json/sessions/:username        controllers.Sessions.sessionsForUsername(username: String)
 
 # Get the user's status as JSON
-#GET         /json/status/:username          controllers.Sessions.status(username: String)
+GET         /json/status/:username          controllers.Sessions.userStatus(username: String)
 
 # Get quotes as JSON for the username
 GET         /json/quotes/:username          controllers.Quotes.getQuotes(username: String)

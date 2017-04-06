@@ -173,6 +173,16 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     sessions.getUserSessionData(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve sessions"))))(data => Ok(Json.toJson(data))))
   }
 
+  /**
+    *
+    * @param username
+    * @return
+    */
+  def userStatus(username: String) = Action.async { implicit request =>
+
+    sessions.getUserStatus(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve status"))))(data => Ok(Json.toJson(data))))
+  }
+
 
   /**
     * Start a study session

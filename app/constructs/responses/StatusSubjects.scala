@@ -1,6 +1,7 @@
 package constructs.responses
 
 import constructs.{Projector, Status, Subject}
+import play.api.libs.json.Json
 import reactivemongo.bson.BSONDocument
 
 /**
@@ -18,9 +19,12 @@ object StatusSubjects {
   import reactivemongo.bson.Macros
 
   // Implicitly convert to/from BSON
-  implicit val StatusSubjectsHandler = Macros.handler[StatusSubjects]
+  implicit val handler = Macros.handler[StatusSubjects]
 
-  implicit val statusSubjectsProjector = new Projector[StatusSubjects] {
-    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
+  // Implicitly convert to JSON
+  implicit val writer = Json.writes[StatusSubjects]
+
+  implicit val projector = new Projector[StatusSubjects] {
+    val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "_id" -> 0)
   }
 }

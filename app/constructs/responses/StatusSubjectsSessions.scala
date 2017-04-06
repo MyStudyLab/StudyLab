@@ -20,13 +20,13 @@ object StatusSubjectsSessions {
   import reactivemongo.bson.Macros
 
   // Implicitly convert to/from BSON
-  implicit val StatusSubjectsSessionsHandler = Macros.handler[StatusSubjectsSessions]
+  implicit val handler = Macros.handler[StatusSubjectsSessions]
 
   // Implicitly convert to JSON
-  implicit val StatusSubjectsSessionsWrites = Json.writes[StatusSubjectsSessions]
+  implicit val writer = Json.writes[StatusSubjectsSessions]
 
 
-  implicit val statusSubjectsSessionsProjector = new Projector[StatusSubjectsSessions] {
+  implicit val projector = new Projector[StatusSubjectsSessions] {
     val projector = BSONDocument("username" -> 1, "status" -> 1, "subjects" -> 1, "sessions" -> 1, "_id" -> 0)
   }
 }

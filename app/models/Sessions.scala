@@ -1,7 +1,8 @@
 package models
 
 // Standard Library
-import constructs.responses.{StatusSubjects, StatusSubjectsSessions}
+import constructs.responses.{StatusOnly, StatusSubjects, StatusSubjectsSessions}
+
 import scala.concurrent.Future
 
 // Play Framework
@@ -42,6 +43,19 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
   }
 
 
+  /**
+    * Get the study status of the given username
+    *
+    * @param username The username for which to retrieve status data.
+    * @return
+    */
+  def getUserStatus(username: String): Future[Option[StatusOnly]] = {
+
+    // Prevent information leakage
+    userData[StatusOnly](username).map(_.map(s => if (s.status.isStudying) s else StatusOnly(s.username, Status.empty)))
+  }
+
+  
   /**
     * Return session data for the given user.
     *
