@@ -100,7 +100,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   protected def add = Action.async { implicit request =>
 
-    AddOrRemoveSubjectForm.form.bindFromRequest()(request).fold(
+    AddSubjectForm.form.bindFromRequest()(request).fold(
       badForm => invalidFormResponse,
       goodForm => sessions.addSubject(goodForm.username, goodForm.subject, goodForm.description).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )

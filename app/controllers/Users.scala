@@ -39,7 +39,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     AddUserForm.form.bindFromRequest()(request).fold(
       badForm => invalidFormResponse,
-      goodForm => usersModel.addNewUserMono(goodForm.username, goodForm.email, goodForm.password).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      goodForm => usersModel.addNewUser(goodForm.username, goodForm.email, goodForm.password).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
 
@@ -54,7 +54,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   def addNewUserFromParams(username: String, email: String, password: String) = Action.async { implicit request =>
 
-    usersModel.addNewUserMono(username, email, password).map(result => Ok(Json.toJson(result)))
+    usersModel.addNewUser(username, email, password).map(result => Ok(Json.toJson(result)))
   }
 
 

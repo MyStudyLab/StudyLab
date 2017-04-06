@@ -1,7 +1,7 @@
 package models
 
 // Standard Library
-import constructs.{ContactInfo, ResultInfo, Status, MonoUser}
+import constructs.{ResultInfo, User}
 import play.api.libs.json.Json
 import play.modules.reactivemongo.json.collection.JSONCollection
 
@@ -17,7 +17,6 @@ import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json._
 
 // Project
-import constructs.{User, Profiles, Subject, Session}
 import constructs.responses.{ProfilesOnly, AboutMessage, Credentials}
 import helpers.Selectors.{emailSelector, usernameSelector}
 
@@ -41,9 +40,9 @@ class Users(protected val api: ReactiveMongoApi) {
     * @param password The user's password
     * @return
     */
-  def addNewUserMono(username: String, email: String, password: String): Future[ResultInfo] = {
+  def addNewUser(username: String, email: String, password: String): Future[ResultInfo] = {
 
-    usersCollection.insert(MonoUser(username, email, password)).map(result => {
+    usersCollection.insert(User(username, email, password)).map(result => {
       new ResultInfo(result.ok, result.message)
     })
 
@@ -113,42 +112,5 @@ class Users(protected val api: ReactiveMongoApi) {
     )
   }
 
-
-  /**
-    * Retrieve the user with the given username
-    *
-    * @param username The username in question
-    * @return
-    */
-  def getUserByUsername(username: String): Future[Option[User]] = {
-    usersCollection.find(usernameSelector(username), User.projector).one[User]
-  }
-
-
-  /**
-    * Search for a particular username
-    *
-    * @param query The search text
-    * @param limit The maximum number of results to return
-    * @return
-    */
-  def searchUsername(query: String, limit: Int = Int.MaxValue): Future[List[User]] = {
-
-    // ALl usernames which contain the query
-    val selector = BSONDocument("username" -> BSONDocument("$regex" -> query))
-
-    usersCollection.find(selector).cursor[User]().collect[List](upTo = limit)
-  }
-
-
-  /**
-    * Find a user by their actual name
-    *
-    * @param name
-    * @return
-    */
-  def findByName(name: String): Future[Option[Int]] = {
-    ???
-  }
 
 }

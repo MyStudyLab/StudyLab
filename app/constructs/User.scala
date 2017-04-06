@@ -14,9 +14,10 @@ import reactivemongo.bson.BSONDocument
   * @param joined      The timestamp when the user joined
   * @param status      The current status of the user
   * @param subjects    The valid study subjects for the user
+  * @param sessions    The session list for this user
   */
 case class User(username: String, about: String, contactInfo: ContactInfo, password: String, joined: Long,
-                status: Status, subjects: Vector[Subject])
+                status: Status, subjects: Vector[Subject], sessions: Vector[Session])
 
 
 object User {
@@ -24,11 +25,19 @@ object User {
   import reactivemongo.bson.Macros
 
   // Implicitly convert to/from BSON
-  implicit val UserHandler = Macros.handler[User]
+  implicit val userHandler = Macros.handler[User]
 
   // A MongoDB projector to get only the fields for this class
-  val projector = BSONDocument(
-    "username" -> 1, "about" -> 1, "contactInfo" -> 1, "password" -> 1, "joined" -> 1,
-    "status" -> 1, "subjects" -> 1, "_id" -> 0
-  )
+  val projector = BSONDocument("_id" -> 0)
+
+  /**
+    * Constructor useful when creating a new user
+    *
+    * @param username A unique, identifying string used by the model layer
+    * @param email    The user's email address
+    * @param password The account password for the user
+    * @return
+    */
+  def apply(username: String, email: String, password: String): User = User(username, "", ContactInfo.onlyEmail(email),
+    password, System.currentTimeMillis(), Status.empty, Vector[Subject](), Vector[Session]())
 }
