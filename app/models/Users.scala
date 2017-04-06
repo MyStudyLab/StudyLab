@@ -1,7 +1,7 @@
 package models
 
 // Standard Library
-import constructs.{ContactInfo, ResultInfo, Status}
+import constructs.{ContactInfo, ResultInfo, Status, MonoUser}
 import play.api.libs.json.Json
 import play.modules.reactivemongo.json.collection.JSONCollection
 
@@ -41,27 +41,11 @@ class Users(protected val api: ReactiveMongoApi) {
     * @param password The user's password
     * @return
     */
-  def addNewUser(username: String, email: String, password: String): Future[ResultInfo] = {
+  def addNewUserMono(username: String, email: String, password: String): Future[ResultInfo] = {
 
-    val sessionsCollection: JSONCollection = api.db.collection[JSONCollection]("sessions")
-
-    val bsonSessions: BSONCollection = api.db.collection[BSONCollection]("sessions")
-
-    // Add document to the users collection
-    usersCollection.insert(User(username, "", ContactInfo.onlyEmail(email), password,
-      System.currentTimeMillis(), Status(false, "", 0), Vector[Subject]())).map(result => {
-      result.ok
+    usersCollection.insert(MonoUser(username, email, password)).map(result => {
+      new ResultInfo(result.ok, result.message)
     })
-
-    val newUserSessionObject = BSONDocument(
-      "username" -> username,
-      "status" -> Status(false, "", 0L),
-      "subjects" -> Vector[Subject](),
-      "sessions" -> Vector[Session]()
-    )
-
-    // Add document to the sessions collection
-    bsonSessions.insert(newUserSessionObject).map(result => ResultInfo(result.ok, result.message, System.currentTimeMillis()))
 
   }
 

@@ -23,4 +23,10 @@ object Status {
   // Implicitly convert to JSON
   implicit val statusWrites = Json.writes[Status]
 
+
+  /**
+    * An empty status object, used when creating a new user
+    */
+  val empty: Status = Status(isStudying = false, "", 0L)
+
 }

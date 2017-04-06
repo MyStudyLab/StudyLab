@@ -39,9 +39,10 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     AddUserForm.form.bindFromRequest()(request).fold(
       badForm => invalidFormResponse,
-      goodForm => usersModel.addNewUser(goodForm.username, goodForm.email, goodForm.password).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      goodForm => usersModel.addNewUserMono(goodForm.username, goodForm.email, goodForm.password).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
+
 
   /**
     * Add a new user via query parameters
@@ -53,7 +54,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   def addNewUserFromParams(username: String, email: String, password: String) = Action.async { implicit request =>
 
-    usersModel.addNewUser(username, email, password).map(result => Ok(Json.toJson(result)))
+    usersModel.addNewUserMono(username, email, password).map(result => Ok(Json.toJson(result)))
   }
 
 
@@ -69,6 +70,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
       optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve profiles"))))(data => Ok(Json.toJson(data)))
     )
   }
+
 
   /**
     * Get the about message for the given user
