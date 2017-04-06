@@ -1,10 +1,6 @@
 package models
 
 // Standard Library
-import constructs.{ResultInfo, User}
-import play.api.libs.json.Json
-import play.modules.reactivemongo.json.collection.JSONCollection
-
 import scala.concurrent.Future
 
 // Play Framework
@@ -13,10 +9,10 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 // Reactive Mongo
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
-import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json._
 
 // Project
+import constructs.{ResultInfo, User}
 import constructs.responses.{ProfilesOnly, AboutMessage, Credentials}
 import helpers.Selectors.{emailSelector, usernameSelector}
 
