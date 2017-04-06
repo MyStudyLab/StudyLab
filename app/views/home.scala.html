@@ -82,7 +82,6 @@ Home page.
 
         <!-- High Charts -->
     <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
 
     <script>
 
@@ -561,6 +560,7 @@ Home page.
                     document.getElementById("widt-row").style.display = "none";
                 }
 
+                // X and Y values for the subjectTotals plot
                 let xs = [];
                 let ys = [];
 
@@ -581,22 +581,25 @@ Home page.
                             ]
                         },
                         style: {
-                            fontFamily: '\'Roboto\', sans-serif'
+                            fontFamily: 'Roboto, sans-serif'
                         },
                         plotBorderColor: '#606063'
                     },
                     title: {
+                        align: 'left',
                         style: {
                             color: '#E0E0E3',
-                            textTransform: 'uppercase',
-                            fontSize: '20px'
-                        }
+                            //textTransform: 'uppercase',
+                            fontSize: '30px'
+                        },
+                        x: 70
                     },
                     subtitle: {
+                        align: 'left',
                         style: {
                             color: '#E0E0E3',
-                            textTransform: 'uppercase'
-                        }
+                        },
+                        x: 70
                     },
                     xAxis: {
                         gridLineColor: '#707073',
@@ -655,17 +658,6 @@ Home page.
                         },
                         errorbar: {
                             color: 'white'
-                        }
-                    },
-                    legend: {
-                        itemStyle: {
-                            color: '#E0E0E3'
-                        },
-                        itemHoverStyle: {
-                            color: '#FFF'
-                        },
-                        itemHiddenStyle: {
-                            color: '#606063'
                         }
                     },
                     credits: {
@@ -779,9 +771,6 @@ Home page.
                     title: {
                         text: 'Subject Totals'
                     },
-                    subtitle: {
-                        text: ''
-                    },
                     xAxis: {
                         categories: xs,
                         title: {
@@ -801,6 +790,9 @@ Home page.
                     tooltip: {
                         valueSuffix: ' hours'
                     },
+                    exporting: {
+                        enabled: "false"
+                    },
                     plotOptions: {
                         bar: {
                             dataLabels: {
@@ -816,8 +808,9 @@ Home page.
                         y: 80,
                         floating: true,
                         borderWidth: 1,
-                        backgroundColor: ((Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'),
-                        shadow: true
+                        //backgroundColor: ((Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'),
+                        shadow: true,
+                        enabled: false
                     },
                     credits: {
                         enabled: false
@@ -828,10 +821,62 @@ Home page.
                     }]
                 });
 
+                // Draw the probability plot with the HighChart library
+                Highcharts.chart('probabilityPlot', {
+
+                    chart: {
+                        type: 'spline',
+                        zoomType: "x"
+                    },
+
+                    title: {
+                        text: "Probability that I'm studying"
+                    },
+
+                    subtitle: {
+                        text: 'at a given hour'
+                    },
+
+                    xAxis: {
+                        title: {
+                            text: "Hour of Day"
+                        }
+                    },
+
+                    yAxis: {
+                        title: {
+                            text: 'Probability'
+                        },
+                        tickAmount: 6
+                    },
+                    legend: {
+                        layout: 'vertical',
+                        align: 'right',
+                        verticalAlign: 'middle',
+                        enabled: false
+                    },
+
+                    exporting: {
+                        enabled: false
+                    },
+
+                    plotOptions: {
+                        series: {
+                            pointStart: 0
+                        }
+                    },
+
+                    series: [{
+                        name: 'Probability',
+                        data: s.probability
+                    }]
+
+                });
+
                 // Set up call-backs to draw all the plots.
                 google.charts.setOnLoadCallback(getCumulativePlotDrawer(s.cumulative, "cumulativePlot"));
-                google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(s.subjectTotals, "subjectTotalsPlot"));
-                google.charts.setOnLoadCallback(getProbabilityPlotDrawer(s.probability, "probabilityPlot"));
+                //google.charts.setOnLoadCallback(getSubjectTotalsPlotDrawer(s.subjectTotals, "subjectTotalsPlot"));
+                //google.charts.setOnLoadCallback(getProbabilityPlotDrawer(s.probability, "probabilityPlot"));
                 google.charts.setOnLoadCallback(getSlidingAveragePlotDrawer(s.movingAverage, "movingAveragePlot"));
                 google.charts.setOnLoadCallback(getDayOfWeekAveragesPlotDrawer(s.dayOfWeekAverages, "dayOfWeekAveragesPlot"));
             });
