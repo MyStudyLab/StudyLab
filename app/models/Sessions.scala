@@ -23,11 +23,9 @@ import helpers.Selectors.usernameSelector
   */
 class Sessions(protected val mongoApi: ReactiveMongoApi) {
 
-  // An interface to the sessions collection as BSON
-  protected def bsonSessionsCollection: BSONCollection = mongoApi.db.collection[BSONCollection]("sessions")
-
   // An interface to the users collection via BSON
   protected def usersCollection: BSONCollection = mongoApi.db.collection[BSONCollection]("users")
+
 
   /**
     * Retrieve data for the given username.
@@ -40,21 +38,6 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     */
   protected def userData[T](username: String)(implicit proj: Projector[T], bsonReader: BSONDocumentReader[T]): Future[Option[T]] = {
 
-    mongoApi.db.collection[BSONCollection]("sessions").find(usernameSelector(username), proj.projector).one[T]
-  }
-
-
-  /**
-    * Retrieve data for the given username.
-    *
-    * @param username Username of the user for which we are fetching data.
-    * @param proj
-    * @param bsonReader
-    * @tparam T Case class specifying what data should be returned.
-    * @return
-    */
-  protected def userDataMono[T](username: String)(implicit proj: Projector[T], bsonReader: BSONDocumentReader[T]): Future[Option[T]] = {
-
     mongoApi.db.collection[BSONCollection]("users").find(usernameSelector(username), proj.projector).one[T]
   }
 
@@ -65,9 +48,9 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @param username The username for which to retrieve session data.
     * @return
     */
-  def getUserSessionDataMono(username: String): Future[Option[StatusSubjectsSessions]] = {
+  def getUserSessionData(username: String): Future[Option[StatusSubjectsSessions]] = {
 
-    userDataMono[StatusSubjectsSessions](username)
+    userData[StatusSubjectsSessions](username)
   }
 
 
@@ -80,7 +63,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     */
   def startSession(username: String, subject: String): Future[ResultInfo] = {
 
-    userDataMono[StatusSubjects](username).flatMap(optStatsSubs =>
+    userData[StatusSubjects](username).flatMap(optStatsSubs =>
 
       // TODO: Change the error message here. Username and pass will have been checked already.
       optStatsSubs.fold(Future(ResultInfo.invalidUsername))(statsAndSubs => {
@@ -120,7 +103,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     */
   def stopSession(username: String, message: String): Future[ResultInfo] = {
 
-    userDataMono[StatusSubjects](username).flatMap(opt =>
+    userData[StatusSubjects](username).flatMap(opt =>
 
       opt.fold(Future(ResultInfo.invalidUsername))(statsAndSubs => {
 
@@ -160,7 +143,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     */
   def abortSession(username: String): Future[ResultInfo] = {
 
-    userDataMono[StatusSubjects](username).flatMap(opt =>
+    userData[StatusSubjects](username).flatMap(opt =>
 
       opt.fold(Future(ResultInfo.invalidUsername))(statsAndSubs => {
 
@@ -196,7 +179,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     */
   def addSubject(username: String, subject: String, description: String): Future[ResultInfo] = {
 
-    userDataMono[StatusSubjects](username).flatMap(opt =>
+    userData[StatusSubjects](username).flatMap(opt =>
 
       opt.fold(Future(ResultInfo.invalidUsername))(statsAndSubs => {
         if (statsAndSubs.subjects.map(_.name).contains(subject)) {
@@ -233,7 +216,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
   def removeSubject(username: String, subject: String): Future[ResultInfo] = {
 
     // Get the user's session data
-    userDataMono[StatusSubjectsSessions](username).flatMap(opt =>
+    userData[StatusSubjectsSessions](username).flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.invalidUsername))(sessionData => {
@@ -275,7 +258,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
   def renameSubject(username: String, oldName: String, newName: String): Future[ResultInfo] = {
 
     // Get the user's session data
-    userDataMono[StatusSubjectsSessions](username).flatMap(opt =>
+    userData[StatusSubjectsSessions](username).flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.invalidUsername))(sessionData => {
@@ -333,7 +316,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
   def mergeSubjects(username: String, absorbed: String, absorbing: String): Future[ResultInfo] = {
 
     // Get the user's session data
-    userDataMono[StatusSubjectsSessions](username).flatMap(opt =>
+    userData[StatusSubjectsSessions](username).flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.invalidUsername))(data => {

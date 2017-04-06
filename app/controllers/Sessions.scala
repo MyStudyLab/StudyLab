@@ -170,7 +170,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   def sessionsForUsername(username: String) = Action.async { implicit request =>
 
-    sessions.getUserSessionDataMono(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve sessions"))))(data => Ok(Json.toJson(data))))
+    sessions.getUserSessionData(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve sessions"))))(data => Ok(Json.toJson(data))))
   }
 
 
