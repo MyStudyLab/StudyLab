@@ -55,7 +55,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     userData[StatusOnly](username).map(_.map(s => if (s.status.isStudying) s else StatusOnly(s.username, Status.empty)))
   }
 
-  
+
   /**
     * Return session data for the given user.
     *
