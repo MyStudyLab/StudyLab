@@ -42,19 +42,6 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   }
 
   /**
-    * Invoke the model layer to start a new study session.
-    *
-    * @return
-    */
-  protected def startMono = Action.async { implicit request =>
-
-    SessionStartForm.startForm.bindFromRequest()(request).fold(
-      badForm => invalidFormResponse,
-      goodForm => sessions.startSessionMono(goodForm.username, goodForm.subject).map(resultInfo => Ok(Json.toJson(resultInfo)))
-    )
-  }
-
-  /**
     * Start a study session via the query string
     *
     * @param username
@@ -72,11 +59,11 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  protected def stopMono = Action.async { implicit request =>
+  protected def stop = Action.async { implicit request =>
 
     SessionStopForm.stopForm.bindFromRequest()(request).fold(
       badForm => invalidFormResponse,
-      goodForm => sessions.stopSessionMono(goodForm.username, goodForm.message).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      goodForm => sessions.stopSession(goodForm.username, goodForm.message).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
 
@@ -97,11 +84,11 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  protected def abortMono = Action.async { implicit request =>
+  protected def abort = Action.async { implicit request =>
 
     PasswordAndUsername.form.bindFromRequest()(request).fold(
       badForm => invalidFormResponse,
-      goodForm => sessions.abortSessionMono(goodForm.username).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      goodForm => sessions.abortSession(goodForm.username).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
 
@@ -111,11 +98,11 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  protected def addMono = Action.async { implicit request =>
+  protected def add = Action.async { implicit request =>
 
     AddOrRemoveSubjectForm.form.bindFromRequest()(request).fold(
       badForm => invalidFormResponse,
-      goodForm => sessions.addSubjectMono(goodForm.username, goodForm.subject, goodForm.description).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      goodForm => sessions.addSubject(goodForm.username, goodForm.subject, goodForm.description).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
 
@@ -129,7 +116,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   def addSubjectFromParams(username: String, subject: String, description: String) = Action.async { implicit request =>
 
-    sessions.addSubjectMono(username, subject, description).map(resInfo => Ok(Json.toJson(resInfo)))
+    sessions.addSubject(username, subject, description).map(resInfo => Ok(Json.toJson(resInfo)))
   }
 
 
@@ -138,11 +125,11 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  protected def removeMono = Action.async { implicit request =>
+  protected def remove = Action.async { implicit request =>
 
     RemoveSubjectForm.form.bindFromRequest()(request).fold(
       badForm => invalidFormResponse,
-      goodForm => sessions.removeSubjectMono(goodForm.username, goodForm.subject).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      goodForm => sessions.removeSubject(goodForm.username, goodForm.subject).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
 
@@ -192,35 +179,35 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def startSession() = checked(startMono)(reactiveMongoApi)
+  def startSession() = checked(start)(reactiveMongoApi)
 
   /**
     * Stop a study session
     *
     * @return
     */
-  def stopSession() = checked(stopMono)(reactiveMongoApi)
+  def stopSession() = checked(stop)(reactiveMongoApi)
 
   /**
     * Abort the current study session
     *
     * @return
     */
-  def abortSession() = checked(abortMono)(reactiveMongoApi)
+  def abortSession() = checked(abort)(reactiveMongoApi)
 
   /**
     * Add a subject to a user's subject list
     *
     * @return
     */
-  def addSubject() = checked(addMono)(reactiveMongoApi)
+  def addSubject() = checked(add)(reactiveMongoApi)
 
   /**
     * Remove a subject from a user's subject list
     *
     * @return
     */
-  def removeSubject() = checked(removeMono)(reactiveMongoApi)
+  def removeSubject() = checked(remove)(reactiveMongoApi)
 
   /**
     * Rename one of the subjects in a user's subject list

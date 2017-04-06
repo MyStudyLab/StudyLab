@@ -58,16 +58,6 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     mongoApi.db.collection[BSONCollection]("users").find(usernameSelector(username), proj.projector).one[T]
   }
 
-  /**
-    * Return session data for the given user.
-    *
-    * @param username The username for which to retrieve session data.
-    * @return
-    */
-  def getUserSessionData(username: String): Future[Option[StatusSubjectsSessions]] = {
-
-    userData[StatusSubjectsSessions](username)
-  }
 
   /**
     * Return session data for the given user.
@@ -89,46 +79,6 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @return
     */
   def startSession(username: String, subject: String): Future[ResultInfo] = {
-
-    userData[StatusSubjects](username).flatMap(optStatsSubs =>
-
-      // TODO: Change the error message here. Username and pass will have been checked already.
-      optStatsSubs.fold(Future(ResultInfo.invalidUsername))(statsAndSubs => {
-
-        if (statsAndSubs.status.isStudying) Future(ResultInfo.alreadyStudying)
-        else if (!statsAndSubs.subjects.map(_.name).contains(subject)) Future(ResultInfo.invalidSubject)
-        else {
-
-          val selector = usernameSelector(username)
-
-          // The modifier to start a session
-          val modifier = BSONDocument(
-            "$set" -> BSONDocument(
-              "status.isStudying" -> true,
-              "status.subject" -> subject,
-              "status.start" -> System.currentTimeMillis()
-            )
-          )
-
-          // Update the status
-          bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
-            if (result.ok) ResultInfo.succeedWithMessage(s"Now studying $subject")
-            else ResultInfo.failWithMessage(message = result.errmsg.getOrElse(ResultInfo.noErrMsg))
-          )
-        }
-      })
-    )
-  }
-
-
-  /**
-    * Starts a study session for the given user and subject.
-    *
-    * @param username The username for which to start a new session.
-    * @param subject  The subject of the new study session.
-    * @return
-    */
-  def startSessionMono(username: String, subject: String): Future[ResultInfo] = {
 
     userDataMono[StatusSubjects](username).flatMap(optStatsSubs =>
 
@@ -160,6 +110,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     )
   }
 
+
   /**
     * Stops the current study session.
     *
@@ -168,46 +119,6 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @return
     */
   def stopSession(username: String, message: String): Future[ResultInfo] = {
-
-    userData[StatusSubjects](username).flatMap(opt =>
-
-      opt.fold(Future(ResultInfo.invalidUsername))(statsAndSubs => {
-
-        if (!statsAndSubs.status.isStudying) Future(ResultInfo.notStudying)
-        else {
-
-          // The newly completed study session
-          val newSession = Session(statsAndSubs.status.subject, statsAndSubs.status.start, System.currentTimeMillis(), message)
-
-          val selector = usernameSelector(username)
-
-          // The modifier to stop a session
-          val modifier = BSONDocument(
-            "$set" -> BSONDocument(
-              "status.isStudying" -> false
-            ),
-            "$push" -> BSONDocument(
-              "sessions" -> newSession
-            )
-          )
-
-          // Add the new session and updated stats
-          bsonSessionsCollection.update(selector, modifier, multi = false).map(result =>
-            if (result.ok) ResultInfo.succeedWithMessage("Finished studying")
-            else ResultInfo.failWithMessage(result.errmsg.getOrElse(ResultInfo.noErrMsg)))
-        }
-      })
-    )
-  }
-
-  /**
-    * Stops the current study session.
-    *
-    * @param username The username for which to stop the current session.
-    * @param message  The commit message for the study session.
-    * @return
-    */
-  def stopSessionMono(username: String, message: String): Future[ResultInfo] = {
 
     userDataMono[StatusSubjects](username).flatMap(opt =>
 
@@ -231,8 +142,6 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
             )
           )
 
-          val usersCollection = mongoApi.db.collection[BSONCollection]("users")
-
           // Add the new session and updated stats
           usersCollection.update(selector, modifier, multi = false).map(result =>
             if (result.ok) ResultInfo.succeedWithMessage("Finished studying")
@@ -249,7 +158,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @param username The username for which to abort the current session.
     * @return
     */
-  def abortSessionMono(username: String): Future[ResultInfo] = {
+  def abortSession(username: String): Future[ResultInfo] = {
 
     userDataMono[StatusSubjects](username).flatMap(opt =>
 
@@ -285,7 +194,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @param description
     * @return
     */
-  def addSubjectMono(username: String, subject: String, description: String): Future[ResultInfo] = {
+  def addSubject(username: String, subject: String, description: String): Future[ResultInfo] = {
 
     userDataMono[StatusSubjects](username).flatMap(opt =>
 
@@ -301,8 +210,6 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
               "subjects" -> Subject(subject, System.currentTimeMillis(), description)
             )
           )
-
-          val usersCollection = mongoApi.db.collection[BSONCollection]("users")
 
           // Add the new subject
           usersCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
@@ -323,7 +230,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @param subject  The subject to remove.
     * @return
     */
-  def removeSubjectMono(username: String, subject: String): Future[ResultInfo] = {
+  def removeSubject(username: String, subject: String): Future[ResultInfo] = {
 
     // Get the user's session data
     userDataMono[StatusSubjectsSessions](username).flatMap(opt =>
@@ -368,7 +275,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
   def renameSubject(username: String, oldName: String, newName: String): Future[ResultInfo] = {
 
     // Get the user's session data
-    userData[StatusSubjectsSessions](username).flatMap(opt =>
+    userDataMono[StatusSubjectsSessions](username).flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.invalidUsername))(sessionData => {
@@ -405,7 +312,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
             )
 
             // Add the new subject
-            bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
+            usersCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
               if (result.ok) ResultInfo.succeedWithMessage(s"Renamed $oldName to $newName")
               else ResultInfo.failWithMessage(result.errmsg.getOrElse(ResultInfo.noErrMsg)))
           }
@@ -426,7 +333,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
   def mergeSubjects(username: String, absorbed: String, absorbing: String): Future[ResultInfo] = {
 
     // Get the user's session data
-    userData[StatusSubjectsSessions](username).flatMap(opt =>
+    userDataMono[StatusSubjectsSessions](username).flatMap(opt =>
 
       // Check the success of the query
       opt.fold(Future(ResultInfo.invalidUsername))(data => {
@@ -463,7 +370,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
             )
 
             // Merge the subjects
-            bsonSessionsCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
+            usersCollection.update(usernameSelector(username), modifier, multi = false).map(result =>
               if (result.ok) ResultInfo.succeedWithMessage(s"Merged $absorbed into $absorbing")
               else ResultInfo.failWithMessage(result.errmsg.getOrElse(ResultInfo.noErrMsg)))
           })
