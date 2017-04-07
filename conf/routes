@@ -5,6 +5,9 @@
 # Home page
 GET         /                               controllers.Application.home
 
+# Demo page for the High Chart graphs
+GET         /highchart                      controllers.Application.highchart
+
 # About page
 GET         /about                          controllers.Application.about
 

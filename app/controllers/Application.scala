@@ -24,6 +24,11 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
   }
 
 
+  def highchart = Action {
+    Ok(views.html.homeHighChart())
+  }
+
+
   /**
     * My resume as a PDF
     *

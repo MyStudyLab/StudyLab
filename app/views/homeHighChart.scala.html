@@ -1,0 +1,841 @@
+@**************
+Home page.
+**************@
+@()(implicit messages: Messages)
+
+@loadingDots() = {
+    <p class="saving"><span>&#11044</span>
+        <span>&#11044</span>
+        <span>&#11044</span>
+        <span>&#11044</span></p>
+}
+
+@dataBlock(title: String, id: String, offset: Int, width: Int) = {
+    <div class="col-sm-offset-@offset col-sm-@width raised-element">
+        <u class="data-block-title">@title</u>
+        <br>
+        <div id="@id">
+        @loadingDots()
+        </div>
+    </div>
+}
+
+@plotHolder(id: String) = {
+    <div class="row">
+        <div class="col-sm-offset-1 col-sm-10 padded-plot spaced-plot">
+            <div id="@id" class="googlePlotContainer loading-icon">
+            @loadingDots()
+            </div>
+        </div>
+    </div>
+}
+
+@siteTemplate("Home") {
+
+        <!-- Contains all raised elements-->
+    <div class="container-fluid">
+
+            <!-- Summary data -->
+        <div class="row small-margin-bottom data-blocks">
+
+                <!-- Total hours studied -->
+            @dataBlock("Total", "total-hours", 1, 2)
+
+                <!-- Hours studied today vs. average -->
+            @dataBlock("Today / Average", "today-vs-average", 1, 4)
+
+                <!-- Length of the current streak -->
+            @dataBlock("Current Streak", "current-streak", 1, 2)
+        </div>
+
+            <!-- Today's sessions plot -->
+        <div id="widt-row" class="row small-margin-bottom">
+            <div id="widt" class="col-sm-offset-1 col-sm-10 raised-element">
+                <div id="todaysSessionsPlot" class="loading-icon">
+                @loadingDots()
+                </div>
+            </div>
+        </div>
+
+            <!-- Cumulative hours studied plot-->
+        @plotHolder("cumulativePlot")
+
+            <!-- Subject totals plot-->
+        @plotHolder("subjectTotalsPlot")
+
+            <!-- Average-day probability plot -->
+        @plotHolder("probabilityPlot")
+
+            <!-- Moving-average plot -->
+        @plotHolder("movingAveragePlot")
+
+            <!-- Day of week averages plot -->
+        @plotHolder("dayOfWeekAveragesPlot")
+
+    </div>
+
+    <script src="https://www.gstatic.com/charts/loader.js" type="text/javascript"></script>
+    <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
+    <script src="@routes.Assets.at("/javascripts/moment.js")"></script>
+    <script src="@routes.Assets.at("/javascripts/moment-timezone-10-20.js")"></script>
+    <script src="@routes.Assets.at("/javascripts/stats.js")"></script>
+
+        <!-- High Charts -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+
+    <script>
+
+            const slidingAverageRadius = 90;
+
+            // Convert a moment object to use moment.js moments for the start and end times
+            function convertTimestampsToMoments(sessions, tz) {
+                return sessions.map(function (curr, i, arr) {
+                    return {
+                        "start": moment(curr.startTime).tz(tz),
+                        "stop": moment(curr.endTime).tz(tz),
+                        "subject": curr.subject
+                    }
+                })
+            }
+
+
+            /*
+             * Return the sum of an array.
+             *
+             * TODO: Find some library function to replace this.
+             */
+            function sumArray(arr) {
+                return arr.reduce(function (acc, curr, i) {
+                    return acc + curr;
+                }, 0);
+            }
+
+
+            /*
+             * Return the sessions occurring in the current month in chronological order.
+             */
+            function currentMonthSessions(dayGroups) {
+
+                // The moment at which the current month began.
+                const startOfMonth = dayGroups[dayGroups.length - 1]['date'].clone().startOf('month');
+
+                let i = dayGroups.length - 1;
+
+                // Iterate in reverse until encountering a day not in this month
+                while (i >= 0 && dayGroups[i]['date'] > startOfMonth) {
+                    i--;
+                }
+
+                let res = [];
+
+                // The original array is not modified
+                dayGroups.slice(i + 1).forEach(function (dayGroup, i, arr) {
+                    dayGroup['sessions'].forEach(function (curr, i, arr) {
+                        res.push(curr);
+                    });
+                });
+
+                return res;
+            }
+
+
+            /*
+             * Filter day groups by the given day(s) of the week
+             */
+            function filterByWeekday(dayGroups, daysOfWeek) {
+
+                return dayGroups.filter(function (day, i, arr) {
+                    return daysOfWeek.includes(day.date.day());
+                });
+            }
+
+
+            /*
+             * Return the total hours studied each day
+             */
+            function dailyTotals(dayGroups) {
+                return dayGroups.map(function (curr, i, arr) {
+                    return sumSessions(curr.sessions);
+                })
+            }
+
+
+            /*
+             * Return the duration of a moment-based session.
+             */
+            function duration(session) {
+                return session.end - session.start / 3600000;
+            }
+
+
+            /*
+             * Return the average of the daily totals.
+             */
+            function dailyAverage(dayGroups) {
+
+                return sumArray(dailyTotals(dayGroups)) / dayGroups.length;
+            }
+
+            /*
+             * Return the standard deviation of the distribution of daily totals
+             *
+             * TODO: Use a library function
+             */
+            function dailyStdev(dayGroups) {
+
+                const mu = dailyAverage(dayGroups);
+
+                const sse = dayGroups.reduce(function (acc, curr, ind) {
+                    return acc + Math.pow(sumSessions(curr.sessions) - mu, 2);
+                }, 0);
+
+                return Math.pow(sse / (dayGroups.length - 1), 0.5);
+            }
+
+
+            /*
+             * Compute all of the statistics
+             */
+            function computeStats(sessions) {
+
+                const dayGroups = splitDays(sessions);
+
+                const dTotals = dailyTotals(dayGroups);
+
+                return {
+                    "cumulative": cumulative(sessions, 100),
+                    "denseCumulative": denseCumulative(dayGroups),
+                    "total": sumRawSessions(sessions),
+                    "dailyAverage": dailyAverage(dayGroups),
+                    "todaysSessions": todaysSessions(dayGroups),
+                    "monthsSessions": currentMonthSessions(dayGroups),
+                    "todaysTotal": todaysTotal(dayGroups),
+                    "currentStreak": currentStreak(dayGroups),
+                    "daysSinceStart": daysSinceStart(dayGroups),
+                    "probability": probability(97, dayGroups),
+                    "movingAverage": movingAverage(dayGroups, slidingAverageRadius),
+                    "dailyTotals": dTotals,
+                    "dailyTotalHistogram": dailyTotalHistogram(dTotals, 12),
+                    "dayOfWeekAverages": dayOfWeekAverages(dayGroups),
+                    "yearlyTotals": yearlyTotals(dayGroups),
+                    "subjectTotals": subjectTotals(sessions)
+                }
+            }
+
+    </script>
+
+    <script>
+
+            // Load the  charts
+            google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
+
+            // Get a duration as [hh, mm, ss] from seconds
+            function hms(sec) {
+                const h = Math.floor(sec / 3600);
+
+                sec -= 3600 * h;
+
+                const m = Math.floor(sec / 60);
+
+                sec -= 60 * m;
+
+                return [h, m, sec];
+            }
+
+
+            function fillSummaryValues(stats) {
+
+                const n1 = stats.todaysTotal.toFixed(2).toString();
+
+                const n2 = stats.dailyAverage.toFixed(2).toString();
+
+                const inner1 = "<span class='introMessageValue'>" + n1 + "</span> / <span class='introMessageValue'>" + n2 + "</span>";
+
+                document.getElementById("total-hours").innerHTML = "<span class='introMessageValue'>" + Math.round(stats.total).toString() + "</span> hours";
+
+                document.getElementById("today-vs-average").innerHTML = inner1;
+
+                document.getElementById("current-streak").innerHTML = "<span class='introMessageValue'>" + stats.currentStreak.toString() + "</span> days";
+            }
+
+
+            function getTodaysSessionsPlotDrawer(sessions, elementId) {
+
+                function tmp() {
+
+                    const options = {
+                        height: 95,
+                        hAxis: {
+                            title: "",
+                            fontSize: 0
+                        },
+                        backgroundColor: "transparent",
+                        groupByRowLabel: false
+                    };
+
+                    let table = new google.visualization.DataTable();
+
+                    table.addColumn({type: "string", id: "Role"});
+                    table.addColumn({type: "string", id: "Subject"});
+                    table.addColumn({type: "number", id: "Start"});
+                    table.addColumn({type: "number", id: "End"});
+
+
+                    const rows = sessions.map(function (elem, i, self) {
+                        return ["What I've Done Today", elem.subject, elem.start.valueOf(), elem.stop.valueOf()];
+                    });
+
+                    table.addRows(rows);
+
+                    let chart = new google.visualization.Timeline(document.getElementById(elementId));
+
+                    chart.draw(table, options);
+                }
+
+                return tmp;
+            }
+
+
+            // TODO: The user will be a parameter when this is a fully functional app
+            loadJSONFile("/json/sessions/jgdodson", function (data) {
+
+                // TODO: The current time could come from the timestamp in the ResultInfo...
+
+                // Add the current session to the session array
+                if (data.status.isStudying) {
+                    data.sessions.push({
+                        "subject": data.status.subject,
+                        "startTime": data.status.start,
+                        "endTime": new Date().getTime()
+                    });
+                }
+
+                const s = computeStats(data.sessions);
+
+                // Fill summary values at top of page
+                fillSummaryValues(s);
+
+                // Only show the current day's overview if the user has studied today.
+                if (s.todaysSessions.length > 0) {
+                    google.charts.setOnLoadCallback(getTodaysSessionsPlotDrawer(s.todaysSessions, "todaysSessionsPlot"));
+                } else {
+                    document.getElementById("widt-row").style.display = "none";
+                }
+
+                Highcharts.theme = {
+                    colors: ['#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066', '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
+                    chart: {
+                        backgroundColor: {
+                            linearGradient: {x1: 0, y1: 0, x2: 1, y2: 1},
+                            stops: [
+                                [0, '#2a2a2b'],
+                                [1, '#3e3e40']
+                            ]
+                        },
+                        style: {
+                            fontFamily: 'Roboto, sans-serif'
+                        },
+                        plotBorderColor: '#606063'
+                    },
+                    title: {
+                        align: 'left',
+                        style: {
+                            color: '#E0E0E3',
+                            //textTransform: 'uppercase',
+                            fontSize: '30px'
+                        },
+                        x: 50
+                    },
+                    subtitle: {
+                        align: 'left',
+                        style: {
+                            color: '#E0E0E3',
+                        },
+                        x: 50
+                    },
+                    xAxis: {
+                        gridLineColor: '#707073',
+                        labels: {
+                            style: {
+                                color: '#E0E0E3',
+                                fontSize: "18px"
+                            }
+                        },
+                        lineColor: '#707073',
+                        minorGridLineColor: '#505053',
+                        tickColor: '#707073',
+                        title: {
+                            style: {
+                                color: '#A0A0A3'
+
+                            }
+                        }
+                    },
+                    yAxis: {
+                        gridLineColor: '#707073',
+                        labels: {
+                            style: {
+                                color: '#E0E0E3',
+                                fontSize: "18px"
+                            }
+                        },
+                        lineColor: '#707073',
+                        minorGridLineColor: '#505053',
+                        tickColor: '#707073',
+                        tickWidth: 1,
+                        title: {
+                            style: {
+                                color: '#A0A0A3'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                        style: {
+                            color: '#F0F0F0'
+                        }
+                    },
+                    plotOptions: {
+                        series: {
+                            dataLabels: {
+                                color: '#B0B0B3'
+                            },
+                            marker: {
+                                lineColor: '#333'
+                            }
+                        },
+                        boxplot: {
+                            fillColor: '#505053'
+                        },
+                        candlestick: {
+                            lineColor: 'white'
+                        },
+                        errorbar: {
+                            color: 'white'
+                        }
+                    },
+                    credits: {
+                        style: {
+                            color: '#666'
+                        }
+                    },
+                    labels: {
+                        style: {
+                            color: '#707073'
+                        }
+                    },
+
+                    drilldown: {
+                        activeAxisLabelStyle: {
+                            color: '#F0F0F3'
+                        },
+                        activeDataLabelStyle: {
+                            color: '#F0F0F3'
+                        }
+                    },
+
+                    navigation: {
+                        buttonOptions: {
+                            symbolStroke: '#DDDDDD',
+                            theme: {
+                                fill: '#505053'
+                            }
+                        }
+                    },
+
+                    // scroll charts
+                    rangeSelector: {
+                        buttonTheme: {
+                            fill: '#505053',
+                            stroke: '#000000',
+                            style: {
+                                color: '#CCC'
+                            },
+                            states: {
+                                hover: {
+                                    fill: '#707073',
+                                    stroke: '#000000',
+                                    style: {
+                                        color: 'white'
+                                    }
+                                },
+                                select: {
+                                    fill: '#000003',
+                                    stroke: '#000000',
+                                    style: {
+                                        color: 'white'
+                                    }
+                                }
+                            }
+                        },
+                        inputBoxBorderColor: '#505053',
+                        inputStyle: {
+                            backgroundColor: '#333',
+                            color: 'silver'
+                        },
+                        labelStyle: {
+                            color: 'silver'
+                        }
+                    },
+
+                    navigator: {
+                        handles: {
+                            backgroundColor: '#666',
+                            borderColor: '#AAA'
+                        },
+                        outlineColor: '#CCC',
+                        maskFill: 'rgba(255,255,255,0.1)',
+                        series: {
+                            color: '#7798BF',
+                            lineColor: '#A6C7ED'
+                        },
+                        xAxis: {
+                            gridLineColor: '#505053'
+                        }
+                    },
+
+                    scrollbar: {
+                        barBackgroundColor: '#808083',
+                        barBorderColor: '#808083',
+                        buttonArrowColor: '#CCC',
+                        buttonBackgroundColor: '#606063',
+                        buttonBorderColor: '#606063',
+                        rifleColor: '#FFF',
+                        trackBackgroundColor: '#404043',
+                        trackBorderColor: '#404043'
+                    },
+
+                    // special colors for some of the
+                    legendBackgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    background2: '#505053',
+                    dataLabelsColor: '#B0B0B3',
+                    textColor: '#C0C0C0',
+                    contrastTextColor: '#F0F0F3',
+                    maskColor: 'rgba(255,255,255,0.3)'
+                };
+
+                // Apply the theme
+                Highcharts.setOptions(Highcharts.theme);
+
+
+                // Draw the Cumulative Plot
+                Highcharts.chart('cumulativePlot', {
+                    chart: {
+                        zoomType: 'x'
+                    },
+                    title: {
+                        text: 'Cumulative Hours Studied',
+                        margin: 50,
+                        x: 20,
+                        y: 40,
+                        align: 'left'
+                    },
+                    xAxis: {
+                        type: 'datetime'
+                    },
+                    yAxis: {
+                        title: {
+                            text: null
+                        },
+                        min: 0
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        area: {
+                            fillColor: {
+                                linearGradient: {
+                                    x1: 0,
+                                    y1: 0,
+                                    x2: 0,
+                                    y2: 1
+                                },
+                                stops: [
+                                    [0, Highcharts.getOptions().colors[0]],
+                                    [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(.3).get('rgba')]
+                                ]
+                            },
+                            marker: {
+                                radius: 2
+                            },
+                            lineWidth: 1,
+                            states: {
+                                hover: {
+                                    lineWidth: 1
+                                }
+                            },
+                            threshold: null
+                        }
+                    },
+
+                    series: [{
+                        type: 'area',
+                        name: 'Cumulative Hours Studied',
+                        data: s.denseCumulative
+                    }]
+                });
+
+
+                // X and Y values for the subjectTotals plot
+                let subject_totals_xs = [];
+                let subject_totals_ys = [];
+
+                for (let i = 0; i < s.subjectTotals.length; i++) {
+                    subject_totals_xs.push(s.subjectTotals[i][0]);
+                    subject_totals_ys.push(s.subjectTotals[i][1]);
+                }
+
+                // Draw the subject totals plot
+                Highcharts.chart('subjectTotalsPlot', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: 'Subject Totals'
+                    },
+                    subtitle: {
+                        text: "10 most studied subjects"
+                    },
+                    xAxis: {
+                        categories: subject_totals_xs
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: 'Hours Studied',
+                            align: 'middle'
+                        },
+                        labels: {
+                            overflow: 'justify'
+                        }
+                    },
+                    tooltip: {
+                        pointFormat: '{point.y}',
+                        valueSuffix: ' hours',
+                        valueDecimals: 2,
+                    },
+                    exporting: {
+                        enabled: "false"
+                    },
+                    plotOptions: {
+                        column: {
+                            dataLabels: {
+                                enabled: false
+                            },
+                            borderWidth: 0
+                        }
+                    },
+                    legend: {
+                        layout: 'vertical',
+                        align: 'right',
+                        verticalAlign: 'top',
+                        x: -40,
+                        y: 80,
+                        floating: true,
+                        borderWidth: 0,
+                        shadow: true,
+                        enabled: false
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    series: [{
+                        name: 'Subject Totals',
+                        data: subject_totals_ys
+                    }]
+                });
+
+
+                // Draw the probability plot with the HighChart library
+                Highcharts.chart('probabilityPlot', {
+
+                    chart: {
+                        type: 'areaspline',
+                        zoomType: "x"
+                    },
+
+                    title: {
+                        text: "Probability that I'm studying"
+                    },
+
+                    subtitle: {
+                        text: 'at any given hour'
+                    },
+
+                    xAxis: {
+                        title: {
+                            text: "Hour of Day"
+                        }
+                    },
+
+                    yAxis: {
+                        title: {
+                            text: 'Probability'
+                        },
+                        tickAmount: 6
+                    },
+                    legend: {
+                        layout: 'vertical',
+                        align: 'right',
+                        verticalAlign: 'middle',
+                        enabled: false
+                    },
+
+                    exporting: {
+                        enabled: false
+                    },
+
+                    plotOptions: {
+                        series: {
+                            pointStart: 0
+                        },
+                        areaspline: {
+                            fillColor: {
+                                linearGradient: {
+                                    x1: 0,
+                                    y1: 0,
+                                    x2: 0,
+                                    y2: 1
+                                },
+                                stops: [
+                                    [0, Highcharts.getOptions().colors[0]],
+                                    [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(.3).get('rgba')]
+                                ]
+                            },
+                            marker: {
+                                enabled: false
+                            }
+                        }
+                    },
+
+                    series: [{
+                        name: 'Probability',
+                        data: s.probability
+                    }]
+
+                });
+
+
+                // Draw the Moving Average Plot
+                Highcharts.chart('movingAveragePlot', {
+                    chart: {
+                        zoomType: 'x'
+                    },
+                    title: {
+                        text: 'Average Hours Studied Per Day'
+                    },
+                    subtitle: {
+                        text: 'Moving Average - 90 day window'
+                    },
+                    xAxis: {
+                        type: 'datetime'
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Hours'
+                        },
+                        min: 0
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        area: {
+                            fillColor: {
+                                linearGradient: {
+                                    x1: 0,
+                                    y1: 0,
+                                    x2: 0,
+                                    y2: 1
+                                },
+                                stops: [
+                                    [0, Highcharts.getOptions().colors[0]],
+                                    [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(.3).get('rgba')]
+                                ]
+                            },
+                            marker: {
+                                radius: 2
+                            },
+                            lineWidth: 1,
+                            states: {
+                                hover: {
+                                    lineWidth: 1
+                                }
+                            },
+                            threshold: null
+                        }
+                    },
+
+                    series: [{
+                        type: 'area',
+                        name: 'Average Hours Studied per Day',
+                        data: s.movingAverage
+                    }]
+                });
+
+                let daily_averages_xs = [];
+                let daily_averages_ys = [];
+
+                s.dayOfWeekAverages.forEach(function (curr, arr, i) {
+                    daily_averages_xs.push(curr[0]);
+                    daily_averages_ys.push(curr[1]);
+                });
+
+                // Draw the subject totals plot
+                Highcharts.chart('dayOfWeekAveragesPlot', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: 'Average Hours Studied Per Weekday'
+                    },
+                    xAxis: {
+                        categories: daily_averages_xs,
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: 'Hours Studied',
+                            align: 'middle'
+                        },
+                        labels: {
+                            overflow: 'justify'
+                        }
+                    },
+                    tooltip: {
+                        valueSuffix: ' hours'
+                    },
+                    exporting: {
+                        enabled: "false"
+                    },
+                    plotOptions: {
+                        bar: {
+                            dataLabels: {
+                                enabled: true
+                            }
+                        }
+                    },
+                    legend: {
+                        layout: 'vertical',
+                        align: 'right',
+                        verticalAlign: 'top',
+                        x: -40,
+                        y: 80,
+                        floating: true,
+                        borderWidth: 1,
+                        shadow: true,
+                        enabled: false
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    series: [{
+                        name: 'Daily Averages',
+                        data: daily_averages_ys
+                    }]
+                });
+            });
+    </script>
+
+}

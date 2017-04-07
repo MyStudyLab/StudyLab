@@ -66,7 +66,6 @@ function stdevOfSessionLength(sessions) {
 /*
  * Return an array of moving averages with the given radius.
  *
- * TODO: Use stepSize to determine how many days separate consecutive data points
  */
 function movingAverage(dayGroups, radius, stepSize) {
 
@@ -198,6 +197,28 @@ function cumulative(sessions, numLevels) {
     }
 
     return res;
+}
+
+// Return the cumulative sequence, with a data point for every day
+function denseCumulative(dayGroups) {
+
+    let cumul = 0;
+
+    let cumuls = [[dayGroups[0]['date'].clone().startOf('day').valueOf(), 0]];
+
+    const dailyTotals = dayGroups.map(function (curr, i, arr) {
+        return [curr['date'].valueOf(), sumSessions(curr['sessions'])];
+    });
+
+    dailyTotals.forEach(function (curr, i, arr) {
+
+        cumul += curr[1];
+
+        cumuls.push([curr[0], cumul]);
+
+    });
+
+    return cumuls;
 }
 
 
