@@ -455,3 +455,39 @@ function probability(numBins, dayGroups) {
 
     return bins;
 }
+
+/*
+ * Return the average-day probability vector
+ */
+function probabilityWithTime(numBins, dayGroups) {
+
+    let bins = [];
+
+    for (let i = 0; i < numBins; i++) {
+        bins.push(0);
+    }
+
+    dayGroups.forEach(function (dayGroup, i, arr) {
+        dayGroup['sessions'].forEach(function (session, j, arr) {
+
+            const upperBound = dayGroup['date'].clone();
+            const lowerBound = dayGroup['date'].clone().startOf('day');
+
+            const startBin = Math.floor((session.start - lowerBound) * numBins / (upperBound - lowerBound));
+            const stopBin = Math.floor((session.stop - lowerBound) * numBins / (upperBound - lowerBound));
+
+            for (let b = startBin; b < stopBin; b++) {
+                bins[b] += 1;
+            }
+        });
+    });
+
+    // Normalize
+    bins.forEach(function (curr, i, arr) {
+        bins[i] = curr / dayGroups.length;
+    });
+
+    return bins.map(function (curr, i, arr) {
+        return [24 * (i / numBins), curr]
+    });
+}

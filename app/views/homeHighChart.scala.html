@@ -213,6 +213,7 @@ Home page.
                     "currentStreak": currentStreak(dayGroups),
                     "daysSinceStart": daysSinceStart(dayGroups),
                     "probability": probability(97, dayGroups),
+                    "probabilityWithTime": probabilityWithTime(96, dayGroups),
                     "movingAverage": movingAverage(dayGroups, slidingAverageRadius),
                     "dailyTotals": dTotals,
                     "dailyTotalHistogram": dailyTotalHistogram(dTotals, 12),
@@ -592,7 +593,11 @@ Home page.
                         type: 'column'
                     },
                     title: {
-                        text: 'Subject Totals'
+                        text: 'Subject Totals',
+                        margin: 50,
+                        x: 20,
+                        y: 40,
+                        align: 'left'
                     },
                     subtitle: {
                         text: "10 most studied subjects"
@@ -656,11 +661,17 @@ Home page.
                     },
 
                     title: {
-                        text: "Probability that I'm studying"
+                        text: "Probability that I'm studying",
+                        margin: 50,
+                        x: 20,
+                        y: 40,
+                        align: 'left'
                     },
 
                     subtitle: {
-                        text: 'at any given hour'
+                        text: 'at any given hour',
+                        x: 20,
+                        y: 60
                     },
 
                     xAxis: {
@@ -711,7 +722,7 @@ Home page.
 
                     series: [{
                         name: 'Probability',
-                        data: s.probability
+                        data: s.probabilityWithTime
                     }]
 
                 });
@@ -810,10 +821,11 @@ Home page.
                         enabled: "false"
                     },
                     plotOptions: {
-                        bar: {
+                        column: {
                             dataLabels: {
-                                enabled: true
-                            }
+                                enabled: false
+                            },
+                            borderWidth: 0
                         }
                     },
                     legend: {
