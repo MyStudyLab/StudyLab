@@ -32,6 +32,9 @@ Home page.
 
 @siteTemplate("Home") {
 
+        <!-- Static assets -->
+    <link href="@routes.Assets.at("stylesheets/highchart.css")" rel="stylesheet" type="text/css">
+
         <!-- Contains all raised elements-->
     <div class="container-fluid">
 
@@ -311,49 +314,51 @@ Home page.
                     });
                 }
 
-                const s = computeStats(data.sessions);
+                // Compute all of the stats and chart data from the raw sessions
+                const stats = computeStats(data.sessions);
 
                 // Fill summary values at top of page
-                fillSummaryValues(s);
+                fillSummaryValues(stats);
 
                 // Only show the current day's overview if the user has studied today.
-                if (s.todaysSessions.length > 0) {
-                    google.charts.setOnLoadCallback(getTodaysSessionsPlotDrawer(s.todaysSessions, "todaysSessionsPlot"));
+                if (stats.todaysSessions.length > 0) {
+                    google.charts.setOnLoadCallback(getTodaysSessionsPlotDrawer(stats.todaysSessions, "todaysSessionsPlot"));
                 } else {
                     document.getElementById("widt-row").style.display = "none";
                 }
 
+                // The master theme for all charts on the page
                 Highcharts.theme = {
+
                     colors: ['#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066', '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
+
                     chart: {
-                        backgroundColor: {
-                            linearGradient: {x1: 0, y1: 0, x2: 1, y2: 1},
-                            stops: [
-                                [0, '#2a2a2b'],
-                                [1, '#3e3e40']
-                            ]
-                        },
+                        backgroundColor: "transparent",
                         style: {
                             fontFamily: 'Roboto, sans-serif'
-                        },
-                        plotBorderColor: '#606063'
+                        }
                     },
+
                     title: {
-                        align: 'left',
                         style: {
                             color: '#E0E0E3',
-                            //textTransform: 'uppercase',
                             fontSize: '30px'
                         },
-                        x: 50
-                    },
-                    subtitle: {
                         align: 'left',
+                        margin: 50,
+                        x: 20,
+                        y: 40
+                    },
+
+                    subtitle: {
                         style: {
                             color: '#E0E0E3',
                         },
-                        x: 50
+                        align: 'left',
+                        x: 20,
+                        y: 60
                     },
+
                     xAxis: {
                         gridLineColor: '#707073',
                         labels: {
@@ -372,6 +377,7 @@ Home page.
                             }
                         }
                     },
+
                     yAxis: {
                         gridLineColor: '#707073',
                         labels: {
@@ -385,18 +391,25 @@ Home page.
                         tickColor: '#707073',
                         tickWidth: 1,
                         title: {
+                            text: null,
+                            align: "middle",
                             style: {
                                 color: '#A0A0A3'
                             }
                         }
                     },
+
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
                         style: {
                             color: '#F0F0F0'
-                        }
+                        },
+                        valueDecimals: 2,
+                        hideDelay: 250
                     },
+
                     plotOptions: {
+
                         series: {
                             dataLabels: {
                                 color: '#B0B0B3'
@@ -405,21 +418,45 @@ Home page.
                                 lineColor: '#333'
                             }
                         },
+
+                        area: {
+                            fillColor: {
+                                linearGradient: {
+                                    x1: 0,
+                                    y1: 0,
+                                    x2: 0,
+                                    y2: 1
+                                },
+                                stops: [
+                                    [0, 'rgba(43, 144, 143, 1)'],
+                                    [1, 'rgba(43, 144, 143, .3)']
+                                ]
+                            },
+                            marker: {
+                                radius: 2
+                            },
+                            lineWidth: 1,
+                            states: {
+                                hover: {
+                                    lineWidth: 1
+                                }
+                            },
+                            threshold: null
+                        },
+
                         boxplot: {
                             fillColor: '#505053'
                         },
+
                         candlestick: {
                             lineColor: 'white'
                         },
+
                         errorbar: {
                             color: 'white'
                         }
                     },
-                    credits: {
-                        style: {
-                            color: '#666'
-                        }
-                    },
+
                     labels: {
                         style: {
                             color: '#707073'
@@ -506,6 +543,18 @@ Home page.
                         trackBorderColor: '#404043'
                     },
 
+                    legend: {
+                        enabled: false
+                    },
+
+                    credits: {
+                        enabled: false
+                    },
+
+                    exporting: {
+                        enabled: false
+                    },
+
                     // special colors for some of the
                     legendBackgroundColor: 'rgba(0, 0, 0, 0.5)',
                     background2: '#505053',
@@ -520,60 +569,33 @@ Home page.
 
 
                 // Draw the Cumulative Plot
-                Highcharts.chart('cumulativePlot', {
+                let cumulativeChart = Highcharts.chart('cumulativePlot', {
+
                     chart: {
                         zoomType: 'x'
                     },
+
                     title: {
-                        text: 'Cumulative Hours Studied',
-                        margin: 50,
-                        x: 20,
-                        y: 40,
-                        align: 'left'
+                        text: 'Cumulative Hours Studied'
                     },
+
                     xAxis: {
                         type: 'datetime'
                     },
+
                     yAxis: {
-                        title: {
-                            text: null
-                        },
-                        min: 0
-                    },
-                    legend: {
-                        enabled: false
-                    },
-                    plotOptions: {
-                        area: {
-                            fillColor: {
-                                linearGradient: {
-                                    x1: 0,
-                                    y1: 0,
-                                    x2: 0,
-                                    y2: 1
-                                },
-                                stops: [
-                                    [0, Highcharts.getOptions().colors[0]],
-                                    [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(.3).get('rgba')]
-                                ]
-                            },
-                            marker: {
-                                radius: 2
-                            },
-                            lineWidth: 1,
-                            states: {
-                                hover: {
-                                    lineWidth: 1
-                                }
-                            },
-                            threshold: null
+                        min: 0,
+                        labels: {
+                            formatter: function () {
+                                return (this.value / 1000).toString() + "K";
+                            }
                         }
                     },
 
                     series: [{
                         type: 'area',
                         name: 'Cumulative Hours Studied',
-                        data: s.denseCumulative
+                        data: stats.denseCumulative
                     }]
                 });
 
@@ -582,22 +604,19 @@ Home page.
                 let subject_totals_xs = [];
                 let subject_totals_ys = [];
 
-                for (let i = 0; i < s.subjectTotals.length; i++) {
-                    subject_totals_xs.push(s.subjectTotals[i][0]);
-                    subject_totals_ys.push(s.subjectTotals[i][1]);
+                for (let i = 0; i < stats.subjectTotals.length; i++) {
+                    subject_totals_xs.push(stats.subjectTotals[i][0]);
+                    subject_totals_ys.push(stats.subjectTotals[i][1]);
                 }
 
                 // Draw the subject totals plot
-                Highcharts.chart('subjectTotalsPlot', {
+                let subjectTotalsChart = Highcharts.chart('subjectTotalsPlot', {
+
                     chart: {
                         type: 'column'
                     },
                     title: {
-                        text: 'Subject Totals',
-                        margin: 50,
-                        x: 20,
-                        y: 40,
-                        align: 'left'
+                        text: 'Subject Totals'
                     },
                     subtitle: {
                         text: "10 most studied subjects"
@@ -608,20 +627,12 @@ Home page.
                     yAxis: {
                         min: 0,
                         title: {
-                            text: 'Hours Studied',
-                            align: 'middle'
-                        },
-                        labels: {
-                            overflow: 'justify'
+                            text: 'Hours Studied'
                         }
                     },
                     tooltip: {
                         pointFormat: '{point.y}',
-                        valueSuffix: ' hours',
-                        valueDecimals: 2,
-                    },
-                    exporting: {
-                        enabled: "false"
+                        valueSuffix: ' hours'
                     },
                     plotOptions: {
                         column: {
@@ -630,17 +641,6 @@ Home page.
                             },
                             borderWidth: 0
                         }
-                    },
-                    legend: {
-                        layout: 'vertical',
-                        align: 'right',
-                        verticalAlign: 'top',
-                        x: -40,
-                        y: 80,
-                        floating: true,
-                        borderWidth: 0,
-                        shadow: true,
-                        enabled: false
                     },
                     credits: {
                         enabled: false
@@ -653,7 +653,7 @@ Home page.
 
 
                 // Draw the probability plot with the HighChart library
-                Highcharts.chart('probabilityPlot', {
+                let probabilityChart = Highcharts.chart('probabilityPlot', {
 
                     chart: {
                         type: 'areaspline',
@@ -661,17 +661,11 @@ Home page.
                     },
 
                     title: {
-                        text: "Probability that I'm studying",
-                        margin: 50,
-                        x: 20,
-                        y: 40,
-                        align: 'left'
+                        text: "Probability that I'm studying"
                     },
 
                     subtitle: {
-                        text: 'at any given hour',
-                        x: 20,
-                        y: 60
+                        text: 'at any given hour'
                     },
 
                     xAxis: {
@@ -681,20 +675,7 @@ Home page.
                     },
 
                     yAxis: {
-                        title: {
-                            text: 'Probability'
-                        },
                         tickAmount: 6
-                    },
-                    legend: {
-                        layout: 'vertical',
-                        align: 'right',
-                        verticalAlign: 'middle',
-                        enabled: false
-                    },
-
-                    exporting: {
-                        enabled: false
                     },
 
                     plotOptions: {
@@ -722,104 +703,73 @@ Home page.
 
                     series: [{
                         name: 'Probability',
-                        data: s.probabilityWithTime
+                        data: stats.probabilityWithTime
                     }]
 
                 });
 
 
                 // Draw the Moving Average Plot
-                Highcharts.chart('movingAveragePlot', {
+                let movingAverageChart = Highcharts.chart('movingAveragePlot', {
+
                     chart: {
                         zoomType: 'x'
                     },
+
                     title: {
                         text: 'Average Hours Studied Per Day'
                     },
+
                     subtitle: {
                         text: 'Moving Average - 90 day window'
                     },
+
                     xAxis: {
                         type: 'datetime'
                     },
+
                     yAxis: {
-                        title: {
-                            text: 'Hours'
-                        },
                         min: 0
-                    },
-                    legend: {
-                        enabled: false
-                    },
-                    plotOptions: {
-                        area: {
-                            fillColor: {
-                                linearGradient: {
-                                    x1: 0,
-                                    y1: 0,
-                                    x2: 0,
-                                    y2: 1
-                                },
-                                stops: [
-                                    [0, Highcharts.getOptions().colors[0]],
-                                    [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(.3).get('rgba')]
-                                ]
-                            },
-                            marker: {
-                                radius: 2
-                            },
-                            lineWidth: 1,
-                            states: {
-                                hover: {
-                                    lineWidth: 1
-                                }
-                            },
-                            threshold: null
-                        }
                     },
 
                     series: [{
                         type: 'area',
                         name: 'Average Hours Studied per Day',
-                        data: s.movingAverage
+                        data: stats.movingAverage
                     }]
                 });
 
                 let daily_averages_xs = [];
                 let daily_averages_ys = [];
 
-                s.dayOfWeekAverages.forEach(function (curr, arr, i) {
+                stats.dayOfWeekAverages.forEach(function (curr, arr, i) {
                     daily_averages_xs.push(curr[0]);
                     daily_averages_ys.push(curr[1]);
                 });
 
                 // Draw the subject totals plot
-                Highcharts.chart('dayOfWeekAveragesPlot', {
+                let dailyAveragesChart = Highcharts.chart('dayOfWeekAveragesPlot', {
+
                     chart: {
                         type: 'column'
                     },
+
                     title: {
                         text: 'Average Hours Studied Per Weekday'
                     },
+
                     xAxis: {
                         categories: daily_averages_xs,
                     },
+
                     yAxis: {
-                        min: 0,
-                        title: {
-                            text: 'Hours Studied',
-                            align: 'middle'
-                        },
-                        labels: {
-                            overflow: 'justify'
-                        }
+                        min: 0
                     },
+
                     tooltip: {
                         valueSuffix: ' hours'
                     },
-                    exporting: {
-                        enabled: "false"
-                    },
+
                     plotOptions: {
                         column: {
                             dataLabels: {
@@ -828,22 +778,9 @@ Home page.
                             borderWidth: 0
                         }
                     },
-                    legend: {
-                        layout: 'vertical',
-                        align: 'right',
-                        verticalAlign: 'top',
-                        x: -40,
-                        y: 80,
-                        floating: true,
-                        borderWidth: 1,
-                        shadow: true,
-                        enabled: false
-                    },
-                    credits: {
-                        enabled: false
-                    },
+
                     series: [{
-                        name: 'Daily Averages',
+                        name: 'Daily Average',
                         data: daily_averages_ys
                     }]
                 });
