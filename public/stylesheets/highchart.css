@@ -134,10 +134,11 @@
 }
 
 .quote {
-    margin-bottom: 35px;
+    margin-bottom: 50px;
     font-size: xx-large;
     color: #E0E0E3;
-    border: 5px;
+    border-left: solid 2px #707073;
+    border-bottom: solid 2px #707073;
 }
 
 .quote-attribution {
