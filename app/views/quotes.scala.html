@@ -10,14 +10,14 @@
 
             // Build an element for a single quote
             function buildQuote(quote) {
-                var row = document.createElement("div");
-                var d1 = document.createElement("div");
-                var d2 = document.createTextNode(quote.text);
-                var d3 = document.createElement("div");
+                let row = document.createElement("div");
+                let d1 = document.createElement("div");
+                let d2 = document.createTextNode(quote.text);
+                let d3 = document.createElement("div");
 
 
                 // The attribution string for the quote.
-                var attribution;
+                let attribution;
 
                 // Include as much information as possible in the attribution
                 if (quote["author"] !== "" && quote["source"] !== "") {
@@ -46,9 +46,9 @@
 
             loadJSONFile("/json/quotes/jgdodson", function (quotes) {
 
-                var quoteList = document.getElementById("quote-list");
+                let quoteList = document.getElementById("quote-list");
 
-                for (var i = 0; i < quotes.length; i++) {
+                for (let i = 0; i < quotes.length; i++) {
 
                     if (Math.random() < 0.3) {
                         quoteList.appendChild(buildQuote(quotes[i]))

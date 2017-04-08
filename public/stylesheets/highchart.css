@@ -1,6 +1,17 @@
 .introMessageValue {
     font-weight: bold;
-    color: green;
+    color: rgb(58, 127, 89);
+}
+
+.introMessageText {
+    color: #707073
+}
+
+#widt-highchart {
+    border-top: solid #707073 2px;
+    border-bottom: solid #707073 2px;
+    padding: 30px 0;
+    margin-bottom: 20px;
 }
 
 .data-blocks {
@@ -11,7 +22,7 @@
 
 .data-block-title {
     font-size: large;
-    color: #757575;
+    color: #E0E0E3;
 }
 
 .googlePlotContainer {
@@ -105,9 +116,7 @@
 }
 
 .raised-element {
-    box-shadow: 0 2px 3px #242424;
-    background-color: #f8f5f0;
-    border-radius: 8px;
+    background-color: transparent;
 }
 
 .padded-plot {
@@ -126,13 +135,16 @@
 
 .quote {
     margin-bottom: 35px;
-    font-size: x-large;
+    font-size: xx-large;
+    color: #E0E0E3;
+    border: 5px;
 }
 
 .quote-attribution {
     margin-top: 7px;
     text-align: right;
-    color: #757575;
+    color: #707073;
+    font-size: x-large;
 }
 
 .book {
@@ -164,6 +176,7 @@
 
 .about-para {
     margin-bottom: 80px;
+    color: #E0E0E3;
 }
 
 .loading-icon {

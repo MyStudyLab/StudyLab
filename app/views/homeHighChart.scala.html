@@ -11,7 +11,7 @@ Home page.
 }
 
 @dataBlock(title: String, id: String, offset: Int, width: Int) = {
-    <div class="col-sm-offset-@offset col-sm-@width raised-element">
+    <div class="col-sm-offset-@offset col-sm-@width">
         <u class="data-block-title">@title</u>
         <br>
         <div id="@id">
@@ -42,22 +42,24 @@ Home page.
         <div class="row small-margin-bottom data-blocks">
 
                 <!-- Total hours studied -->
-            @dataBlock("Total", "total-hours", 1, 2)
+            @dataBlock("Total", "total-hours", 3, 2)
 
                 <!-- Hours studied today vs. average -->
-            @dataBlock("Today / Average", "today-vs-average", 1, 4)
+            @dataBlock("Today / Average", "today-vs-average", 0, 2)
 
                 <!-- Length of the current streak -->
-            @dataBlock("Current Streak", "current-streak", 1, 2)
+            @dataBlock("Current Streak", "current-streak", 0, 2)
         </div>
 
             <!-- Today's sessions plot -->
-        <div id="widt-row" class="row small-margin-bottom">
-            <div id="widt" class="col-sm-offset-1 col-sm-10 raised-element">
-                <div id="todaysSessionsPlot" class="loading-icon">
-                @loadingDots()
-                </div>
+        <div id="widt-row" class="row small-margin-bottom" hidden="true">
+            <div id="widt">
+                <div id="todaysSessionsPlot" class="loading-icon"></div>
             </div>
+        </div>
+
+        <div>
+            <div id="widt-highchart" class="col-sm-offset-1 col-sm-10"></div>
         </div>
 
             <!-- Cumulative hours studied plot-->
@@ -196,6 +198,61 @@ Home page.
             }
 
 
+            // Generate the input to the What-I-Did-Today chart
+            function todayPlotPrep(todaySessions) {
+
+                if (todaySessions.length === 0) {
+                    return [];
+                }
+
+                const len = todaySessions.length;
+
+                let startOfDay = todaySessions[0]['start'].clone().startOf('day');
+
+                let endOfDay = todaySessions[len - 1]['stop'].clone().endOf('day');
+
+                // The initial gap
+                let series = [{
+                    name: ' ',
+                    data: [(todaySessions[0]['start'].clone() - startOfDay) / 3600000],
+                    color: 'transparent'
+                }];
+
+                // The middle sessions
+                for (let i = 0; i < len - 1; i++) {
+
+                    // Append the next session interval
+                    series.push({
+                        name: todaySessions[i]['subject'],
+                        data: [(todaySessions[i].stop - todaySessions[i].start) / 3600000]
+                    });
+
+                    // Append the non-study time following the session
+                    series.push({
+                        name: " ",
+                        data: [(todaySessions[i + 1].start - todaySessions[i].stop) / 3600000],
+                        color: "transparent"
+                    });
+                }
+
+                // The last session
+                series.push({
+                    name: todaySessions[len - 1]['subject'],
+                    data: [(todaySessions[len - 1].stop - todaySessions[len - 1].start) / 3600000]
+                });
+
+                // The last gap
+                series.push({
+                    name: ' ',
+                    data: [(endOfDay - todaySessions[len - 1]['stop'].clone()) / 3600000],
+                    color: 'transparent'
+                });
+
+
+                return series;
+
+            }
+
             /*
              * Compute all of the statistics
              */
@@ -230,9 +287,6 @@ Home page.
 
     <script>
 
-            // Load the  charts
-            google.charts.load('44', {packages: ['line', 'bar', 'timeline']});
-
             // Get a duration as [hh, mm, ss] from seconds
             function hms(sec) {
                 const h = Math.floor(sec / 3600);
@@ -253,50 +307,13 @@ Home page.
 
                 const n2 = stats.dailyAverage.toFixed(2).toString();
 
-                const inner1 = "<span class='introMessageValue'>" + n1 + "</span> / <span class='introMessageValue'>" + n2 + "</span>";
+                const inner1 = "<span class='introMessageValue'>" + n1 + "</span> <span class=\"introMessageText\">/</span> <span class='introMessageValue'>" + n2 + "</span>";
 
-                document.getElementById("total-hours").innerHTML = "<span class='introMessageValue'>" + Math.round(stats.total).toString() + "</span> hours";
+                document.getElementById("total-hours").innerHTML = "<span class='introMessageValue'>" + Math.round(stats.total).toString() + "</span> <span class=\"introMessageText\">hours</span>";
 
                 document.getElementById("today-vs-average").innerHTML = inner1;
 
-                document.getElementById("current-streak").innerHTML = "<span class='introMessageValue'>" + stats.currentStreak.toString() + "</span> days";
-            }
-
-
-            function getTodaysSessionsPlotDrawer(sessions, elementId) {
-
-                function tmp() {
-
-                    const options = {
-                        height: 95,
-                        hAxis: {
-                            title: "",
-                            fontSize: 0
-                        },
-                        backgroundColor: "transparent",
-                        groupByRowLabel: false
-                    };
-
-                    let table = new google.visualization.DataTable();
-
-                    table.addColumn({type: "string", id: "Role"});
-                    table.addColumn({type: "string", id: "Subject"});
-                    table.addColumn({type: "number", id: "Start"});
-                    table.addColumn({type: "number", id: "End"});
-
-
-                    const rows = sessions.map(function (elem, i, self) {
-                        return ["What I've Done Today", elem.subject, elem.start.valueOf(), elem.stop.valueOf()];
-                    });
-
-                    table.addRows(rows);
-
-                    let chart = new google.visualization.Timeline(document.getElementById(elementId));
-
-                    chart.draw(table, options);
-                }
-
-                return tmp;
+                document.getElementById("current-streak").innerHTML = "<span class='introMessageValue'>" + stats.currentStreak.toString() + "</span> <span class=\"introMessageText\">days</span>";
             }
 
 
@@ -322,20 +339,24 @@ Home page.
 
                 // Only show the current day's overview if the user has studied today.
                 if (stats.todaysSessions.length > 0) {
-                    google.charts.setOnLoadCallback(getTodaysSessionsPlotDrawer(stats.todaysSessions, "todaysSessionsPlot"));
+                    //google.charts.setOnLoadCallback(getTodaysSessionsPlotDrawer(stats.todaysSessions, "todaysSessionsPlot"));
                 } else {
                     document.getElementById("widt-row").style.display = "none";
                 }
 
-                // The master theme for all charts on the page
+                // DEBUG - DEBUG - DEBUG
+                console.log(stats.todaysSessions);
+                console.log(todayPlotPrep(stats.todaysSessions));
+
+                // Set the master theme for all charts on the page
                 Highcharts.theme = {
 
-                    colors: ['#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066', '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
+                    colors: ['rgb(58, 127, 89)', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066', '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
 
                     chart: {
                         backgroundColor: "transparent",
                         style: {
-                            fontFamily: 'Roboto, sans-serif'
+                            fontFamily: 'Roboto, sans-serif, serif'
                         }
                     },
 
@@ -405,7 +426,7 @@ Home page.
                             color: '#F0F0F0'
                         },
                         valueDecimals: 2,
-                        hideDelay: 250
+                        hideDelay: 150
                     },
 
                     plotOptions: {
@@ -428,32 +449,58 @@ Home page.
                                     y2: 1
                                 },
                                 stops: [
-                                    [0, 'rgba(43, 144, 143, 1)'],
-                                    [1, 'rgba(43, 144, 143, .3)']
+                                    [0, "rgba(58, 127, 89, 1)"],
+                                    [1, "rgba(58, 127, 89, .5)"]
+                                ]
+                            },
+
+                            marker: {
+                                radius: 0
+                            },
+
+                            lineWidth: 1,
+                            states: {
+                                hover: {
+                                    lineWidth: 1
+                                }
+                            }
+                        },
+
+                        areaspline: {
+                            lineColor: "rgb(58, 127, 89)",
+                            fillColor: {
+                                linearGradient: {
+                                    x1: 0,
+                                    y1: 0,
+                                    x2: 0,
+                                    y2: 1
+                                },
+                                stops: [
+                                    [0, "rgba(58, 127, 89, 1)"],
+                                    [1, "rgba(58, 127, 89, .75)"]
                                 ]
                             },
                             marker: {
-                                radius: 2
+                                radius: 0
                             },
                             lineWidth: 1,
                             states: {
                                 hover: {
                                     lineWidth: 1
                                 }
+                            }
+                        },
+
+                        column: {
+                            color: "rgba(58, 127, 89, .9)",
+                            dataLabels: {
+                                enabled: false
                             },
-                            threshold: null
+                            borderWidth: 0
                         },
 
-                        boxplot: {
-                            fillColor: '#505053'
-                        },
-
-                        candlestick: {
-                            lineColor: 'white'
-                        },
-
-                        errorbar: {
-                            color: 'white'
+                        bar: {
+                            borderWidth: 0
                         }
                     },
 
@@ -568,10 +615,67 @@ Home page.
                 Highcharts.setOptions(Highcharts.theme);
 
 
+                // Draw the daily summary chart
+                let widtChart = Highcharts.chart('widt-highchart', {
+
+                    chart: {
+                        type: 'bar',
+                        height: 100,
+                        marginLeft: 20,
+                        marginRight: 20,
+                        ignoreHiddenSeries: false
+                    },
+
+                    title: {
+                        text: ""
+                    },
+
+                    xAxis: {
+                        categories: [''],
+                        tickColor: 'transparent'
+                    },
+
+                    yAxis: {
+                        min: 0,
+                        max: 24,
+                        tickAmount: 13,
+                        tickLength: 0,
+                        title: {
+                            text: null
+                        },
+                        // The intervals appear in chronological order
+                        reversedStacks: false
+                    },
+
+                    tooltip: {
+                        valueSuffix: " hours"
+                    },
+
+                    plotOptions: {
+                        series: {
+                            stacking: 'normal'
+                        },
+                        bar: {
+                            dataLabels: {
+                                enabled: true,
+                                format: "{series.name}"
+                            }
+                        }
+                    },
+
+                    series: todayPlotPrep(stats.todaysSessions)
+                });
+
+                // Hide all of the series representing non-study time
+                for (let i = 0; i < widtChart.series.length; i += 2) {
+                    widtChart.series[i].hide();
+                }
+
                 // Draw the Cumulative Plot
                 let cumulativeChart = Highcharts.chart('cumulativePlot', {
 
                     chart: {
+                        type: "areaspline",
                         zoomType: 'x'
                     },
 
@@ -587,13 +691,24 @@ Home page.
                         min: 0,
                         labels: {
                             formatter: function () {
-                                return (this.value / 1000).toString() + "K";
+
+                                if (this.value === 0) {
+                                    return "0";
+                                } else {
+                                    return (this.value / 1000).toString() + "K";
+                                }
                             }
                         }
                     },
 
+                    tooltip: {
+                        pointFormatter: function () {
+                            return Math.round(this.y).toString() + ' hours';
+                        },
+                        valueSuffix: " hours"
+                    },
+
                     series: [{
-                        type: 'area',
                         name: 'Cumulative Hours Studied',
                         data: stats.denseCumulative
                     }]
@@ -615,36 +730,29 @@ Home page.
                     chart: {
                         type: 'column'
                     },
+
                     title: {
-                        text: 'Subject Totals'
+                        text: 'Hours Studied Per Subject'
                     },
+
                     subtitle: {
                         text: "10 most studied subjects"
                     },
+
                     xAxis: {
                         categories: subject_totals_xs
                     },
+
                     yAxis: {
-                        min: 0,
-                        title: {
-                            text: 'Hours Studied'
-                        }
+                        min: 0
                     },
+
                     tooltip: {
                         pointFormat: '{point.y}',
-                        valueSuffix: ' hours'
+                        valueSuffix: ' hours',
+                        valueDecimals: 0
                     },
-                    plotOptions: {
-                        column: {
-                            dataLabels: {
-                                enabled: false
-                            },
-                            borderWidth: 0
-                        }
-                    },
-                    credits: {
-                        enabled: false
-                    },
+
                     series: [{
                         name: 'Subject Totals',
                         data: subject_totals_ys
@@ -665,7 +773,7 @@ Home page.
                     },
 
                     subtitle: {
-                        text: 'at any given hour'
+                        text: 'At any given hour'
                     },
 
                     xAxis: {
@@ -683,18 +791,6 @@ Home page.
                             pointStart: 0
                         },
                         areaspline: {
-                            fillColor: {
-                                linearGradient: {
-                                    x1: 0,
-                                    y1: 0,
-                                    x2: 0,
-                                    y2: 1
-                                },
-                                stops: [
-                                    [0, Highcharts.getOptions().colors[0]],
-                                    [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(.3).get('rgba')]
-                                ]
-                            },
                             marker: {
                                 enabled: false
                             }
@@ -713,11 +809,12 @@ Home page.
                 let movingAverageChart = Highcharts.chart('movingAveragePlot', {
 
                     chart: {
+                        type: "areaspline",
                         zoomType: 'x'
                     },
 
                     title: {
-                        text: 'Average Hours Studied Per Day'
+                        text: 'Hours Studied Per Day'
                     },
 
                     subtitle: {
@@ -732,8 +829,12 @@ Home page.
                         min: 0
                     },
 
+                    tooltip: {
+                        valueSuffix: " hours",
+                        pointFormat: "{point.y}"
+                    },
+
                     series: [{
-                        type: 'area',
                         name: 'Average Hours Studied per Day',
                         data: stats.movingAverage
                     }]
@@ -755,7 +856,11 @@ Home page.
                     },
 
                     title: {
-                        text: 'Average Hours Studied Per Weekday'
+                        text: 'Hours Studied Per Weekday'
+                    },
+
+                    subtitle: {
+                        text: "On average"
                     },
 
                     xAxis: {
@@ -767,7 +872,8 @@ Home page.
                     },
 
                     tooltip: {
-                        valueSuffix: ' hours'
+                        valueSuffix: " hours",
+                        pointFormat: "{point.y}"
                     },
 
                     plotOptions: {

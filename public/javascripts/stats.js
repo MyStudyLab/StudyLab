@@ -271,6 +271,7 @@ function subjectTotals(sessions) {
     }
 
 
+    // Return only the 10 most studied subjects
     return Array.from(subTotals.entries()).sort(cmp).slice(0, 10);
 }
 
