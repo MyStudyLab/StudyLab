@@ -198,6 +198,10 @@ Home page.
             }
 
 
+            function sessionDuration(session) {
+                return (session.stop - session.start) / 3600000;
+            }
+
             // Generate the input to the What-I-Did-Today chart
             function todayPlotPrep(todaySessions) {
 
@@ -224,7 +228,7 @@ Home page.
                     // Append the next session interval
                     series.push({
                         name: todaySessions[i]['subject'],
-                        data: [(todaySessions[i].stop - todaySessions[i].start) / 3600000]
+                        data: [sessionDuration(todaySessions[i])]
                     });
 
                     // Append the non-study time following the session
@@ -238,7 +242,7 @@ Home page.
                 // The last session
                 series.push({
                     name: todaySessions[len - 1]['subject'],
-                    data: [(todaySessions[len - 1].stop - todaySessions[len - 1].start) / 3600000]
+                    data: [sessionDuration(todaySessions[len - 1])]
                 });
 
                 // The last gap
