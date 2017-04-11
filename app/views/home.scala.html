@@ -341,16 +341,15 @@ Home page.
                 // Fill summary values at top of page
                 fillSummaryValues(stats);
 
-                // Only show the current day's overview if the user has studied today.
-                if (stats.todaysSessions.length > 0) {
-                    //google.charts.setOnLoadCallback(getTodaysSessionsPlotDrawer(stats.todaysSessions, "todaysSessionsPlot"));
-                } else {
-                    document.getElementById("widt-row").style.display = "none";
-                }
 
-                // DEBUG - DEBUG - DEBUG
-                console.log(stats.todaysSessions);
-                console.log(todayPlotPrep(stats.todaysSessions));
+                /*
+                 // Only show the current day's overview if the user has studied today.
+                 if (stats.todaysSessions.length > 0) {
+                 //google.charts.setOnLoadCallback(getTodaysSessionsPlotDrawer(stats.todaysSessions, "todaysSessionsPlot"));
+                 } else {
+                 document.getElementById("widt-row").style.display = "none";
+                 }
+                 */
 
                 // Set the master theme for all charts on the page
                 Highcharts.theme = {
