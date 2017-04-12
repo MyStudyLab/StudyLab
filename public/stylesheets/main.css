@@ -1,33 +1,28 @@
+body {
+    font-family: Roboto, "Open Sans", Helvetica, Arial, sans-serif;
+    background-color: #393939;
+    color: #E0E0E3;
+    padding-top: 80px;
+}
+
 .introMessageValue {
     font-weight: bold;
-    color: green;
+    color: rgb(58, 127, 89);
 }
 
-.data-blocks {
-    font-size: xx-large;
-    text-align: center;
-    margin-top: 5px;
+.introMessageText {
+    color: #707073
 }
 
-.data-block-title {
-    font-size: large;
-    color: #757575;
-}
-
-.googlePlotContainer {
-    height: 500px;
-}
-
-.spaced-plot {
-    margin-bottom: 80px;
+#widt-highchart {
+    border-top: solid #707073 2px;
+    border-bottom: solid #707073 2px;
+    padding: 30px 0;
+    margin-bottom: 20px;
 }
 
 #widt {
     padding: 15px 15px 0 15px;
-}
-
-#about-para {
-    font-size: xx-large;
 }
 
 .navbar-margin-bottom {
@@ -104,49 +99,20 @@
     color: #75ca00;
 }
 
+#wordpress-link {
+    color: rgb(39, 136, 193);
+}
+
 .raised-element {
-    box-shadow: 0 2px 3px #242424;
-    background-color: #f8f5f0;
-    border-radius: 8px;
+    background-color: transparent;
 }
 
 .padded-plot {
     padding: 25px 15px;
 }
 
-.profile-link {
-    text-align: center;
-    font-size: 10em;
-    padding: 10px;
-}
-
 .profile-link-row {
     margin: 20px;
-}
-
-.quote {
-    margin-bottom: 35px;
-    font-size: x-large;
-}
-
-.quote-attribution {
-    margin-top: 7px;
-    text-align: right;
-    color: #757575;
-}
-
-.book {
-    margin-bottom: 35px;
-}
-
-.book-title {
-    font-size: xx-large;
-}
-
-.book-info {
-    margin-top: 5px;
-    color: #757575;
-    font-size: medium;
 }
 
 .footer-quote {
@@ -162,17 +128,109 @@
     margin-bottom: 30px;
 }
 
-.about-para {
-    margin-bottom: 80px;
-}
-
 .loading-icon {
     text-align: center;
 }
 
-body {
-    font-family: Roboto, "Open Sans", Helvetica, Arial, sans-serif;
-    background-color: #393939;
+/* X-Small Screens */
+.data-blocks {
+    font-size: xx-large;
+    text-align: center;
+    padding-top: 5px;
+}
+
+.data-block-title {
+    font-size: large;
+}
+
+.profile-link {
+    font-size: 3.5em;
+    text-align: center;
+    padding: 10px;
+}
+
+.quote {
+    margin-bottom: 30px;
+    font-size: x-large;
+    border-bottom: solid 2px #707073;
+}
+
+.quote-attribution {
+    margin-top: 7px;
+    text-align: right;
+    color: #707073;
+    font-size: large;
+}
+
+#about-para {
+    font-size: x-large;
+    margin-bottom: 80px;
+}
+
+.highcharts-title {
+    font-size: 20px;
+}
+
+.chart-container {
+    height: 350px;
+}
+
+/* Small Screens */
+@media (min-width: 768px) {
+
+    .chart-container {
+        height: 500px;
+    }
+
+    .profile-link {
+        font-size: 6em;
+    }
+
+    .quote {
+        margin-bottom: 50px;
+        font-size: xx-large;
+        border-left: solid 2px #707073;
+    }
+
+    .quote-attribution {
+        margin-top: 7px;
+        font-size: x-large;
+    }
+
+    #about-para {
+        font-size: xx-large;
+    }
+
+    .highcharts-title {
+        font-size: 30px;
+    }
+
+}
+
+/* Medium Screens */
+@media (min-width: 992px) {
+
+    .profile-link {
+        font-size: 8em;
+    }
+
+}
+
+/* Large Screens */
+@media (min-width: 1200px) {
+
+    .profile-link {
+        font-size: 10em;
+    }
+
+}
+
+/* X-Large Screens */
+@media (min-width: 1800px) {
+
+    .chart-container {
+        height: 700px;
+    }
 }
 
 /* CSS for loading animation */

@@ -1,42 +1,25 @@
-body {
-    font-family: Roboto, "Open Sans", Helvetica, Arial, sans-serif;
-    background-color: #393939;
-    padding-top: 80px;
-}
-
 .introMessageValue {
     font-weight: bold;
-    color: rgb(58, 127, 89);
-}
-
-.introMessageText {
-    color: #707073
-}
-
-#widt-highchart {
-    border-top: solid #707073 2px;
-    border-bottom: solid #707073 2px;
-    padding: 30px 0;
-    margin-bottom: 20px;
+    color: green;
 }
 
 .data-blocks {
     font-size: xx-large;
     text-align: center;
-    padding-top: 5px;
+    margin-top: 5px;
 }
 
 .data-block-title {
     font-size: large;
-    color: #E0E0E3;
+    color: #757575;
 }
 
-.googlePlotContainer {
+.chart-container {
     height: 500px;
 }
 
 .spaced-plot {
-    margin-bottom: 20px;
+    margin-bottom: 80px;
 }
 
 #widt {
@@ -122,7 +105,9 @@ body {
 }
 
 .raised-element {
-    background-color: transparent;
+    box-shadow: 0 2px 3px #242424;
+    background-color: #f8f5f0;
+    border-radius: 8px;
 }
 
 .padded-plot {
@@ -131,12 +116,23 @@ body {
 
 .profile-link {
     text-align: center;
-    font-size: 8em;
+    font-size: 10em;
     padding: 10px;
 }
 
 .profile-link-row {
     margin: 20px;
+}
+
+.quote {
+    margin-bottom: 35px;
+    font-size: x-large;
+}
+
+.quote-attribution {
+    margin-top: 7px;
+    text-align: right;
+    color: #757575;
 }
 
 .book {
@@ -168,65 +164,15 @@ body {
 
 .about-para {
     margin-bottom: 80px;
-    color: #E0E0E3;
 }
 
 .loading-icon {
     text-align: center;
 }
 
-/* xs screens */
-.profile-link {
-    font-size: 3.5em;
-}
-
-.quote {
-    margin-bottom: 30px;
-    font-size: x-large;
-    color: #E0E0E3;
-    border-bottom: solid 2px #707073;
-}
-
-.quote-attribution {
-    margin-top: 7px;
-    text-align: right;
-    color: #707073;
-    font-size: large;
-}
-
-@media (min-width: 768px) {
-
-    .profile-link {
-        font-size: 6em;
-    }
-
-    .quote {
-        margin-bottom: 50px;
-        font-size: xx-large;
-        border-left: solid 2px #707073;
-    }
-
-    .quote-attribution {
-        margin-top: 7px;
-        font-size: x-large;
-    }
-
-}
-
-@media (min-width: 992px) {
-
-    .profile-link {
-        font-size: 8em;
-    }
-
-}
-
-@media (min-width: 1200px) {
-
-    .profile-link {
-        font-size: 10em;
-    }
-
+body {
+    font-family: Roboto, "Open Sans", Helvetica, Arial, sans-serif;
+    background-color: #393939;
 }
 
 /* CSS for loading animation */

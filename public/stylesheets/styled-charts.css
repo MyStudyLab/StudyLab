@@ -1,0 +1,87 @@
+@import "../highcharts/highcharts-style.css";
+
+.highcharts-root {
+    font-family: Roboto, "Open Sans", Helvetica, Arial, sans-serif;
+    color: #E0E0E3
+}
+
+.highcharts-background {
+    fill: transparent;
+}
+
+.highcharts-title {
+    font-size: 20px;
+    fill: #E0E0E3;
+}
+
+.highcharts-subtitle {
+    font-size: 10px;
+    fill: #E0E0E3;
+}
+
+.highcharts-axis-title {
+    fill: #A0A0A3;
+}
+
+.highcharts-axis-line {
+    stroke: #707073;
+}
+
+.highcharts-grid-line {
+    stroke: #707073;
+}
+
+.highcharts-minor-grid-line {
+    stroke: #505053;
+}
+
+.highcharts-tick {
+    stroke: #707073;
+}
+
+.highcharts-axis-labels {
+    fill: #E0E0E3;
+    font-size: 12px;
+}
+
+.highcharts-tooltip text {
+    fill: #F0F0F0;
+}
+
+.highcharts-tooltip-box {
+    fill: rgba(0, 0, 0, 0.8);
+}
+
+.highcharts-color-0 {
+    fill: rgb(58, 127, 89);
+    stroke: rgb(58, 127, 89);
+}
+
+#subjectTotalsPlot .highcharts-point {
+    stroke: rgb(58, 127, 89);
+}
+
+#dayOfWeekAveragesPlot .highcharts-point {
+    stroke: rgb(58, 127, 89);
+}
+
+.highcharts-area {
+    stop-opacity: 0.7;
+    stop-color: rgb(58, 127, 89);
+}
+
+/* Small Screens */
+@media (min-width: 768px) {
+
+    .highcharts-title {
+        font-size: 30px;
+    }
+
+    .highcharts-subtitle {
+        font-size: 15px;
+    }
+
+    .highcharts-axis-labels {
+        font-size: 18px;
+    }
+}
