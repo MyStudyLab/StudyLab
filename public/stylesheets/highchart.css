@@ -131,27 +131,12 @@ body {
 
 .profile-link {
     text-align: center;
-    font-size: 10em;
+    font-size: 8em;
     padding: 10px;
 }
 
 .profile-link-row {
     margin: 20px;
-}
-
-.quote {
-    margin-bottom: 50px;
-    font-size: xx-large;
-    color: #E0E0E3;
-    border-left: solid 2px #707073;
-    border-bottom: solid 2px #707073;
-}
-
-.quote-attribution {
-    margin-top: 7px;
-    text-align: right;
-    color: #707073;
-    font-size: x-large;
 }
 
 .book {
@@ -188,6 +173,60 @@ body {
 
 .loading-icon {
     text-align: center;
+}
+
+/* xs screens */
+.profile-link {
+    font-size: 3.5em;
+}
+
+.quote {
+    margin-bottom: 30px;
+    font-size: x-large;
+    color: #E0E0E3;
+    border-bottom: solid 2px #707073;
+}
+
+.quote-attribution {
+    margin-top: 7px;
+    text-align: right;
+    color: #707073;
+    font-size: large;
+}
+
+@media (min-width: 768px) {
+
+    .profile-link {
+        font-size: 6em;
+    }
+
+    .quote {
+        margin-bottom: 50px;
+        font-size: xx-large;
+        border-left: solid 2px #707073;
+    }
+
+    .quote-attribution {
+        margin-top: 7px;
+        font-size: x-large;
+    }
+
+}
+
+@media (min-width: 992px) {
+
+    .profile-link {
+        font-size: 8em;
+    }
+
+}
+
+@media (min-width: 1200px) {
+
+    .profile-link {
+        font-size: 10em;
+    }
+
 }
 
 /* CSS for loading animation */
