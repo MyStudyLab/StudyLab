@@ -44,6 +44,7 @@
     font-size: 12px;
 }
 
+/* Set the default fill opacity for a series */
 .highcharts-series {
     fill-opacity: 0.9;
 }
@@ -83,7 +84,7 @@
 }
 
 #gradient-0 stop[offset="1"] {
-    stop-opacity: 0.5;
+    stop-opacity: 0.65;
 }
 
 /*- - - - - - - - - - - - - - - */

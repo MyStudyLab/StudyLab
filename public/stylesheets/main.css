@@ -1,8 +1,21 @@
+html {
+    height: 100%;
+}
+
 body {
     font-family: Roboto, "Open Sans", Helvetica, Arial, sans-serif;
     background-color: #393939;
     color: #E0E0E3;
     padding-top: 80px;
+
+    /* Sticky footer stuff */
+    display: flex;
+    min-height: 100%;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1;
 }
 
 .introMessageValue {
@@ -149,10 +162,13 @@ body {
     padding: 10px;
 }
 
+.partial-border {
+    border-bottom: solid 2px #707073;
+}
+
 .quote {
     margin-bottom: 30px;
     font-size: x-large;
-    border-bottom: solid 2px #707073;
 }
 
 .quote-attribution {
@@ -189,7 +205,6 @@ body {
     .quote {
         margin-bottom: 50px;
         font-size: xx-large;
-        border-left: solid 2px #707073;
     }
 
     .quote-attribution {
@@ -199,6 +214,10 @@ body {
 
     #about-para {
         font-size: xx-large;
+    }
+
+    .partial-border {
+        border-left: solid 2px #707073;
     }
 
     .highcharts-title {

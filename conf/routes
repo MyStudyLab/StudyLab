@@ -5,9 +5,6 @@
 # Demo page for the High Chart graphs
 GET         /                               controllers.Application.home
 
-# Old home page
-GET         /oldHome                        controllers.Application.oldHome
-
 # About page
 GET         /about                          controllers.Application.about
 
