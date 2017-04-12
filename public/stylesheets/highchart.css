@@ -1,3 +1,9 @@
+body {
+    font-family: Roboto, "Open Sans", Helvetica, Arial, sans-serif;
+    background-color: #393939;
+    padding-top: 80px;
+}
+
 .introMessageValue {
     font-weight: bold;
     color: rgb(58, 127, 89);
@@ -17,7 +23,7 @@
 .data-blocks {
     font-size: xx-large;
     text-align: center;
-    margin-top: 5px;
+    padding-top: 5px;
 }
 
 .data-block-title {
@@ -182,11 +188,6 @@
 
 .loading-icon {
     text-align: center;
-}
-
-body {
-    font-family: Roboto, "Open Sans", Helvetica, Arial, sans-serif;
-    background-color: #393939;
 }
 
 /* CSS for loading animation */
