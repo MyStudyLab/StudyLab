@@ -3,8 +3,8 @@ Links to profiles on other sites.
 ***********************************@
 @()(implicit messages: Messages)
 
-    @profileLink(profile: String, offset: Int, width: Int, faGlyph: String) = {
-        <div class="col-md-@width col-md-offset-@offset raised-element profile-link">
+    @profileLink(profile: String, sm_offset: Int, sm_width: Int, md_offset: Int, md_width: Int, faGlyph: String) = {
+        <div class="col-sm-@sm_width col-sm-offset-@sm_offset col-md-@md_width col-md-offset-@md_offset raised-element profile-link">
             <a id="@profile.toLowerCase()-link" href="#" title="@profile Profile" target="_blank">
                 <span class="fa @faGlyph" aria-hidden="true"></span>
             </a>
@@ -17,68 +17,55 @@ Links to profiles on other sites.
             <div class="row profile-link-row">
 
                     <!-- Link to my Github profile.-->
-                @profileLink("Github", 1, 2, "fa-github")
+                @profileLink("Github", 0, 6, 1, 2, "fa-github")
 
                     <!-- Link to my Twitter profile.-->
-                @profileLink("Twitter", 0, 2, "fa-twitter")
+                @profileLink("Twitter", 0, 6, 0, 2, "fa-twitter")
 
                     <!-- Link to my LinkedIn profile.-->
-                @profileLink("LinkedIn", 0, 2, "fa-linkedin")
+                @profileLink("LinkedIn", 0, 6, 0, 2, "fa-linkedin")
 
                     <!-- Link to my Stack Exchange profile.-->
-                @profileLink("StackExchange", 0, 2, "fa-stack-exchange")
+                @profileLink("StackExchange", 0, 6, 0, 2, "fa-stack-exchange")
 
                     <!-- Link to my Google Plus profile.-->
-                @profileLink("GooglePlus", 0, 2, "fa-google-plus-circle")
-
-            </div>
-
-            <div class="row profile-link-row">
+                @profileLink("GooglePlus", 0, 6, 0, 2, "fa-google-plus-circle")
 
                     <!-- Link to my Hackernews profile.-->
-                @profileLink("YCombinator", 1, 2, "fa-y-combinator-square")
+                @profileLink("YCombinator", 0, 6, 1, 2, "fa-y-combinator-square")
 
                     <!-- Link to my Goodreads profile.-->
-                @profileLink("Goodreads", 0, 2, "fa-book")
+                @profileLink("Goodreads", 0, 6, 0, 2, "fa-book")
 
                     <!-- Link to my Codewars profile.-->
-                @profileLink("Codewars", 0, 2, "fa-code")
+                @profileLink("Codewars", 0, 6, 0, 2, "fa-code")
 
                     <!-- Link to my FreeCodeCamp profile.-->
-                @profileLink("FreeCodeCamp", 0, 2, "fa-free-code-camp")
+                @profileLink("FreeCodeCamp", 0, 6, 0, 2, "fa-free-code-camp")
 
                     <!-- Link to my Quora profile.-->
-                @profileLink("Quora", 0, 2, "fa-quora")
-
-            </div>
-
-            <div class="row profile-link-row">
-
+                @profileLink("Quora", 0, 6, 0, 2, "fa-quora")
 
                     <!-- Link to my Pinterest profile.-->
-                @profileLink("Pinterest", 1, 2, "fa-pinterest")
+                @profileLink("Pinterest", 0, 6, 1, 2, "fa-pinterest")
 
                     <!-- Link to my Facebook profile.-->
-                @profileLink("Facebook", 0, 2, "fa-facebook-square")
+                @profileLink("Facebook", 0, 6, 0, 2, "fa-facebook-square")
 
                     <!-- Link to my Codecademy profile.-->
-                @profileLink("Codecademy", 0, 2, "fa-cube")
+                @profileLink("Codecademy", 0, 6, 0, 2, "fa-cube")
 
                     <!-- Link to my Coursera profile.-->
-                @profileLink("Coursera", 0, 2, "fa-coffee")
+                @profileLink("Coursera", 0, 6, 0, 2, "fa-coffee")
 
                     <!-- Link to my IMDb profile.-->
-                @profileLink("IMDb", 0, 2, "fa-imdb")
-            </div>
-
-            <div class="row profile-link-row">
-
+                @profileLink("IMDb", 0, 6, 0, 2, "fa-imdb")
 
                     <!-- Link to my Gyroscope profile.-->
-                @profileLink("Gyroscope", 1, 2, "fa-heartbeat")
+                @profileLink("Gyroscope", 0, 6, 1, 2, "fa-heartbeat")
 
                     <!-- Link to my Duolingo profile.-->
-                @profileLink("Duolingo", 0, 2, "fa-language")
+                @profileLink("Duolingo", 0, 6, 0, 2, "fa-language")
             </div>
 
 
