@@ -44,6 +44,10 @@
     font-size: 12px;
 }
 
+.highcharts-series {
+    fill-opacity: 0.9;
+}
+
 .highcharts-tooltip text {
     fill: #F0F0F0;
 }
@@ -57,6 +61,10 @@
     stroke: rgb(58, 127, 89);
 }
 
+.highcharts-column-series {
+    fill: rgba(58, 127, 89, .9);
+}
+
 #subjectTotalsPlot .highcharts-point {
     stroke: rgb(58, 127, 89);
 }
@@ -65,9 +73,30 @@
     stroke: rgb(58, 127, 89);
 }
 
+/* The gradient for area charts */
+#gradient-0 stop {
+    stop-color: rgb(58, 127, 89)
+}
+
+#gradient-0 stop[offset="0"] {
+    stop-opacity: 1;
+}
+
+#gradient-0 stop[offset="1"] {
+    stop-opacity: 0.5;
+}
+
+/*- - - - - - - - - - - - - - - */
+
 .highcharts-area {
-    stop-opacity: 0.7;
-    stop-color: rgb(58, 127, 89);
+    fill: url(#gradient-0);
+    fill-opacity: 1;
+}
+
+/* Monotonic charts do not have a gradient fill */
+.monotonic .highcharts-area {
+    fill: rgb(58, 127, 89);
+    fill-opacity: .8;
 }
 
 /* Small Screens */
