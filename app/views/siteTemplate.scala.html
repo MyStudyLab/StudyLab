@@ -21,8 +21,14 @@
             <!-- Roboto font from Google -->
         <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet" type="text/css">
 
-            <!-- Bootstrap -->
+            <!-- JQuery -->
+        <script src="@routes.Assets.at("javascripts/jquery-3.2.1.min.js")" type="text/javascript"></script>
+
+            <!-- Bootstrap CSS-->
         <link href="@routes.Assets.at("stylesheets/bootstrap/3.3.6/css/bootstrap.min.css")" rel="stylesheet" type="text/css">
+
+            <!-- Bootstrap JS -->
+        <script src="@routes.Assets.at("javascripts/bootstrap-3.3.7.min.js")" type="text/javascript"></script>
 
             <!-- Font awesome -->
         <link href="@routes.Assets.at("stylesheets/font-awesome/4.7.0/css/font-awesome.css")" rel="stylesheet" type="text/css">
@@ -42,10 +48,15 @@
 
                     <!-- Link to the homepage -->
                 <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#jordans-navbar">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
                     <a href="@routes.Application.home()" class="navbar-brand" hreflang="en">Jordan G. Dodson</a>
                 </div>
 
-                <div class="collapse navbar-collapse">
+                <div class="collapse navbar-collapse" id="jordans-navbar">
 
                         <!-- Links to other pages on the site-->
                     <ul class="nav navbar-nav navbar-right">
