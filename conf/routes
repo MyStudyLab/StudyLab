@@ -2,7 +2,7 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Demo page for the High Chart graphs
+# Home page
 GET         /                               controllers.Application.home
 
 # About page
@@ -11,10 +11,10 @@ GET         /about                          controllers.Application.about
 # Link to pdf of resume
 GET         /resume                         controllers.Application.resume
 
-# Go to the quotes page
+# Quotes page
 GET         /quotes                         controllers.Application.quotes
 
-# Go to the profiles page
+# Profiles page
 GET         /profiles                       controllers.Application.profiles
 
 # Get sessions as JSON for the username
@@ -38,23 +38,14 @@ GET         /json/journal/:username         controllers.JournalEntries.journalEn
 # Start a study session
 POST        /study/start                    controllers.Sessions.startSession()
 
-# Start a study session via the query string
-#GET         /study/queryStart               controllers.Sessions.startSessionFromParams(username: String, subject: String)
-
 # Stop a study session
 POST        /study/stop                     controllers.Sessions.stopSession()
-
-# Stop a study session via the query string
-#GET         /study/queryStop                controllers.Sessions.stopSessionFromParams(username: String, message: String)
 
 # Abort a study session
 POST        /study/abort                    controllers.Sessions.abortSession()
 
 # Add a study subject
 POST        /study/add                      controllers.Sessions.addSubject()
-
-# Add a study subject via the query string
-#GET         /study/queryAdd                 controllers.Sessions.addSubjectFromParams(username: String, subject: String, description: String)
 
 # Remove a study subject
 POST        /study/remove                   controllers.Sessions.removeSubject()
@@ -68,9 +59,6 @@ POST        /study/merge                    controllers.Sessions.mergeSubjects()
 # Add a journal entry
 POST        /journal/add                    controllers.JournalEntries.addJournalEntry()
 
-# Add a new user via the query string
-#GET         /users/queryAdd                 controllers.Users.addNewUserFromParams(username: String, email: String, password: String)
-
 # Add a new user via a POSTed form
 POST        /users/add                      controllers.Users.addNewUser()
 
@@ -80,4 +68,18 @@ POST        /goals/addCumulative            controllers.Default.todo()
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                   controllers.Assets.at(path="/public", file)
 
-    
+#
+# The following are routes temporarily used during HackGSU 2017
+#
+
+# Add a study subject via the query string
+#GET         /study/queryAdd                 controllers.Sessions.addSubjectFromParams(username: String, subject: String, description: String)
+
+# Start a study session via the query string
+#GET         /study/queryStart               controllers.Sessions.startSessionFromParams(username: String, subject: String)
+
+# Stop a study session via the query string
+#GET         /study/queryStop                controllers.Sessions.stopSessionFromParams(username: String, message: String)
+
+# Add a new user via the query string
+#GET         /users/queryAdd                 controllers.Users.addNewUserFromParams(username: String, email: String, password: String)

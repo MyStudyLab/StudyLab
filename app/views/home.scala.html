@@ -4,10 +4,12 @@ Home page.
 @()(implicit messages: Messages)
 
 @loadingDots() = {
-    <p class="saving"><span>&#11044</span>
+    <p class="loading-dots">
         <span>&#11044</span>
         <span>&#11044</span>
-        <span>&#11044</span></p>
+        <span>&#11044</span>
+        <span>&#11044</span>
+    </p>
 }
 
 @dataBlock(title: String, id: String, offset: Int, width: Int) = {
@@ -31,11 +33,6 @@ Home page.
 }
 
 @siteTemplate("Home") {
-
-        <!-- Highchart assets -->
-    <link href="@routes.Assets.at("stylesheets/styled-charts.css")" rel="stylesheet" type="text/css">
-    <script src="@routes.Assets.at("highcharts/highcharts-style.js")" type="text/javascript"></script>
-
 
     <svg style="height: 0">
         <defs>
@@ -85,9 +82,16 @@ Home page.
     </div>
 
     <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
+
+    <script src="@routes.Assets.at("/javascripts/stats.js")"></script>
+
+        <!-- Moment JS -->
     <script src="@routes.Assets.at("/javascripts/moment.js")"></script>
     <script src="@routes.Assets.at("/javascripts/moment-timezone-10-20.js")"></script>
-    <script src="@routes.Assets.at("/javascripts/stats.js")"></script>
+
+        <!-- Highchart assets -->
+    <link href="@routes.Assets.at("stylesheets/styled-charts.css")" rel="stylesheet" type="text/css">
+    <script src="@routes.Assets.at("highcharts/highcharts-style.js")" type="text/javascript"></script>
 
     <script>
 
@@ -206,8 +210,13 @@ Home page.
             // Generate the input to the What-I-Did-Today chart
             function todayPlotPrep(todaySessions) {
 
+                // No sessions yet today. Return this object so that the chart is always plotted.
                 if (todaySessions.length === 0) {
-                    return [];
+                    return [{
+                        name: ' ',
+                        data: [0],
+                        color: 'transparent'
+                    }];
                 }
 
                 const len = todaySessions.length;
@@ -803,16 +812,16 @@ Home page.
                         height: 100,
                         marginLeft: 20,
                         marginRight: 20,
+                        // Non-study time is represented with hidden series
                         ignoreHiddenSeries: false
                     },
 
                     title: {
-                        text: ""
+                        text: null
                     },
 
                     xAxis: {
                         categories: [''],
-                        tickColor: 'transparent',
                         tickLength: 0
                     },
 
@@ -824,7 +833,7 @@ Home page.
                         title: {
                             text: null
                         },
-                        // The intervals appear in chronological order
+                        // Ensure sessions appear in chronological order
                         reversedStacks: false
                     },
 
