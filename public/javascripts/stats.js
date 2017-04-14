@@ -1,5 +1,8 @@
+'use strict';
+
 // TODO: Probability distribution of session length (total and per-subject)
 // TODO: Probability distribution of daily total (total and per-subject)
+
 
 function probabilityOverlap(user1, user2) {
 
@@ -20,7 +23,7 @@ function probabilityOverlap(user1, user2) {
 /**
  * Return the total duration of a sequence of sessions (hours).
  *
- * @param sessions
+ * @param {Array} sessions  - An array of unprocessed study sessions
  * @returns {number}
  */
 function sumSessions(sessions) {
@@ -28,7 +31,6 @@ function sumSessions(sessions) {
     return sessions.reduce(function (acc, curr, i) {
         return acc + ((curr.stop - curr.start) / 3600000);
     }, 0);
-
 }
 
 
@@ -37,6 +39,7 @@ function sumSessions(sessions) {
  * Return the number of days since the first session.
  */
 function daysSinceStart(dayGroups) {
+
     return dayGroups.length;
 }
 
@@ -59,7 +62,7 @@ function todaysSessions(dayGroups) {
 /**
  * Return the average value of a numeric array
  *
- * @param {Array} numArr
+ * @param {Array} numArr - An array of numbers
  * @returns {number}
  */
 function avg(numArr) {
@@ -75,7 +78,7 @@ function avg(numArr) {
 /**
  * Return the standard deviation of a numeric array
  *
- * @param {Array} numArr
+ * @param {Array} numArr - An array of numbers
  * @returns {number}
  */
 function stdDev(numArr) {
@@ -93,7 +96,7 @@ function stdDev(numArr) {
 /**
  * Return the standard deviation of session length
  *
- * @param sessions
+ * @param {Array} sessions - An array of unprocessed study sessions
  * @returns {number}
  */
 function stdevOfSessionLength(sessions) {
@@ -138,7 +141,14 @@ function movingAverage(dayGroups, radius, stepSize) {
 }
 
 
-// Does not handle sessions longer than 24 hours
+/**
+ * Group sessions by day
+ *
+ * Does not handle sessions longer than 24 hours
+ *
+ * @param {Array} sessions - An array of unprocessed study sessions
+ * @returns {Array}
+ */
 function splitDays(sessions) {
 
     // TODO: How should we generalize to allow users to change timezones?
@@ -201,7 +211,13 @@ function splitDays(sessions) {
 }
 
 
-// Compute a list of cumulative study totals
+/**
+ * Compute a list of cumulative study totals
+ *
+ * @param {Array} sessions - An array of unprocessed study sessions
+ * @param numLevels - Controls the resolution of the result
+ * @returns {[*]}
+ */
 function cumulative(sessions, numLevels) {
 
     // A running total of the hours studied
@@ -263,7 +279,14 @@ function denseCumulative(dayGroups) {
 }
 
 
-function subjectTotals(sessions) {
+/**
+ * Return the total hours studied per subject
+ *
+ * @param {Array} sessions - An array of unprocessed study sessions
+ * @param highest_n - The number of totals to return
+ * @returns {Array.<*>}
+ */
+function subjectTotals(sessions, highest_n) {
 
     // The total number of hours studied
     let total = 0;
@@ -312,15 +335,23 @@ function subjectTotals(sessions) {
     }
 
 
-    // Return only the 10 most studied subjects
-    return Array.from(subTotals.entries()).sort(cmp).slice(0, 10);
+    // Return only the n most studied subjects
+    return Array.from(subTotals.entries()).sort(cmp).slice(0, highest_n);
 }
+
 
 function durationInHours(session) {
     return (session.endTime - session.startTime) / 3600000;
 }
 
+
 // Compute the total duration, in seconds, of a group of sessions.
+
+/**
+ *
+ * @param {Array} sessions - An array of unprocessed study sessions
+ * @returns {number}
+ */
 function sumRawSessions(sessions) {
 
     let total = 0;
@@ -363,7 +394,7 @@ function sessionsSince(t, sessions) {
 /**
  * Return the average duration of a study session
  *
- * @param sessions
+ * @param {Array} sessions - An array of unprocessed study sessions
  * @returns {number}
  */
 function averageSessionDuration(sessions) {
@@ -373,8 +404,12 @@ function averageSessionDuration(sessions) {
     return avg(durations);
 }
 
-/*
+
+/**
  * Return the yearly totals.
+ *
+ * @param dayGroups
+ * @returns {Map}
  */
 function yearlyTotals(dayGroups) {
 
@@ -472,8 +507,12 @@ function dailyTotalHistogram(dailyTotals, numBins) {
 }
 
 
-/*
+/**
  * Return the average-day probability vector
+ *
+ * @param {number} numBins
+ * @param {Array} dayGroups
+ * @returns {Array}
  */
 function probability(numBins, dayGroups) {
 
@@ -506,8 +545,15 @@ function probability(numBins, dayGroups) {
     return bins;
 }
 
-/*
+
+/**
  * Return the average-day probability vector
+ *
+ * The time of day in raw hours is returned as well
+ *
+ * @param {number} numBins
+ * @param {Array} dayGroups
+ * @returns {Array}
  */
 function probabilityWithTime(numBins, dayGroups) {
 
