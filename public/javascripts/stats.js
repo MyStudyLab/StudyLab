@@ -3,7 +3,7 @@
 
 function probabilityOverlap(user1, user2) {
 
-    var min_sequence = [];
+    let min_sequence = [];
 
     if (user1.length != user2.length) {
         //todo
@@ -16,8 +16,12 @@ function probabilityOverlap(user1, user2) {
     return min_sequence;
 }
 
-/*
+
+/**
  * Return the total duration of a sequence of sessions (hours).
+ *
+ * @param sessions
+ * @returns {number}
  */
 function sumSessions(sessions) {
 
@@ -28,6 +32,7 @@ function sumSessions(sessions) {
 }
 
 
+// TODO: Rewrite this once the user join time is sent with the study data
 /*
  * Return the number of days since the first session.
  */
@@ -50,16 +55,52 @@ function todaysSessions(dayGroups) {
     return dayGroups[dayGroups.length - 1]['sessions'];
 }
 
-// TODO: Should simply use a library stdev function on session duration input
-function stdevOfSessionLength(sessions) {
 
-    const mu = averageSessionDuration(sessions);
+/**
+ * Return the average value of a numeric array
+ *
+ * @param {Array} numArr
+ * @returns {number}
+ */
+function avg(numArr) {
 
-    const sse = sessions.reduce(function (acc, curr, ind) {
-        return acc + Math.pow(durationInHours(curr) - mu, 2);
+    const total = numArr.reduce(function (acc, curr, ind) {
+        return acc + curr
+    }, 0);
+
+    return total / numArr.length;
+}
+
+
+/**
+ * Return the standard deviation of a numeric array
+ *
+ * @param {Array} numArr
+ * @returns {number}
+ */
+function stdDev(numArr) {
+
+    const mu = avg(numArr);
+
+    const sse = numArr.reduce(function (acc, curr, ind) {
+        return acc + Math.pow(curr - mu, 2);
     });
 
-    return Math.pow(sse / (sessions.length - 1), 0.5);
+    return Math.pow(sse / (numArr.length - 1), 0.5);
+}
+
+
+/**
+ * Return the standard deviation of session length
+ *
+ * @param sessions
+ * @returns {number}
+ */
+function stdevOfSessionLength(sessions) {
+
+    let durations = durationInHours(sessions);
+
+    return stdDev(durations);
 }
 
 
@@ -319,14 +360,17 @@ function sessionsSince(t, sessions) {
     return result;
 }
 
-// TODO: Use a mean function from a library
+/**
+ * Return the average duration of a study session
+ *
+ * @param sessions
+ * @returns {number}
+ */
 function averageSessionDuration(sessions) {
 
-    const total = sessions.reduce(function (acc, curr, ind) {
-        return acc + durationInHours(curr)
-    }, 0);
+    let durations = durationInHours(sessions);
 
-    return total / sessions.length;
+    return avg(durations);
 }
 
 /*
@@ -378,8 +422,12 @@ function currentStreak(dayGroups) {
     return streak;
 }
 
-/*
+
+/**
  * Compute the average number of hours studied on each weekday
+ *
+ * @param dayGroups
+ * @returns {Array}
  */
 function dayOfWeekAverages(dayGroups) {
 
@@ -387,6 +435,7 @@ function dayOfWeekAverages(dayGroups) {
     let dayTotals = [0, 0, 0, 0, 0, 0, 0];
     let counts = [0, 0, 0, 0, 0, 0, 0];
 
+    // Compute the total number and duration of sessions per day of week
     dayGroups.forEach(function (curr, i, arr) {
         dayTotals[curr.date.day()] += sumSessions(curr.sessions);
         counts[curr.date.day()] += 1;

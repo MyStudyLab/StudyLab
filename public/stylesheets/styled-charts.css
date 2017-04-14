@@ -89,6 +89,7 @@
 
 #widt-highchart .highcharts-bar-series .highcharts-point {
     fill: rgb(58, 127, 89);
+    stroke: rgb(58, 127, 89);
 }
 
 #widt-highchart .highcharts-data-label text {
