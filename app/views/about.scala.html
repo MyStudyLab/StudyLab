@@ -1,4 +1,4 @@
-@()(implicit messages: Messages)
+@(username: String)(implicit messages: Messages)
 
     @siteTemplate("About") {
 
@@ -14,7 +14,7 @@
 
         <script>
                 // Load the about message
-                loadJSONFile("/json/about/jgdodson", function (response) {
+                loadJSONFile("/json/about/@username", function (response) {
 
                     document.getElementById("aboutMessage").textContent = response["about"];
                 });

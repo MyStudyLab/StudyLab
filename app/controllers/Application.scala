@@ -27,31 +27,15 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     Ok(views.html.dashboard(username))
   }
 
-
-  /**
-    * My resume as a PDF
-    *
-    * @return
-    */
-  def resume: Action[AnyContent] = controllers.Assets.at(path = "/public", file = "pdfs/resume.pdf")
-
   /**
     * The About Page
     *
     * @return
     */
-  def about = Action {
-    Ok(views.html.about())
+  def about(username: String) = Action {
+    Ok(views.html.about(username))
   }
 
-  /**
-    * The Quotes Page
-    *
-    * @return
-    */
-  def quotes = Action {
-    Ok(views.html.quotes())
-  }
 
   /**
     * The Profiles Page

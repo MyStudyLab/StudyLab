@@ -5,17 +5,11 @@
 # Home page
 GET         /                               controllers.Application.home()
 
-
+# Dashboard
 GET         /:username/dashboard            controllers.Application.dashboard(username: String)
 
 # About page
-GET         /about                          controllers.Application.about
-
-# Link to pdf of resume
-GET         /resume                         controllers.Application.resume
-
-# Quotes page
-GET         /quotes                         controllers.Application.quotes
+GET         /:username/about                controllers.Application.about(username: String)
 
 # Profiles page
 GET         /profiles                       controllers.Application.profiles
@@ -25,9 +19,6 @@ GET         /json/sessions/:username        controllers.Sessions.sessionsForUser
 
 # Get the user's status as JSON
 GET         /json/status/:username          controllers.Sessions.userStatus(username: String)
-
-# Get quotes as JSON for the username
-GET         /json/quotes/:username          controllers.Quotes.getQuotes(username: String)
 
 # Get profiles as JSON for the username
 GET         /json/profiles/:username        controllers.Users.profilesForUsername(username: String)
