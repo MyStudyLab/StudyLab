@@ -14,23 +14,17 @@ import play.api.i18n.{I18nSupport, MessagesApi}
   */
 class Application @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
-  /**
-    * The Old Home Page
-    *
-    * @return
-    */
-  def oldHome = Action {
-    Ok(views.html.oldHome())
+  def home() = Action {
+    Ok(views.html.home())
   }
-
 
   /**
     * The Home Page
     *
     * @return
     */
-  def home = Action {
-    Ok(views.html.home())
+  def dashboard(username: String) = Action {
+    Ok(views.html.dashboard(username))
   }
 
 

@@ -3,7 +3,10 @@
 # ~~~~
 
 # Home page
-GET         /                               controllers.Application.home
+GET         /                               controllers.Application.home()
+
+
+GET         /:username/dashboard            controllers.Application.dashboard(username: String)
 
 # About page
 GET         /about                          controllers.Application.about
