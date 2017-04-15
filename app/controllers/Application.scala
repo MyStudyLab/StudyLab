@@ -14,8 +14,22 @@ import play.api.i18n.{I18nSupport, MessagesApi}
   */
 class Application @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
+  /**
+    * The Home Page
+    *
+    * @return
+    */
   def home() = Action {
     Ok(views.html.home())
+  }
+
+  /**
+    * The Signup Page
+    *
+    * @return
+    */
+  def signup = Action {
+    Ok(views.html.signup())
   }
 
   /**

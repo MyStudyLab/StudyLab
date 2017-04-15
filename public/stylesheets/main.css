@@ -13,6 +13,7 @@ body {
     display: flex;
     min-height: 100%;
     flex-direction: column;
+    align-items: center;
 }
 
 .content {
@@ -130,13 +131,31 @@ body {
     margin: 20px;
 }
 
-.footer-quote {
-    text-align: center;
-    font-size: medium;
-    padding: 15px 0;
+footer {
+    /* Ensure that the footer stretches the entire page width */
+    align-self: stretch;
+
+    /* The footer content is organized with flex */
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+
     color: #8f8f8f;
     background: #333;
     box-shadow: 0 -2px 3px #242424;
+    font-size: medium;
+    height: 50px;
+    padding: 0 10px;
+}
+
+#footer-copyright {
+    flex: 1;
+    text-align: right;
+}
+
+.footer-link {
+    text-align: center;
+    margin: 0 20px;
 }
 
 .small-margin-bottom {

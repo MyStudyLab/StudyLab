@@ -5,14 +5,19 @@
 # Home page
 GET         /                               controllers.Application.home()
 
+GET         /signup                         controllers.Application.signup()
+
+GET         /about                          controllers.Default.todo()
+
+GET         /contact                        controllers.Default.todo()
+
+GET         /help                           controllers.Default.todo()
+
 # Dashboard
 GET         /:username/dashboard            controllers.Application.dashboard(username: String)
 
 # About page
 GET         /:username/about                controllers.Application.about(username: String)
-
-# Profiles page
-GET         /profiles                       controllers.Application.profiles
 
 # Get sessions as JSON for the username
 GET         /json/sessions/:username        controllers.Sessions.sessionsForUsername(username: String)
@@ -61,19 +66,3 @@ POST        /goals/addCumulative            controllers.Default.todo()
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                   controllers.Assets.at(path="/public", file)
-
-#
-# The following are routes temporarily used during HackGSU 2017
-#
-
-# Add a study subject via the query string
-#GET         /study/queryAdd                 controllers.Sessions.addSubjectFromParams(username: String, subject: String, description: String)
-
-# Start a study session via the query string
-#GET         /study/queryStart               controllers.Sessions.startSessionFromParams(username: String, subject: String)
-
-# Stop a study session via the query string
-#GET         /study/queryStop                controllers.Sessions.stopSessionFromParams(username: String, message: String)
-
-# Add a new user via the query string
-#GET         /users/queryAdd                 controllers.Users.addNewUserFromParams(username: String, email: String, password: String)

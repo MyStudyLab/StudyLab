@@ -1,5 +1,6 @@
 @(pageTitle: String)(content: Html)
 
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -60,10 +61,7 @@
 
                         <!-- Links to other pages on the site-->
                     <ul class="nav navbar-nav navbar-right">
-
-                        <li><a href="@routes.Application.profiles()" hreflang="en">Profiles</a></li>
-
-                        <li><a href="@routes.Application.home()" hreflang="en">About</a></li>
+                        <li><a href="@routes.Application.signup()" hreflang="en">Signup</a></li>
                     </ul>
                 </div>
             </div>
@@ -74,18 +72,12 @@
         @content
         </div>
 
-            <!-- Footer with the guiding quote of this site-->
+            <!-- Footer with assistive information and copyright -->
         <footer>
-            <div class="footer-quote">
-                The unexamined life is not worth living
-            </div>
+            <span class="footer-link"><a href="/about" hreflang="en">About</a></span>
+            <span class="footer-link"><a href="/contact" hreflang="en">Contact</a></span>
+            <span class="footer-link"><a href="/help" hreflang="en">Help</a></span>
+            <span id="footer-copyright">&copy 2017 Study Lab Inc.</span>
         </footer>
-
-            <!-- A message to fellow developers-->
-        <script>
-                console.log(
-                        "If you're reading this, I assume you to be a fellow developer. Welcome! If you see something that could be improved, I'd love the feedback :)"
-                );
-        </script>
     </body>
 </html>
