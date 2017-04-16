@@ -1,0 +1,20 @@
+@()(implicit messages: Messages)
+
+@siteTemplate("Login") {
+
+    <form action="@routes.Default.todo()" id="login-form" class="studylab-entry-form" method="post" onsubmit="">
+
+        <div class="form-group">
+            <label for="login-username-input">Username</label>
+            <input name="username" type="text" class="form-control" id="login-username-input" placeholder="Username">
+        </div>
+
+        <div class="form-group">
+            <label for="login-password-input">Password</label>
+            <input name="password" type="password" class="form-control" id="login-password-input" placeholder="Password">
+        </div>
+
+        <button type="submit" class="btn btn-default" value="Submit">Login</button>
+    </form>
+
+}

@@ -33,6 +33,15 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
   }
 
   /**
+    * The Login Page
+    *
+    * @return
+    */
+  def login = Action {
+    Ok(views.html.login())
+  }
+
+  /**
     * The Home Page
     *
     * @return

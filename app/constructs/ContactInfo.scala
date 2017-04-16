@@ -16,6 +16,15 @@ object ContactInfo {
     */
   def onlyEmail(email: String) = ContactInfo("", "", "", email, "", Profiles.emptyProfiles)
 
+  /**
+    *
+    * @param firstName
+    * @param lastName
+    * @param email
+    * @return
+    */
+  def basics(firstName: String, lastName: String, email: String) = ContactInfo(firstName, lastName, "", email, "", Profiles.emptyProfiles)
+
   // Implicitly convert to/from BSON
   implicit val ContactInfoHandler = Macros.handler[ContactInfo]
 }

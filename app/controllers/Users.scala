@@ -39,22 +39,8 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     AddUserForm.form.bindFromRequest()(request).fold(
       badForm => invalidFormResponse,
-      goodForm => usersModel.addNewUser(goodForm.username, goodForm.email, goodForm.password).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      goodForm => usersModel.addNewUser(goodForm.username, goodForm.firstName, goodForm.lastName, goodForm.email, goodForm.password).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
-  }
-
-
-  /**
-    * Add a new user via query parameters
-    *
-    * @param username The new user's username
-    * @param email    The new user's email
-    * @param password The new user's password
-    * @return
-    */
-  def addNewUserFromParams(username: String, email: String, password: String) = Action.async { implicit request =>
-
-    usersModel.addNewUser(username, email, password).map(result => Ok(Json.toJson(result)))
   }
 
 

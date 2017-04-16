@@ -7,11 +7,15 @@ GET         /                               controllers.Application.home()
 
 GET         /signup                         controllers.Application.signup()
 
+GET         /login                          controllers.Application.login()
+
 GET         /about                          controllers.Default.todo()
 
 GET         /contact                        controllers.Default.todo()
 
 GET         /help                           controllers.Default.todo()
+
+GET         /emailInUse                     controllers.Default.todo()
 
 # Dashboard
 GET         /:username/dashboard            controllers.Application.dashboard(username: String)

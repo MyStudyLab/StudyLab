@@ -38,6 +38,6 @@ object User {
     * @param password The account password for the user
     * @return
     */
-  def apply(username: String, email: String, password: String): User = User(username, "", ContactInfo.onlyEmail(email),
+  def apply(username: String, firstName: String, lastName: String, email: String, password: String): User = User(username, "", ContactInfo.basics(firstName, lastName, email),
     password, System.currentTimeMillis(), Status.empty, Vector[Subject](), Vector[Session]())
 }

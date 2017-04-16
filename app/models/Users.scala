@@ -36,9 +36,9 @@ class Users(protected val api: ReactiveMongoApi) {
     * @param password The user's password
     * @return
     */
-  def addNewUser(username: String, email: String, password: String): Future[ResultInfo] = {
+  def addNewUser(username: String, firstName: String, lastName: String, email: String, password: String): Future[ResultInfo] = {
 
-    usersCollection.insert(User(username, email, password)).map(result => {
+    usersCollection.insert(User(username, firstName, lastName, email, password)).map(result => {
       new ResultInfo(result.ok, result.message)
     })
 
