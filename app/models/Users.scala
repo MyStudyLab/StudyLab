@@ -1,6 +1,8 @@
 package models
 
 // Standard Library
+import reactivemongo.core.errors.GenericDatabaseException
+
 import scala.concurrent.Future
 
 // Play Framework
@@ -9,6 +11,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 // Reactive Mongo
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
+import reactivemongo.core.errors.DatabaseException
 import reactivemongo.play.json._
 
 // Project
@@ -40,7 +43,22 @@ class Users(protected val api: ReactiveMongoApi) {
 
     usersCollection.insert(User(username, firstName, lastName, email, password)).map(result => {
       new ResultInfo(result.ok, result.message)
-    })
+    }).recover {
+      case e: DatabaseException =>
+        e.code.fold(ResultInfo.failWithMessage(e.message))(code => {
+
+          // A unique index was violated
+          if (code == 11000) {
+            if (e.message.contains("username_1")) {
+              ResultInfo.failWithMessage("username already in use")
+            } else {
+              ResultInfo.failWithMessage("email already in use")
+            }
+          } else {
+            ResultInfo.failWithMessage(e.message)
+          }
+        })
+    }
 
   }
 

@@ -4,6 +4,7 @@ package controllers
 import javax.inject.Inject
 
 import forms.AddUserForm
+import play.api.i18n.{I18nSupport, MessagesApi}
 
 // Project
 import constructs.ResultInfo
@@ -20,8 +21,8 @@ import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMo
   *
   * @param reactiveMongoApi Holds a reference to the database.
   */
-class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
-  extends Controller with MongoController with ReactiveMongoComponents {
+class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: MessagesApi)
+  extends Controller with MongoController with ReactiveMongoComponents with I18nSupport {
 
 
   /**
@@ -38,8 +39,11 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   def addNewUser = Action.async { implicit request =>
 
     AddUserForm.form.bindFromRequest()(request).fold(
-      badForm => invalidFormResponse,
-      goodForm => usersModel.addNewUser(goodForm.username, goodForm.firstName, goodForm.lastName, goodForm.email, goodForm.password).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      _ => invalidFormResponse,
+      goodForm => usersModel.addNewUser(goodForm.username, goodForm.firstName, goodForm.lastName, goodForm.email, goodForm.password).map(
+        resultInfo =>
+          if (resultInfo.success) Ok(views.html.successful_signup())
+          else Ok(Json.toJson(resultInfo)))
     )
   }
 
