@@ -4,39 +4,48 @@
 
     <script>
 
-            function ajaxSubmit(e) {
+            $(function () {
+                $("#signup-form").on("submit", function (e) {
 
-                e.preventDefault();
+                    // TODO: prevent fields from clearing
 
-                $.ajax({
-                    type: "post",
-                    url: "/users/add",
-                    data: $("signup-form").serialize(),
-                    dataType: "json",
-                    complete: function (request, textStatus) {
+                    e.preventDefault();
 
-                        if (request.status === 200) {
+                    $.ajax({
+                        type: "post",
+                        url: "/users/add",
+                        data: $("#signup-form").serialize(),
+                        dataType: "json",
+                        complete: function (request, textStatus) {
 
-                            // Parse the response text as JSON
-                            let data = JSON.parse(request.responseText);
+                            if (request.status === 200) {
 
-                            if (data['success']) {
-                                $("signup-form").style.display = "none";
-                                $("successful-signup-message").style.display = "block";
-                            } else {
-                                if (data['message'].includes("username")) {
+                                console.log(request.responseText);
 
-                                } else if (data["message"].includes("email")) {
+                                // Parse the response text as JSON
+                                let data = JSON.parse(request.responseText);
 
+
+                                if (data['success'] === true) {
+                                    console.log(data);
+                                    $("#successful-signup-message").removeAttr("hidden");
+                                    $("#signup-form").remove();
+                                } else {
+                                    if (data['message'].includes("username")) {
+                                        $("#signup-username-input").val("");
+                                        alert("Sorry, that username is already taken");
+                                    } else if (data["message"].includes("email")) {
+                                        $("#signup-email-input").val("");
+                                        alert("That email is already in use");
+                                    }
                                 }
+
                             }
 
                         }
-
-                    }
+                    });
                 });
-
-            }
+            });
 
     </script>
 
@@ -45,7 +54,7 @@
         Click the link inside to complete your account.
     </p>
 
-    <form action="@routes.Users.addNewUser()" id="signup-form" class="studylab-entry-form" method="post" onsubmit="ajaxSubmit();">
+    <form id="signup-form" class="studylab-entry-form">
 
         <div class="form-group">
             <label for="signup-username-input">Username</label>
