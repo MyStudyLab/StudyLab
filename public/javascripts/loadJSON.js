@@ -1,20 +1,35 @@
+'use strict';
+
+
+/**
+ * Load a resource and pass it to the given function
+ *
+ * @param path {string} - The path of the resource on the server
+ * @param callback {function} - A function to call with the response
+ */
 function loadJSONFile(path, callback) {
 
-    var httpRequest = new XMLHttpRequest();
+    var request = new XMLHttpRequest();
 
-    httpRequest.onreadystatechange = function () {
-        if (httpRequest.readyState === 4) {
-            if (httpRequest.status === 200) {
+    // Specify what to do with the response
+    request.onreadystatechange = function () {
+        if (request.readyState === 4) {
+            if (request.status === 200) {
 
                 // Parse the response text as JSON
                 var data = JSON.parse(httpRequest.responseText);
 
+                // Pass the data to the callback function
                 if (callback) {
                     callback(data);
                 }
             }
         }
     };
-    httpRequest.open('GET', path);
-    httpRequest.send();
+
+    // We are sending an HTTP GET request
+    request.open('GET', path);
+
+    // Send the request
+    request.send();
 }

@@ -1,21 +1,60 @@
 @()(implicit messages: Messages)
 
-@siteTemplate("Signup") {
+@siteTemplate("Sign-Up") {
 
     <script>
 
+            function ajaxSubmit(e) {
+
+                e.preventDefault();
+
+                $.ajax({
+                    type: "post",
+                    url: "/users/add",
+                    data: $("signup-form").serialize(),
+                    dataType: "json",
+                    complete: function (request, textStatus) {
+
+                        if (request.status === 200) {
+
+                            // Parse the response text as JSON
+                            let data = JSON.parse(request.responseText);
+
+                            if (data['success']) {
+                                $("signup-form").style.display = "none";
+                                $("successful-signup-message").style.display = "block";
+                            } else {
+                                if (data['message'].includes("username")) {
+
+                                } else if (data["message"].includes("email")) {
+
+                                }
+                            }
+
+                        }
+
+                    }
+                });
+
+            }
+
     </script>
 
-    <form action="@routes.Users.addNewUser()" id="signup-form" class="studylab-entry-form" method="post" onsubmit="">
+    <p id="successful-signup-message" class="studylab-entry-form" hidden>
+        Congratulations! You're officially registered for Study Lab! We've sent you a confirmation email.
+        Click the link inside to complete your account.
+    </p>
+
+    <form action="@routes.Users.addNewUser()" id="signup-form" class="studylab-entry-form" method="post" onsubmit="ajaxSubmit();">
 
         <div class="form-group">
             <label for="signup-username-input">Username</label>
-            <input name="username" type="text" class="form-control" id="signup-username-input" placeholder="Username">
+            <input name="username" type="text" class="form-control" id="signup-username-input" placeholder="Username" required>
         </div>
 
         <div class="form-group">
             <label for="signup-first-name-input">First Name</label>
-            <input name="firstName" type="text" class="form-control" id="signup-first-name-input" placeholder="First Name">
+            <input name="firstName" type="text" class="form-control" id="signup-first-name-input" placeholder="First Name" required>
         </div>
 
         <div class="form-group">
@@ -25,17 +64,16 @@
 
         <div class="form-group">
             <label for="signup-email-input">Email</label>
-            <input name="email" type="email" class="form-control" id="signup-email-input" placeholder="Email">
+            <input name="email" type="email" class="form-control" id="signup-email-input" placeholder="Email" required>
         </div>
 
         <div class="form-group">
             <label for="signup-password-input">Password</label>
-            <input name="password" type="password" class="form-control" id="signup-password-input" placeholder="Password">
+            <input name="password" type="password" class="form-control" id="signup-password-input" placeholder="Password" required>
         </div>
 
 
         <button type="submit" class="btn btn-default" value="Submit">Signup</button>
-        <button type="button" class="btn btn-default" onclick="">Check</button>
     </form>
 
 }
