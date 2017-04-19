@@ -1,8 +1,6 @@
 package models
 
 // Standard Library
-import reactivemongo.core.errors.GenericDatabaseException
-
 import scala.concurrent.Future
 
 // Play Framework
@@ -34,30 +32,26 @@ class Users(protected val api: ReactiveMongoApi) {
   /**
     * Add a new user to the database
     *
-    * @param username The user's username
-    * @param email    The user's email
-    * @param password The user's password
+    * @param user The user to add
     * @return
     */
-  def addNewUser(username: String, firstName: String, lastName: String, email: String, password: String): Future[ResultInfo] = {
+  def addNewUser(user: User): Future[ResultInfo] = {
 
-    usersCollection.insert(User(username, firstName, lastName, email, password)).map(result => {
+    usersCollection.insert(user).map(result =>
       new ResultInfo(result.ok, result.message)
-    }).recover {
-      case e: DatabaseException =>
-        e.code.fold(ResultInfo.failWithMessage(e.message))(code => {
+    ).recover {
+      case e: DatabaseException => e.code.fold(ResultInfo.failWithMessage(e.message)) {
 
-          // A unique index was violated
-          if (code == 11000) {
-            if (e.message.contains("username_1")) {
-              ResultInfo.failWithMessage("username already in use")
-            } else {
-              ResultInfo.failWithMessage("email already in use")
-            }
-          } else {
-            ResultInfo.failWithMessage(e.message)
-          }
-        })
+        // A unique index was violated
+        case 11000 =>
+          if (e.message.contains("username_1")) ResultInfo.failWithMessage("username already in use")
+          else ResultInfo.failWithMessage("email already in use")
+
+        // TODO: add cases for other error codes
+
+        // Catch all the other error codes
+        case _ => ResultInfo.failWithMessage(e.message)
+      }
     }
 
   }

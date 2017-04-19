@@ -3,6 +3,8 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
+import constructs.User
+
 // Project
 import constructs.ResultInfo
 import forms.AddUserForm
@@ -38,7 +40,14 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     AddUserForm.form.bindFromRequest()(request).fold(
       _ => invalidFormResponse,
-      goodForm => usersModel.addNewUser(goodForm.username, goodForm.firstName, goodForm.lastName, goodForm.email, goodForm.password).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      goodForm => {
+
+        val newUser = User(goodForm.username, goodForm.firstName, goodForm.lastName, goodForm.email, goodForm.password)
+
+        usersModel.addNewUser(newUser).map(
+          resultInfo => Ok(Json.toJson(resultInfo))
+        )
+      }
     )
   }
 
