@@ -13,15 +13,8 @@ import play.api.libs.json.{Json, Writes}
   */
 case class ResultInfo(success: Boolean, message: String, timestamp: Long) {
 
-  /**
-    * Constructor that fills in the timestamp field
-    *
-    * @param success Indicates whether the operation succeeded
-    * @param message A message regarding the success/failure of the operation
-    * @return
-    */
-  def this(success: Boolean, message: String) = this(success, message, System.currentTimeMillis())
 
+  def this(success: Boolean, message: String) = this(success, message, System.currentTimeMillis())
 }
 
 object ResultInfo {
@@ -32,6 +25,9 @@ object ResultInfo {
   // Message for when Mongo fails without providing one
   val noErrMsg = "Failed without error message"
 
+
+  // TODO: See what version of the ReactiveMongo version fixes the bug with custom apply methods
+  //def apply(success: Boolean, message: String): ResultInfo = ResultInfo(success, message, System.currentTimeMillis())
 
   // All of the following helpers are functions so that the timestamp will be generated at the proper time
 

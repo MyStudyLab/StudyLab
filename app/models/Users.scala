@@ -53,6 +53,20 @@ class Users(protected val api: ReactiveMongoApi) {
         case _ => ResultInfo.failWithMessage(e.message)
       }
     }
+  }
+
+
+  /**
+    * Remove a user from the database
+    *
+    * @param username The username of the user to be removed
+    * @return
+    */
+  def deleteUser(username: String): Future[ResultInfo] = {
+
+    usersCollection.remove(usernameSelector(username), firstMatchOnly = true).map(
+      result => new ResultInfo(result.ok, result.message)
+    )
 
   }
 

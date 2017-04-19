@@ -3,10 +3,8 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
-import constructs.User
-
 // Project
-import constructs.ResultInfo
+import constructs.{ResultInfo, User}
 import forms.AddUserForm
 
 // Play Framework
@@ -42,13 +40,25 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
       _ => invalidFormResponse,
       goodForm => {
 
+        // User object representing the new user
         val newUser = User(goodForm.username, goodForm.firstName, goodForm.lastName, goodForm.email, goodForm.password)
 
+        // Insert the user object into the database
         usersModel.addNewUser(newUser).map(
           resultInfo => Ok(Json.toJson(resultInfo))
         )
       }
     )
+  }
+
+  
+  /**
+    * Remove a user
+    *
+    * @return
+    */
+  def removeUser = Action.async { implicit request =>
+    ???
   }
 
 
