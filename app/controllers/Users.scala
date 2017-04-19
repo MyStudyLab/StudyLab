@@ -51,7 +51,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     )
   }
 
-  
+
   /**
     * Remove a user
     *

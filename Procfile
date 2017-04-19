@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/dashboard -Dhttp.port=${PORT}
+web: target/universal/stage/bin/studylab -Dhttp.port=${PORT}
