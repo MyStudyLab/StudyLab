@@ -73,7 +73,13 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     LoginForm.form.bindFromRequest()(request).fold(
       _ => invalidFormResponse,
       goodForm => {
-        usersModel.checkCredentials(goodForm.username, goodForm.password).map(valid => Ok(Json.obj("success" -> true, "message" -> "<none>", "timestamp" -> System.currentTimeMillis(), "payload" -> valid)))
+        usersModel.checkCredentials(goodForm.username, goodForm.password).map(valid =>
+
+          if (valid) {
+            Ok(Json.obj("success" -> true, "message" -> "<none>", "timestamp" -> System.currentTimeMillis(), "payload" -> valid)).withSession("connected" -> goodForm.username)
+          } else {
+            Ok(Json.obj("success" -> true, "message" -> "<none>", "timestamp" -> System.currentTimeMillis(), "payload" -> valid))
+          })
       }
     )
 
