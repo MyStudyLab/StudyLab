@@ -6,7 +6,7 @@
 
     <p>Welcome to Study Lab, @username</p>
 
-    <form id="study-start-form" class="studylab-entry-form">
+    <form id="study-start-form" class="studylab-entry-form" hidden>
         <input id="study-start-username-input" name="username" value="@username" type="text" hidden>
         <input id="study-start-subject-input" name="subject" type="text">
         <button type="submit" class="btn btn-default">start</button>
@@ -24,6 +24,29 @@
         <input id="add-subject-description-input" name="description" type="text">
         <button type="submit" class="btn btn-default">add</button>
     </form>
+
+
+    <script>
+
+            jQuery.ajax({
+                url: "@routes.Sessions.userStatus(username)",
+                type: "get",
+                dataType: "json",
+                success: function (data, textStatus, response) {
+
+                    console.log(response.responseText);
+
+                    console.log(data);
+
+                    if (data['status']['isStudying']) {
+                        $("#study-stop-form").removeAttr("hidden");
+                    } else {
+                        $("#study-start-form").removeAttr("hidden");
+                    }
+                }
+            })
+
+    </script>
 
     <script>
 

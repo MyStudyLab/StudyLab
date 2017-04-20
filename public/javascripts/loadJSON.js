@@ -17,7 +17,7 @@ function loadJSONFile(path, callback) {
             if (request.status === 200) {
 
                 // Parse the response text as JSON
-                var data = JSON.parse(httpRequest.responseText);
+                var data = JSON.parse(request.responseText);
 
                 // Pass the data to the callback function
                 if (callback) {
