@@ -4,13 +4,13 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Jordan G. Dodson - @pageTitle</title>
+        <title>@pageTitle</title>
 
-        <meta name="author" content="Jordan Dodson">
+        <meta name="author" content="Study Lab">
 
         <meta name="description" content="The digital home of Jordan G. Dodson.">
 
-        <meta name="keywords" content="Blog, Programming, Informatics, Analytics, Computer Science">
+        <meta name="keywords" content="Informatics, Analytics, Time, Tracking, Study">
 
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -60,10 +60,9 @@
                 <div class="collapse navbar-collapse" id="studylab-navbar">
 
                         <!-- Links to other pages on the site-->
-                    <ul class="nav navbar-nav navbar-right">
-                        <li><a href="@routes.Application.signup()" hreflang="en">Signup</a></li>
-                        <li><a href="@routes.Application.loginPage()" hreflang="en">Login</a></li>
-                    </ul>
+                    <form id="navbar-logout-form" class="navbar-form navbar-right" action="/logout" method="post">
+                        <button id="navbar-logout-button" class="btn btn-default" type="submit">Logout</button>
+                    </form>
                 </div>
             </div>
         </nav>

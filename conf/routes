@@ -9,7 +9,13 @@ GET         /                               controllers.Application.home()
 GET         /signup                         controllers.Application.signup()
 
 # The Login page for existing users
-GET         /login                          controllers.Application.login()
+GET         /login                          controllers.Application.loginPage()
+
+# Log in a user
+POST        /login                          controllers.Users.login()
+
+# Logout of the current session
+POST        /logout                         controllers.Application.logout()
 
 # The About page for Study Lab
 GET         /about                          controllers.Default.todo()

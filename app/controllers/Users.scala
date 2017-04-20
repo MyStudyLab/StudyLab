@@ -4,6 +4,7 @@ package controllers
 import javax.inject.Inject
 
 import forms.LoginForm
+import play.api.i18n.{I18nSupport, MessagesApi}
 
 // Project
 import constructs.{ResultInfo, User}
@@ -21,14 +22,34 @@ import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMo
   *
   * @param reactiveMongoApi Holds a reference to the database.
   */
-class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
-  extends Controller with MongoController with ReactiveMongoComponents {
+class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: MessagesApi)
+  extends Controller with MongoController with ReactiveMongoComponents with I18nSupport {
 
 
   /**
     * Instance of the Users model
     */
   protected val usersModel = new models.Users(reactiveMongoApi)
+
+  /**
+    * Begin a new session
+    *
+    * @return
+    */
+  def login = Action.async { implicit request =>
+    LoginForm.form.bindFromRequest()(request).fold(
+      _ => invalidFormResponse,
+      goodForm => {
+        usersModel.checkCredentials(goodForm.username, goodForm.password).map(valid =>
+
+          if (valid) {
+            Ok(views.html.loggedInHome(goodForm.username)).withSession("connected" -> goodForm.username)
+          } else {
+            Ok(views.html.login())
+          })
+      }
+    )
+  }
 
 
   /**

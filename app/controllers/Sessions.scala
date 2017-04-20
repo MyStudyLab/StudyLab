@@ -3,6 +3,8 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
+import scala.concurrent.Future
+
 // Project
 import constructs.ResultInfo
 import forms._
@@ -36,10 +38,11 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   protected def start = Action.async { implicit request =>
 
     SessionStartForm.startForm.bindFromRequest()(request).fold(
-      badForm => invalidFormResponse,
+      _ => invalidFormResponse,
       goodForm => sessions.startSession(goodForm.username, goodForm.subject).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
+
 
   /**
     * Start a study session via the query string
@@ -62,7 +65,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   protected def stop = Action.async { implicit request =>
 
     SessionStopForm.stopForm.bindFromRequest()(request).fold(
-      badForm => invalidFormResponse,
+      _ => invalidFormResponse,
       goodForm => sessions.stopSession(goodForm.username, goodForm.message).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
@@ -87,7 +90,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   protected def abort = Action.async { implicit request =>
 
     PasswordAndUsername.form.bindFromRequest()(request).fold(
-      badForm => invalidFormResponse,
+      _ => invalidFormResponse,
       goodForm => sessions.abortSession(goodForm.username).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
@@ -101,7 +104,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   protected def add = Action.async { implicit request =>
 
     AddSubjectForm.form.bindFromRequest()(request).fold(
-      badForm => invalidFormResponse,
+      _ => invalidFormResponse,
       goodForm => sessions.addSubject(goodForm.username, goodForm.subject, goodForm.description).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
@@ -128,7 +131,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   protected def remove = Action.async { implicit request =>
 
     RemoveSubjectForm.form.bindFromRequest()(request).fold(
-      badForm => invalidFormResponse,
+      _ => invalidFormResponse,
       goodForm => sessions.removeSubject(goodForm.username, goodForm.subject).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
@@ -142,7 +145,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   protected def rename = Action.async { implicit request =>
 
     RenameSubjectForm.form.bindFromRequest()(request).fold(
-      badForm => invalidFormResponse,
+      _ => invalidFormResponse,
       goodForm => sessions.renameSubject(goodForm.username, goodForm.oldName, goodForm.newName).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
@@ -156,7 +159,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   protected def merge = Action.async { implicit request =>
 
     MergeSubjectsForm.form.bindFromRequest()(request).fold(
-      badForm => invalidFormResponse,
+      _ => invalidFormResponse,
       goodForm => sessions.mergeSubjects(goodForm.username, goodForm.absorbed, goodForm.absorbing).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
   }
@@ -189,14 +192,15 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def startSession() = checked(start)(reactiveMongoApi)
+  def startSession() = checkSession(start)
+
 
   /**
     * Stop a study session
     *
     * @return
     */
-  def stopSession() = checked(stop)(reactiveMongoApi)
+  def stopSession() = checkSession(stop)
 
   /**
     * Abort the current study session
@@ -210,7 +214,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def addSubject() = checked(add)(reactiveMongoApi)
+  def addSubject() = checkSession(add)
 
   /**
     * Remove a subject from a user's subject list

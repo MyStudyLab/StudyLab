@@ -1,0 +1,136 @@
+@(username: String)(implicit messages: Messages)
+
+<!-- TODO: Set the visibility of buttons based on user status -->
+
+@loggedInTemplate("Home") {
+
+    <p>Welcome to Study Lab, @username</p>
+
+    <form id="study-start-form" class="studylab-entry-form">
+        <input id="study-start-username-input" name="username" value="@username" type="text" hidden>
+        <input id="study-start-subject-input" name="subject" type="text">
+        <button type="submit" class="btn btn-default">start</button>
+    </form>
+
+    <form id="study-stop-form" class="studylab-entry-form" hidden>
+        <input id="study-stop-username-input" name="username" value="@username" type="text" hidden>
+        <input id="study-stop-message-input" name="message" type="text">
+        <button type="submit" class="btn btn-default">stop</button>
+    </form>
+
+    <form id="add-subject-form">
+        <input id="add-subject-username-input" name="username" value="@username" type="text" hidden>
+        <input id="add-subject-subject-input" name="subject" type="text">
+        <input id="add-subject-description-input" name="description" type="text">
+        <button type="submit" class="btn btn-default">add</button>
+    </form>
+
+    <script>
+
+            $(function () {
+                $("#study-start-form").on("submit", function (e) {
+
+                    // TODO: prevent fields from clearing
+
+                    e.preventDefault();
+
+                    $.ajax({
+                        type: "post",
+                        url: "@controllers.routes.Sessions.startSession()",
+                        data: $("#study-start-form").serialize(),
+                        dataType: "json",
+                        complete: function (request, textStatus) {
+
+                            if (request.status === 200) {
+
+                                console.log(request.responseText);
+
+                                // Parse the response text as JSON
+                                let data = JSON.parse(request.responseText);
+
+                                if (data['success'] === true) {
+                                    console.log(data);
+                                    $("#study-start-subject-input").val("");
+                                    $("#study-stop-form").removeAttr("hidden");
+                                    $("#study-start-form").attr("hidden", true);
+                                } else {
+
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+
+            $(function () {
+                $("#study-stop-form").on("submit", function (e) {
+
+                    // TODO: prevent fields from clearing
+
+                    e.preventDefault();
+
+                    $.ajax({
+                        type: "post",
+                        url: "@controllers.routes.Sessions.stopSession()",
+                        data: $("#study-stop-form").serialize(),
+                        dataType: "json",
+                        complete: function (request, textStatus) {
+
+                            if (request.status === 200) {
+
+                                console.log(request.responseText);
+
+                                // Parse the response text as JSON
+                                let data = JSON.parse(request.responseText);
+
+                                if (data['success'] === true) {
+                                    console.log(data);
+                                    $("#study-stop-message-input").val("");
+                                    $("#study-start-form").removeAttr("hidden");
+                                    $("#study-stop-form").attr("hidden", true);
+                                } else {
+
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+
+            $(function () {
+                $("#add-subject-form").on("submit", function (e) {
+
+                    // TODO: prevent fields from clearing
+
+                    e.preventDefault();
+
+                    $.ajax({
+                        type: "post",
+                        url: "@controllers.routes.Sessions.addSubject()",
+                        data: $("#add-subject-form").serialize(),
+                        dataType: "json",
+                        complete: function (request, textStatus) {
+
+                            if (request.status === 200) {
+
+                                console.log(request.responseText);
+
+                                // Parse the response text as JSON
+                                let data = JSON.parse(request.responseText);
+
+                                if (data['success'] === true) {
+                                    console.log(data);
+                                    // Clear the form inputs
+                                    $("#add-subject-subject-input").val("");
+                                    $("#add-subject-description-input").val("");
+                                } else {
+                                    // Handle errors: subject already added, etc.
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+
+    </script>
+}

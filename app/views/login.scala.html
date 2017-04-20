@@ -2,52 +2,7 @@
 
     @siteTemplate("Login") {
 
-        <script id="login-form-script">
-
-                $(function () {
-                    $("#login-form").on("submit", function (e) {
-
-                        e.preventDefault();
-
-                        $.ajax({
-                            type: "post",
-                            url: "/users/checkCredentials",
-                            data: $("#login-form").serialize(),
-                            dataType: "json",
-                            complete: function (request, textStatus) {
-
-                                if (request.status === 200) {
-
-                                    console.log(request.responseText);
-
-                                    // Parse the response text as JSON
-                                    let data = JSON.parse(request.responseText);
-
-
-                                    if (data['payload'] === true) {
-                                        console.log(data);
-                                        $("#successful-login-message").removeAttr("hidden");
-                                        $("#login-form").remove();
-                                    } else {
-                                        $("#login-username-input").val("");
-                                        $("#login-password-input").val("");
-                                        alert("Sorry, your login information was incorrect");
-
-                                    }
-
-                                }
-
-                            }
-                        });
-                    });
-                });
-        </script>
-
-        <p id="successful-login-message" class="studylab-entry-form" hidden>
-            You're logged in!
-        </p>
-
-        <form id="login-form" class="studylab-entry-form">
+        <form action="/login" method="post" id="login-form" class="studylab-entry-form">
 
             <div class="form-group">
                 <label for="login-username-input">Username</label>

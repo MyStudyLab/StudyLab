@@ -37,12 +37,22 @@ package object controllers {
     val users = new models.Users(api)
 
     PasswordAndUsername.form.bindFromRequest()(request).fold(
-      badForm => invalidFormResponse,
+      _ => invalidFormResponse,
       goodForm =>
         users.checkCredentials(goodForm.username, goodForm.password).flatMap(matched =>
           if (matched) action(request)
           else Future(Ok(Json.toJson(ResultInfo.badUsernameOrPass)))
         )
     )
+  }
+
+  /**
+    *
+    * @param action
+    * @tparam A
+    * @return
+    */
+  def checkSession[A](action: Action[A]) = Action.async(action.parser) { implicit request =>
+    request.session.get("connected").fold(Future(Ok("")))(username => action(request))
   }
 }

@@ -19,12 +19,13 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     *
     * @return
     */
-  def home() = Action {
-    Ok(views.html.home())
+  def home() = Action { implicit request =>
+
+    request.session.get("connected").fold(Ok(views.html.home()))(username => Ok(views.html.loggedInHome(username)))
   }
 
   /**
-    * The Signup Page
+    * The Sign-Up Page
     *
     * @return
     */
@@ -37,8 +38,18 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     *
     * @return
     */
-  def login = Action {
+  def loginPage = Action {
     Ok(views.html.login())
+  }
+
+
+  /**
+    * Logout and return to the Home Page
+    *
+    * @return
+    */
+  def logout = Action {
+    Ok(views.html.home()).withNewSession
   }
 
   /**
