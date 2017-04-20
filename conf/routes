@@ -5,23 +5,26 @@
 # Home page
 GET         /                               controllers.Application.home()
 
+# The Sign-Up page for new users
 GET         /signup                         controllers.Application.signup()
 
+# The Login page for existing users
 GET         /login                          controllers.Application.login()
 
+# The About page for Study Lab
 GET         /about                          controllers.Default.todo()
 
+# The Contact page for Study Lab
 GET         /contact                        controllers.Default.todo()
 
+# The Help page for Study Lab
 GET         /help                           controllers.Default.todo()
 
+# TODO: Figure out a path for this
 GET         /emailInUse                     controllers.Default.todo()
 
 # Dashboard
 GET         /:username/dashboard            controllers.Application.dashboard(username: String)
-
-# About page
-GET         /:username/about                controllers.Application.about(username: String)
 
 # Get sessions as JSON for the username
 GET         /json/sessions/:username        controllers.Sessions.sessionsForUsername(username: String)
@@ -62,8 +65,14 @@ POST        /study/merge                    controllers.Sessions.mergeSubjects()
 # Add a journal entry
 POST        /journal/add                    controllers.JournalEntries.addJournalEntry()
 
-# Add a new user via a POSTed form
+# Add a new user
 POST        /users/add                      controllers.Users.addNewUser()
+
+# Check the credentials of a user
+POST        /users/checkCredentials         controllers.Users.checkCredentials()
+
+# Remove a user
+POST        /users/remove                   controllers.Default.todo()
 
 # Add a cumulative goal for a user
 POST        /goals/addCumulative            controllers.Default.todo()
@@ -71,4 +80,5 @@ POST        /goals/addCumulative            controllers.Default.todo()
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                   controllers.Assets.at(path="/public", file)
 
-# TODO: Add a /favicon.ico route
+# A root-level link to the favicon
+GET         /favicon.ico                    controllers.Default.redirect(to = "/assets/images/favicon.ico")

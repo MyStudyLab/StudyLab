@@ -3,6 +3,8 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
+import forms.LoginForm
+
 // Project
 import constructs.{ResultInfo, User}
 import forms.AddUserForm
@@ -59,6 +61,22 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   def removeUser = Action.async { implicit request =>
     ???
+  }
+
+
+  /**
+    *
+    * @return
+    */
+  def checkCredentials = Action.async { implicit request =>
+
+    LoginForm.form.bindFromRequest()(request).fold(
+      _ => invalidFormResponse,
+      goodForm => {
+        usersModel.checkCredentials(goodForm.username, goodForm.password).map(valid => Ok(Json.obj("success" -> true, "message" -> "<none>", "timestamp" -> System.currentTimeMillis(), "payload" -> valid)))
+      }
+    )
+
   }
 
 

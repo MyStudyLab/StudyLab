@@ -68,5 +68,4 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
   def profiles = Action {
     Ok(views.html.profiles())
   }
-
 }
