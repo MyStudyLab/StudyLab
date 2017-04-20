@@ -172,7 +172,12 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   def userStatus(username: String) = Action.async { implicit request =>
 
-    sessions.getUserStatus(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve status"))))(data => Ok(Json.toJson(data))))
+    sessions.getUserStatus(username).map(optData => optData.fold(
+      Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve status")))
+    )(data =>
+      Ok(Json.obj("success" -> true, "message" -> s"retrieved status for $username", "timestamp" -> System.currentTimeMillis(), "payload" -> data.status))
+    )
+    )
   }
 
 

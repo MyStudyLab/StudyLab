@@ -1,52 +1,8 @@
 @(username: String)(implicit messages: Messages)
 
-<!-- TODO: Set the visibility of buttons based on user status -->
-
 @loggedInTemplate("Home") {
 
-    <script>
-
-            function Clock() {
-                this.seconds = 0;
-                this.minutes = 0;
-                this.hours = 0;
-
-                this.reset = function () {
-                    this.seconds = 0;
-                    this.minutes = 0;
-                    this.hours = 0;
-                };
-
-                this.tick = function () {
-                    this.seconds++;
-
-                    if (this.seconds > 59) {
-                        this.minutes++;
-                        this.seconds = 0;
-
-                        if (this.minutes > 59) {
-                            this.hours++;
-                            this.minutes = 0;
-                        }
-                    }
-
-
-                };
-
-                this.toString = function () {
-
-                    let secondsField = this.seconds.toString();
-                    if (secondsField.length === 1) {
-                        secondsField = "0" + secondsField;
-                    }
-
-                    return this.hours.toString() + ":" + this.minutes.toString() + ":" + secondsField;
-                }
-            }
-
-            let clock = new Clock();
-
-    </script>
+    <script src="@routes.Assets.at("javascripts/StudyClock.js")"></script>
 
     <p>Welcome to Study Lab, @username</p>
 
@@ -82,8 +38,10 @@
 
     <script>
 
-            // TODO: Initialize the clock if the user is studying
+            let stopwatch = new StopWatch(0);
+            let intervalID = 0;
 
+            // Initialize the page according to the user's status
             jQuery.ajax({
                 url: "@routes.Sessions.userStatus(username)",
                 type: "get",
@@ -94,10 +52,21 @@
 
                     console.log(data);
 
-                    if (data['status']['isStudying']) {
+                    if (data['payload']['isStudying']) {
+
+                        // Unhide and set the stopwatch
+                        $("#study-clock").removeAttr("hidden");
+                        stopwatch.set(data['payload']['start']);
+                        intervalID = setInterval(function () {
+                            document.getElementById("study-clock").innerHTML = stopwatch.display();
+                        }, 1000);
+
+                        // Unhide the stop and cancel forms
                         $("#study-stop-form").removeAttr("hidden");
                         $("#study-cancel-form").removeAttr("hidden");
                     } else {
+
+                        // Unhide the start form
                         $("#study-start-form").removeAttr("hidden");
                     }
                 }
@@ -130,17 +99,23 @@
                                 console.log(data);
 
                                 if (data['success'] === true) {
-                                    clock.reset();
-                                    setInterval(function () {
-                                        document.getElementById("study-clock").textContent = clock.toString();
-                                        clock.tick();
+
+                                    // TODO: Return the session start time in the payload
+
+                                    // Unhide and start the clock
+                                    stopwatch.set(data['timestamp']);
+                                    $("#study-clock").removeAttr("hidden");
+                                    intervalID = setInterval(function () {
+                                        document.getElementById("study-clock").innerHTML = stopwatch.display();
                                     }, 1000);
 
-                                    $("#study-clock").removeAttr("hidden");
-                                    $("#study-start-subject-input").val("");
+                                    // Unhide the stop and cancel forms
                                     $("#study-stop-form").removeAttr("hidden");
                                     $("#study-cancel-form").removeAttr("hidden");
+
+                                    // Hide and clear the start form
                                     $("#study-start-form").attr("hidden", true);
+                                    $("#study-start-subject-input").val("");
                                 } else {
 
                                 }
@@ -172,10 +147,17 @@
                                 // Parse the response text as JSON
                                 let data = JSON.parse(request.responseText);
 
+                                console.log(data);
+
                                 if (data['success'] === true) {
-                                    console.log(data);
+
                                     $("#study-stop-message-input").val("");
+
+                                    // Hide and clear the clock
+                                    document.getElementById("study-clock").innerHTML = "00:00:00";
                                     $("#study-clock").attr("hidden", true);
+                                    clearInterval(intervalID);
+
                                     $("#study-start-form").removeAttr("hidden");
                                     $("#study-stop-form").attr("hidden", true);
                                     $("#study-cancel-form").attr("hidden", true);
@@ -213,7 +195,12 @@
                                 if (data['success'] === true) {
                                     console.log(data);
                                     $("#study-stop-message-input").val("");
+
+                                    // Hide and clear the clock
+                                    document.getElementById("study-clock").innerHTML = "00:00:00";
                                     $("#study-clock").attr("hidden", true);
+                                    clearInterval(intervalID);
+
                                     $("#study-start-form").removeAttr("hidden");
                                     $("#study-stop-form").attr("hidden", true);
                                     $("#study-cancel-form").attr("hidden", true);
