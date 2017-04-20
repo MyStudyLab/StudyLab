@@ -43,7 +43,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
         usersModel.checkCredentials(goodForm.username, goodForm.password).map(valid =>
 
           if (valid) {
-            Ok(views.html.loggedInHome(goodForm.username)).withSession("connected" -> goodForm.username)
+            Redirect(routes.Application.home()).withSession("connected" -> goodForm.username)
           } else {
             Ok(views.html.login())
           })

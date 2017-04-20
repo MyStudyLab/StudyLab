@@ -54,7 +54,7 @@ POST        /study/start                    controllers.Sessions.startSession()
 POST        /study/stop                     controllers.Sessions.stopSession()
 
 # Abort a study session
-POST        /study/abort                    controllers.Sessions.abortSession()
+POST        /study/cancel                   controllers.Sessions.cancelSession()
 
 # Add a study subject
 POST        /study/add                      controllers.Sessions.addSubject()

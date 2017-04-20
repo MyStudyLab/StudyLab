@@ -4,29 +4,85 @@
 
 @loggedInTemplate("Home") {
 
+    <script>
+
+            function Clock() {
+                this.seconds = 0;
+                this.minutes = 0;
+                this.hours = 0;
+
+                this.reset = function () {
+                    this.seconds = 0;
+                    this.minutes = 0;
+                    this.hours = 0;
+                };
+
+                this.tick = function () {
+                    this.seconds++;
+
+                    if (this.seconds > 59) {
+                        this.minutes++;
+                        this.seconds = 0;
+
+                        if (this.minutes > 59) {
+                            this.hours++;
+                            this.minutes = 0;
+                        }
+                    }
+
+
+                };
+
+                this.toString = function () {
+
+                    let secondsField = this.seconds.toString();
+                    if (secondsField.length === 1) {
+                        secondsField = "0" + secondsField;
+                    }
+
+                    return this.hours.toString() + ":" + this.minutes.toString() + ":" + secondsField;
+                }
+            }
+
+            let clock = new Clock();
+
+    </script>
+
     <p>Welcome to Study Lab, @username</p>
 
-    <form id="study-start-form" class="studylab-entry-form" hidden>
-        <input id="study-start-username-input" name="username" value="@username" type="text" hidden>
-        <input id="study-start-subject-input" name="subject" type="text">
-        <button type="submit" class="btn btn-default">start</button>
-    </form>
+    <div id="study-clock" hidden></div>
 
-    <form id="study-stop-form" class="studylab-entry-form" hidden>
-        <input id="study-stop-username-input" name="username" value="@username" type="text" hidden>
-        <input id="study-stop-message-input" name="message" type="text">
-        <button type="submit" class="btn btn-default">stop</button>
-    </form>
+    <div class="studylab-entry-form">
 
-    <form id="add-subject-form">
-        <input id="add-subject-username-input" name="username" value="@username" type="text" hidden>
-        <input id="add-subject-subject-input" name="subject" type="text">
-        <input id="add-subject-description-input" name="description" type="text">
-        <button type="submit" class="btn btn-default">add</button>
-    </form>
+        <form id="study-start-form" hidden>
+            <input id="study-start-username-input" name="username" value="@username" type="text" required hidden>
+            <input id="study-start-subject-input" name="subject" type="text">
+            <button type="submit" class="btn btn-default">start</button>
+        </form>
 
+        <form id="study-stop-form" hidden>
+            <input id="study-stop-username-input" name="username" value="@username" type="text" hidden>
+            <input id="study-stop-message-input" name="message" type="text">
+            <button type="submit" class="btn btn-default">stop</button>
+        </form>
+
+        <form id="study-cancel-form" hidden>
+            <input id="study-cancel-username-input" name="username" value="@username" type="text" required hidden>
+            <button type="submit" class="btn btn-default">cancel</button>
+        </form>
+
+        <form id="add-subject-form">
+            <input id="add-subject-username-input" name="username" value="@username" type="text" required hidden>
+            <input id="add-subject-subject-input" name="subject" type="text">
+            <input id="add-subject-description-input" name="description" type="text">
+            <button type="submit" class="btn btn-default">add</button>
+        </form>
+
+    </div>
 
     <script>
+
+            // TODO: Initialize the clock if the user is studying
 
             jQuery.ajax({
                 url: "@routes.Sessions.userStatus(username)",
@@ -40,6 +96,7 @@
 
                     if (data['status']['isStudying']) {
                         $("#study-stop-form").removeAttr("hidden");
+                        $("#study-cancel-form").removeAttr("hidden");
                     } else {
                         $("#study-start-form").removeAttr("hidden");
                     }
@@ -70,11 +127,19 @@
 
                                 // Parse the response text as JSON
                                 let data = JSON.parse(request.responseText);
+                                console.log(data);
 
                                 if (data['success'] === true) {
-                                    console.log(data);
+                                    clock.reset();
+                                    setInterval(function () {
+                                        document.getElementById("study-clock").textContent = clock.toString();
+                                        clock.tick();
+                                    }, 1000);
+
+                                    $("#study-clock").removeAttr("hidden");
                                     $("#study-start-subject-input").val("");
                                     $("#study-stop-form").removeAttr("hidden");
+                                    $("#study-cancel-form").removeAttr("hidden");
                                     $("#study-start-form").attr("hidden", true);
                                 } else {
 
@@ -84,6 +149,7 @@
                     });
                 });
             });
+
 
             $(function () {
                 $("#study-stop-form").on("submit", function (e) {
@@ -109,8 +175,10 @@
                                 if (data['success'] === true) {
                                     console.log(data);
                                     $("#study-stop-message-input").val("");
+                                    $("#study-clock").attr("hidden", true);
                                     $("#study-start-form").removeAttr("hidden");
                                     $("#study-stop-form").attr("hidden", true);
+                                    $("#study-cancel-form").attr("hidden", true);
                                 } else {
 
                                 }
@@ -119,6 +187,45 @@
                     });
                 });
             });
+
+
+            $(function () {
+                $("#study-cancel-form").on("submit", function (e) {
+
+                    // TODO: prevent fields from clearing
+
+                    e.preventDefault();
+
+                    $.ajax({
+                        type: "post",
+                        url: "@controllers.routes.Sessions.cancelSession()",
+                        data: $("#study-cancel-form").serialize(),
+                        dataType: "json",
+                        complete: function (request, textStatus) {
+
+                            if (request.status === 200) {
+
+                                console.log(request.responseText);
+
+                                // Parse the response text as JSON
+                                let data = JSON.parse(request.responseText);
+
+                                if (data['success'] === true) {
+                                    console.log(data);
+                                    $("#study-stop-message-input").val("");
+                                    $("#study-clock").attr("hidden", true);
+                                    $("#study-start-form").removeAttr("hidden");
+                                    $("#study-stop-form").attr("hidden", true);
+                                    $("#study-cancel-form").attr("hidden", true);
+                                } else {
+
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+
 
             $(function () {
                 $("#add-subject-form").on("submit", function (e) {

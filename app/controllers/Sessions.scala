@@ -70,26 +70,15 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     )
   }
 
-  /**
-    *
-    * @param username
-    * @param message
-    * @return
-    */
-  def stopSessionFromParams(username: String, message: String) = Action.async { implicit request =>
-
-    sessions.stopSession(username, message).map(result => Ok(Json.toJson(result)))
-  }
-
 
   /**
     * Invoke the model layer to abort the current study session.
     *
     * @return
     */
-  protected def abort = Action.async { implicit request =>
+  protected def cancel = Action.async { implicit request =>
 
-    PasswordAndUsername.form.bindFromRequest()(request).fold(
+    SessionCancelForm.form.bindFromRequest()(request).fold(
       _ => invalidFormResponse,
       goodForm => sessions.abortSession(goodForm.username).map(resultInfo => Ok(Json.toJson(resultInfo)))
     )
@@ -207,7 +196,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def abortSession() = checked(abort)(reactiveMongoApi)
+  def cancelSession() = checkSession(cancel)
 
   /**
     * Add a subject to a user's subject list
