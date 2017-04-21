@@ -6,7 +6,7 @@
 
     <p>Welcome to Study Lab, @username</p>
 
-    <div id="study-clock" hidden></div>
+    <div id="study-clock"></div>
 
     <div class="studylab-entry-form">
 
@@ -38,8 +38,7 @@
 
     <script>
 
-            let stopwatch = new StopWatch(0);
-            let intervalID = 0;
+            let stopwatch = new Stopwatch("study-clock");
 
             // Initialize the page according to the user's status
             jQuery.ajax({
@@ -54,17 +53,15 @@
 
                     if (data['payload']['isStudying']) {
 
-                        // Unhide and set the stopwatch
-                        $("#study-clock").removeAttr("hidden");
-                        stopwatch.set(data['payload']['start']);
-                        intervalID = setInterval(function () {
-                            document.getElementById("study-clock").innerHTML = stopwatch.display();
-                        }, 1000);
+                        // Start the stopwatch
+                        stopwatch.startFrom(data['payload']['start']);
 
                         // Unhide the stop and cancel forms
                         $("#study-stop-form").removeAttr("hidden");
                         $("#study-cancel-form").removeAttr("hidden");
                     } else {
+
+                        stopwatch.displayZero();
 
                         // Unhide the start form
                         $("#study-start-form").removeAttr("hidden");
@@ -75,7 +72,6 @@
     </script>
 
     <script>
-
             $(function () {
                 $("#study-start-form").on("submit", function (e) {
 
@@ -102,12 +98,8 @@
 
                                     // TODO: Return the session start time in the payload
 
-                                    // Unhide and start the clock
-                                    stopwatch.set(data['timestamp']);
-                                    $("#study-clock").removeAttr("hidden");
-                                    intervalID = setInterval(function () {
-                                        document.getElementById("study-clock").innerHTML = stopwatch.display();
-                                    }, 1000);
+                                    // Start the stopwatch
+                                    stopwatch.start();
 
                                     // Unhide the stop and cancel forms
                                     $("#study-stop-form").removeAttr("hidden");
@@ -153,10 +145,8 @@
 
                                     $("#study-stop-message-input").val("");
 
-                                    // Hide and clear the clock
-                                    document.getElementById("study-clock").innerHTML = "00:00:00";
-                                    $("#study-clock").attr("hidden", true);
-                                    clearInterval(intervalID);
+                                    // Reset the clock
+                                    stopwatch.reset();
 
                                     $("#study-start-form").removeAttr("hidden");
                                     $("#study-stop-form").attr("hidden", true);
@@ -196,10 +186,8 @@
                                     console.log(data);
                                     $("#study-stop-message-input").val("");
 
-                                    // Hide and clear the clock
-                                    document.getElementById("study-clock").innerHTML = "00:00:00";
-                                    $("#study-clock").attr("hidden", true);
-                                    clearInterval(intervalID);
+                                    // Reset the clock
+                                    stopwatch.reset();
 
                                     $("#study-start-form").removeAttr("hidden");
                                     $("#study-stop-form").attr("hidden", true);
