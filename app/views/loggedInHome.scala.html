@@ -11,7 +11,6 @@
         <div id="study-control">
 
             <div class="control-panel-element">
-                <p>Welcome to Study Lab, @username</p>
 
                 <div id="study-clock"></div>
 
@@ -43,11 +42,16 @@
             </div>
 
             <div class="control-panel-element">
-                <form id="add-subject-form" class="study-control-form">
-                    <input id="add-subject-username-input" name="username" value="@username" type="text" required hidden>
+
+                <div id="add-subject-label" class="control-panel-label" onclick="toggleHidden('add-subject-form')">
+                    Add a subject
+                </div>
+
+                <form id="add-subject-form" class="study-control-form" hidden>
+                    <input id="add-subject-username-input" name="username" value="@username" title="username" type="text" required hidden>
 
                     <div class="form-group">
-                        <input id="add-subject-subject-input" class="study-control-input" name="subject" placeholder="New Subject" type="text">
+                        <input id="add-subject-subject-input" class="study-control-input" name="subject" placeholder="New Subject" title="subject name" type="text">
                     </div>
 
                     <div class="form-group">
@@ -58,10 +62,44 @@
                 </form>
             </div>
 
+            <div class="control-panel-element">
+
+                <div id="rename-subject-label" class="control-panel-label" onclick="toggleHidden('rename-subject-form')">
+                    Rename a subject
+                </div>
+
+                <form id="rename-subject-form" class="study-control-form" hidden>
+
+                    <input id="rename-subject-username-input" name="username" value="@username" title="username" type="text" required hidden>
+
+                    <div class="form-group">
+                        <input id="rename-subject-old-subject-input" class="study-control-input" name="oldName" placeholder="Old Name" title="old subject name" type="text">
+                    </div>
+
+                    <div class="form-group">
+                        <input id="rename-subject-new-subject-input" class="study-control-input" name="newName" placeholder="New Name" title="new subject name" type="text">
+                    </div>
+
+                    <button type="submit" class="btn btn-default study-control-button">rename</button>
+                </form>
+
+            </div>
+
         </div>
     </div>
 
     <script src="@routes.Assets.at("javascripts/StudyClock.js")"></script>
+
+    <script>
+
+            function toggleHidden(elementID) {
+
+                const elem = $("#" + elementID);
+
+                elem.attr("hidden", !elem.attr("hidden"));
+            }
+
+    </script>
 
     <script>
 
@@ -255,6 +293,43 @@
                                     // Clear the form inputs
                                     $("#add-subject-subject-input").val("");
                                     $("#add-subject-description-input").val("");
+                                } else {
+                                    // Handle errors: subject already added, etc.
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+
+            $(function () {
+                $("#rename-subject-form").on("submit", function (e) {
+
+                    // TODO: prevent fields from clearing
+
+                    e.preventDefault();
+
+                    $.ajax({
+                        type: "post",
+                        url: "@controllers.routes.Sessions.renameSubject()",
+                        data: $("#rename-subject-form").serialize(),
+                        dataType: "json",
+                        complete: function (request, textStatus) {
+
+                            if (request.status === 200) {
+
+                                console.log(request.responseText);
+
+                                // Parse the response text as JSON
+                                let data = JSON.parse(request.responseText);
+
+                                if (data['success'] === true) {
+
+                                    console.log(data);
+
+                                    // Clear the form inputs
+                                    $("#rename-subject-new-subject-input").val("");
+                                    $("#rename-subject-old-subject-input").val("");
                                 } else {
                                     // Handle errors: subject already added, etc.
                                 }

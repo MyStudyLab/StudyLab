@@ -28,6 +28,10 @@ body {
     border-radius: 5px;
 }
 
+.control-panel-label {
+    width: 100%;
+}
+
 .studylab-entry-form {
     width: 300px;
     margin-top: 200px;
@@ -82,7 +86,7 @@ body {
 
 #study-clock {
     text-align: center;
-    font-size: 3vw;
+    font-size: xx-large;
 }
 
 .clock-separator {
@@ -367,11 +371,15 @@ footer {
     }
 
     #summary-content {
-        flex: 4;
+        flex: 3;
     }
 
     #study-control {
         flex: 1;
+    }
+
+    #study-clock {
+        font-size: 3vw;
     }
 
 }

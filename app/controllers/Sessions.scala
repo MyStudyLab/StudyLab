@@ -224,7 +224,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  def renameSubject() = checked(rename)(reactiveMongoApi)
+  def renameSubject() = checkSession(rename)
 
   /**
     * Merge two subjects from a user's subject list
