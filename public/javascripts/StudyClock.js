@@ -19,48 +19,65 @@ function padString(str, padStr, len) {
 /**
  * A simple stopwatch
  *
- * @param {string} elementId -
+ * @param {string} elementID -
  * @member {int} intervalID -
  * @member {int} startTime - The time that this stopwatch begins (milliseconds since the epoch)
  * @constructor
  */
 function Stopwatch(elementID) {
 
+    // Initialize members
     this.elementID = elementID;
     this.intervalID = -1;
     this.startTime = -1;
 
+    // Start the stopwatch
     this.start = function () {
 
-        this.startTime = Date.now();
+        // Only start if currently stopped
+        if (this.startTime < 0) {
 
-        this.intervalID = setInterval(function () {
-            document.getElementById(elementID).innerText = stopwatch.display();
-        }, 1000);
+            this.startTime = Date.now();
+
+            this.intervalID = setInterval(function () {
+                document.getElementById(elementID).innerText = stopwatch.display();
+            }, 1000);
+        }
 
     };
 
+    // Run the stopwatch, using the given time as the start
     this.startFrom = function (startTime) {
 
-        this.startTime = startTime;
+        if (startTime < 0) {
+            throw new Error("start time must be non-negative");
+        }
 
-        //let elementId = this.elementID;
+        // Only start if currently stopped
+        if (this.startTime < 0) {
 
-        this.intervalID = setInterval(function () {
-            document.getElementById(elementID).innerText = stopwatch.display();
-        }, 1000,);
+            this.startTime = startTime;
+
+            this.intervalID = setInterval(function () {
+                document.getElementById(elementID).innerText = stopwatch.display();
+            }, 1000,);
+        }
 
     };
 
+    // Reset the stopwatch
     this.reset = function () {
-        document.getElementById(this.elementID).innerText = "00:00:00";
+        this.displayZero();
         clearInterval(this.intervalID);
+        this.startTime = -1;
     };
 
+    // Display all zeros on the stopwatch
     this.displayZero = function () {
         document.getElementById(this.elementID).innerText = "00:00:00";
     };
 
+    // Display the elapsed time as hh:mm:ss
     this.display = function () {
 
         const elapsed = Math.round((Date.now() - this.startTime) / 1000);
@@ -77,7 +94,7 @@ function Stopwatch(elementID) {
             return padString(curr, "0", 2);
         });
 
-        return paddedFields.join(":");
+        return paddedFields.join(':');
     };
 }
 

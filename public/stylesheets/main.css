@@ -16,9 +16,15 @@ body {
     align-items: center;
 }
 
-.content {
+.page-content {
     /* Sticky footer */
     flex: 1;
+}
+
+.padded-border {
+    padding: 10px;
+    border: solid gray 2px;
+    border-radius: 5px;
 }
 
 .studylab-entry-form {
@@ -27,6 +33,39 @@ body {
     padding: 10px;
     border: solid gray 2px;
     border-radius: 5px;
+}
+
+#study-control {
+    width: 400px;
+}
+
+#study-start-button {
+    border: 0;
+    color: #fff;
+    background-color: #4b4;
+}
+
+#study-stop-button {
+    border: 0;
+    color: #fff;
+    background-color: #b44;
+}
+
+.study-control-button {
+    width: 100%;
+}
+
+.study-control-input {
+    width: 100%;
+}
+
+.study-control-form {
+    margin: 10px 0;
+}
+
+#study-clock {
+    text-align: center;
+    font-size: 3vw;
 }
 
 .introMessageValue {

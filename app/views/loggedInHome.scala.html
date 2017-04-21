@@ -6,34 +6,51 @@
 
     <p>Welcome to Study Lab, @username</p>
 
-    <div id="study-clock"></div>
+    <div id="study-control" class="padded-border">
+        <div id="study-clock"></div>
 
-    <div class="studylab-entry-form">
+        <div>
+            <form id="study-start-form" class="study-control-form" hidden>
+                <input id="study-start-username-input" name="username" value="@username" type="text" required hidden>
 
-        <form id="study-start-form" hidden>
-            <input id="study-start-username-input" name="username" value="@username" type="text" required hidden>
-            <input id="study-start-subject-input" name="subject" type="text">
-            <button type="submit" class="btn btn-default">start</button>
-        </form>
+                <div class="form-group">
+                    <input id="study-start-subject-input" class="study-control-input" name="subject" placeholder="Subject" type="text">
+                </div>
 
-        <form id="study-stop-form" hidden>
-            <input id="study-stop-username-input" name="username" value="@username" type="text" hidden>
-            <input id="study-stop-message-input" name="message" type="text">
-            <button type="submit" class="btn btn-default">stop</button>
-        </form>
+                <button type="submit" id="study-start-button" class="btn btn-default study-control-button">start</button>
+            </form>
 
-        <form id="study-cancel-form" hidden>
-            <input id="study-cancel-username-input" name="username" value="@username" type="text" required hidden>
-            <button type="submit" class="btn btn-default">cancel</button>
-        </form>
+            <form id="study-stop-form" class="study-control-form" hidden>
+                <input id="study-stop-username-input" name="username" value="@username" type="text" hidden>
 
-        <form id="add-subject-form">
-            <input id="add-subject-username-input" name="username" value="@username" type="text" required hidden>
-            <input id="add-subject-subject-input" name="subject" type="text">
-            <input id="add-subject-description-input" name="description" type="text">
-            <button type="submit" class="btn btn-default">add</button>
-        </form>
+                <div class="form-group">
+                    <input id="study-stop-message-input" class="study-control-input" name="message" placeholder="Message" type="text">
+                </div>
 
+                <button type="submit" id="study-stop-button" class="btn btn-default study-control-button">stop</button>
+            </form>
+
+            <form id="study-cancel-form" class="study-control-form" hidden>
+                <input id="study-cancel-username-input" class="study-control-input" name="username" value="@username" type="text" required hidden>
+
+                <button type="submit" class="btn btn-default study-control-button">cancel</button>
+            </form>
+
+            <form id="add-subject-form" class="study-control-form">
+                <input id="add-subject-username-input" name="username" value="@username" type="text" required hidden>
+
+                <div class="form-group">
+                    <input id="add-subject-subject-input" class="study-control-input" name="subject" placeholder="New Subject" type="text">
+                </div>
+
+                <div class="form-group">
+                    <input id="add-subject-description-input" class="study-control-input" name="description" placeholder="Description" type="text">
+                </div>
+
+                <button type="submit" class="btn btn-default study-control-button">add</button>
+            </form>
+
+        </div>
     </div>
 
     <script>

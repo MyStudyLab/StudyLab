@@ -39,7 +39,9 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     SessionStartForm.startForm.bindFromRequest()(request).fold(
       _ => invalidFormResponse,
-      goodForm => sessions.startSession(goodForm.username, goodForm.subject).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      goodForm => sessions.startSession(goodForm.username, goodForm.subject).map(resultInfo =>
+        Ok(Json.toJson(resultInfo))
+      )
     )
   }
 
