@@ -40,7 +40,7 @@ function Stopwatch(elementID) {
             this.startTime = Date.now();
 
             this.intervalID = setInterval(function () {
-                document.getElementById(elementID).innerText = stopwatch.display();
+                document.getElementById(elementID).innerHTML = stopwatch.display();
             }, 1000);
         }
 
@@ -58,8 +58,10 @@ function Stopwatch(elementID) {
 
             this.startTime = startTime;
 
+            this.display(startTime);
+
             this.intervalID = setInterval(function () {
-                document.getElementById(elementID).innerText = stopwatch.display();
+                document.getElementById(elementID).innerHTML = stopwatch.display();
             }, 1000,);
         }
 
@@ -74,18 +76,20 @@ function Stopwatch(elementID) {
 
     // Display all zeros on the stopwatch
     this.displayZero = function () {
-        document.getElementById(this.elementID).innerText = "00:00:00";
+        document.getElementById(this.elementID).innerHTML = this.display(0);
     };
 
     // Display the elapsed time as hh:mm:ss
-    this.display = function () {
+    this.display = function (elapsedGiven = -1) {
 
-        const elapsed = Math.round((Date.now() - this.startTime) / 1000);
+        let elapsed = elapsedGiven;
+
+        if (elapsed < 0) {
+            elapsed = Math.round((Date.now() - this.startTime) / 1000);
+        }
 
         const hours = Math.floor(elapsed / 3600);
-
         const minutes = Math.floor((elapsed % 3600) / 60);
-
         const seconds = elapsed % 60;
 
         const fields = [hours.toString(), minutes.toString(), seconds.toString()];
@@ -94,7 +98,7 @@ function Stopwatch(elementID) {
             return padString(curr, "0", 2);
         });
 
-        return paddedFields.join(':');
+        return paddedFields.join('<span class="clock-separator">:</span>');
     };
 }
 

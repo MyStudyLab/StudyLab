@@ -2,56 +2,66 @@
 
 @loggedInTemplate("Home") {
 
-    <script src="@routes.Assets.at("javascripts/StudyClock.js")"></script>
+    <div id="dashboard-content">
 
-    <p>Welcome to Study Lab, @username</p>
+        <div id="summary-content">
+            <div id="test-content"></div>
+        </div>
 
-    <div id="study-control" class="padded-border">
-        <div id="study-clock"></div>
+        <div id="study-control">
 
-        <div>
-            <form id="study-start-form" class="study-control-form" hidden>
-                <input id="study-start-username-input" name="username" value="@username" type="text" required hidden>
+            <div class="control-panel-element">
+                <p>Welcome to Study Lab, @username</p>
 
-                <div class="form-group">
-                    <input id="study-start-subject-input" class="study-control-input" name="subject" placeholder="Subject" type="text">
-                </div>
+                <div id="study-clock"></div>
 
-                <button type="submit" id="study-start-button" class="btn btn-default study-control-button">start</button>
-            </form>
+                <form id="study-start-form" class="study-control-form" hidden>
+                    <input id="study-start-username-input" name="username" value="@username" type="text" required hidden>
 
-            <form id="study-stop-form" class="study-control-form" hidden>
-                <input id="study-stop-username-input" name="username" value="@username" type="text" hidden>
+                    <div class="form-group">
+                        <input id="study-start-subject-input" class="study-control-input" name="subject" placeholder="Subject" type="text">
+                    </div>
 
-                <div class="form-group">
-                    <input id="study-stop-message-input" class="study-control-input" name="message" placeholder="Message" type="text">
-                </div>
+                    <button type="submit" id="study-start-button" class="btn btn-default study-control-button">start</button>
+                </form>
 
-                <button type="submit" id="study-stop-button" class="btn btn-default study-control-button">stop</button>
-            </form>
+                <form id="study-stop-form" class="study-control-form" hidden>
+                    <input id="study-stop-username-input" name="username" value="@username" type="text" hidden>
 
-            <form id="study-cancel-form" class="study-control-form" hidden>
-                <input id="study-cancel-username-input" class="study-control-input" name="username" value="@username" type="text" required hidden>
+                    <div class="form-group">
+                        <input id="study-stop-message-input" class="study-control-input" name="message" placeholder="Message" type="text">
+                    </div>
 
-                <button type="submit" class="btn btn-default study-control-button">cancel</button>
-            </form>
+                    <button type="submit" id="study-stop-button" class="btn btn-default study-control-button">stop</button>
+                </form>
 
-            <form id="add-subject-form" class="study-control-form">
-                <input id="add-subject-username-input" name="username" value="@username" type="text" required hidden>
+                <form id="study-cancel-form" class="study-control-form" hidden>
+                    <input id="study-cancel-username-input" class="study-control-input" name="username" value="@username" type="text" required hidden>
 
-                <div class="form-group">
-                    <input id="add-subject-subject-input" class="study-control-input" name="subject" placeholder="New Subject" type="text">
-                </div>
+                    <button type="submit" class="btn btn-default study-control-button">cancel</button>
+                </form>
+            </div>
 
-                <div class="form-group">
-                    <input id="add-subject-description-input" class="study-control-input" name="description" placeholder="Description" type="text">
-                </div>
+            <div class="control-panel-element">
+                <form id="add-subject-form" class="study-control-form">
+                    <input id="add-subject-username-input" name="username" value="@username" type="text" required hidden>
 
-                <button type="submit" class="btn btn-default study-control-button">add</button>
-            </form>
+                    <div class="form-group">
+                        <input id="add-subject-subject-input" class="study-control-input" name="subject" placeholder="New Subject" type="text">
+                    </div>
+
+                    <div class="form-group">
+                        <input id="add-subject-description-input" class="study-control-input" name="description" placeholder="Description" type="text">
+                    </div>
+
+                    <button type="submit" class="btn btn-default study-control-button">add</button>
+                </form>
+            </div>
 
         </div>
     </div>
+
+    <script src="@routes.Assets.at("javascripts/StudyClock.js")"></script>
 
     <script>
 
