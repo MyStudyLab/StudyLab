@@ -49,7 +49,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     * @return
     */
   def logout = Action {
-    Ok(views.html.home()).withNewSession
+    Redirect(routes.Application.home()).withNewSession
   }
 
   /**
