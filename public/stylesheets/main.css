@@ -46,9 +46,8 @@ body {
     flex-flow: row wrap;
 }
 
-#test-content {
-    width: 100%;
-    background-color: #1b6d85;
+.panel-data-block {
+
 }
 
 #summary-content {

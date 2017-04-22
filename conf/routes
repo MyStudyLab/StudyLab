@@ -29,9 +29,6 @@ GET         /help                           controllers.Default.todo()
 # TODO: Figure out a path for this
 GET         /emailInUse                     controllers.Default.todo()
 
-# Dashboard
-GET         /:username/dashboard            controllers.Application.dashboard(username: String)
-
 # Get sessions as JSON for the username
 GET         /json/sessions/:username        controllers.Sessions.sessionsForUsername(username: String)
 

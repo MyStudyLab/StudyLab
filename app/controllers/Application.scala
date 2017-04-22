@@ -52,14 +52,6 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     Redirect(routes.Application.home()).withNewSession
   }
 
-  /**
-    * The Home Page
-    *
-    * @return
-    */
-  def dashboard(username: String) = Action {
-    Ok(views.html.dashboard(username))
-  }
 
   /**
     * The About Page
