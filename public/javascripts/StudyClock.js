@@ -98,6 +98,28 @@ function Stopwatch(elementID) {
             return padString(curr, "0", 2);
         });
 
+        // Indicate which digits are inactive
+        let i = 0;
+
+        // Run through the inactive digits
+        for (; i < paddedFields.length; i++) {
+
+            if (paddedFields[i] === "00") {
+
+            } else if (paddedFields[i].substr(0, 1) === "0") {
+                paddedFields[i] = paddedFields[i].substr(0, 1) + '<span class="clock-active-digit">' + paddedFields[i].substr(1) + '</span>';
+                break;
+            } else {
+                paddedFields[i] = '<span class="clock-active-digit">' + paddedFields[i] + '</span>';
+                break;
+            }
+        }
+
+        // Indicate the active digits
+        for (i++; i < paddedFields.length; i++) {
+            paddedFields[i] = '<span class="clock-active-digit">' + paddedFields[i] + '</span>';
+        }
+
         return paddedFields.join('<span class="clock-separator">:</span>');
     };
 }

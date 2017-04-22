@@ -87,10 +87,15 @@ body {
 #study-clock {
     text-align: center;
     font-size: xx-large;
+    color: rgba(255, 255, 255, .4);
 }
 
 .clock-separator {
     color: rgba(255, 255, 255, .4);
+}
+
+.clock-active-digit {
+    color: #78a4ff;
 }
 
 .introMessageValue {
