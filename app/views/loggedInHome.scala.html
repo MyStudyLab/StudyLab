@@ -30,13 +30,13 @@
 }
 
 @plotHolder(id: String, classes: List[String] = List()) = {
-    <div class="row">
-        <div class="col-sm-offset-1 col-sm-10 padded-plot spaced-plot">
-            <div id="@id" class="chart-container loading-icon @classes.mkString(" ")">
-            @loadingDots()
-            </div>
+
+    <div class="padded-plot spaced-plot">
+        <div id="@id" class="chart-container loading-icon @classes.mkString(" ")">
+        @loadingDots()
         </div>
     </div>
+
 }
 
 @loggedInTemplate("Home") {
@@ -120,8 +120,7 @@
 
             </div>
 
-
-            <div class="data-blocks">
+            <div>
 
                     <!-- Total hours studied -->
                 @panelDataBlock("Total", "total-hours")
@@ -133,15 +132,17 @@
                 @panelDataBlock("Current Streak", "current-streak")
             </div>
 
+            <div id="subject-list-container" class="control-panel-element"></div>
+
         </div>
 
 
             <!-- Contains all charts -->
-        <div id="summary-content" class="container-fluid">
+        <div id="summary-content" class="">
 
                 <!-- Today's sessions plot -->
-            <div class="row">
-                <div id="widt-highchart" class="col-sm-offset-1 col-sm-10 loading-icon"></div>
+            <div class="padded-plot">
+                <div id="widt-highchart" class="loading-icon"></div>
             </div>
 
                 <!-- Cumulative hours studied plot-->
@@ -436,7 +437,6 @@
     </svg>
 
     <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
-
     <script src="@routes.Assets.at("/javascripts/stats.js")"></script>
 
         <!-- Moment JS -->
@@ -655,20 +655,6 @@
 
     <script>
 
-            // Get a duration as [hh, mm, ss] from seconds
-            function hms(sec) {
-                const h = Math.floor(sec / 3600);
-
-                sec -= 3600 * h;
-
-                const m = Math.floor(sec / 60);
-
-                sec -= 60 * m;
-
-                return [h, m, sec];
-            }
-
-
             function fillSummaryValues(stats) {
 
                 const n1 = stats.todaysTotal.toFixed(2).toString();
@@ -685,7 +671,6 @@
             }
 
 
-            // TODO: The user will be a parameter when this is a fully functional app
             loadJSONFile("/json/sessions/@username", function (data) {
 
                 // TODO: The current time could come from the timestamp in the ResultInfo...
@@ -705,6 +690,24 @@
                 // Fill summary values at top of page
                 fillSummaryValues(stats);
 
+
+                function subjectList(subjects) {
+
+                    const subjectName = (subject) => "<div class='subject-list-name'>" + subject['name'] + "</div>";
+
+                    const subjectDescription = (subject) => "<div class='subject-list-description'>" + subject['description'] + "</div>";
+
+                    const subjectOptions = "<div class='subject-list-options'>" + "<span><u>rename</u></span>" + "</div>";
+
+                    // Populate the subject list
+                    const subjectListHTML = subjects.map(function (subject, i, arr) {
+                        return "<div class='subject-list-element'>" + subjectName(subject) + subjectDescription(subject) + subjectOptions + "</div>";
+                    });
+
+                    document.getElementById("subject-list-container").innerHTML = subjectListHTML.join("");
+                }
+
+                subjectList(data.subjects);
 
                 // Highchart default theme using CSS chart styling
                 let styledTheme = {

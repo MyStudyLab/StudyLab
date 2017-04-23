@@ -40,19 +40,33 @@ body {
     border-radius: 5px;
 }
 
+.subject-list-element {
+    width: 100%;
+    font-size: large;
+}
+
+.subject-list-name {
+    font-size: x-large;
+}
+
+.subject-list-description {
+    font-size: medium;
+    color: #707073;
+}
+
+.subject-list-options {
+    color: #707073;
+    text-align: right;
+}
+
 #dashboard-content {
     min-width: 100%;
     display: flex;
     flex-flow: row wrap;
 }
 
-.panel-data-block {
-
-}
-
 #summary-content {
     flex: 1 100%;
-
 }
 
 #study-control {
@@ -200,7 +214,7 @@ body {
 }
 
 .padded-plot {
-    padding: 25px 15px;
+    padding: 25px 0;
 }
 
 .profile-link-row {
@@ -243,7 +257,7 @@ footer {
 }
 
 /* X-Small Screens */
-.data-blocks {
+.panel-data-block {
     font-size: xx-large;
     text-align: center;
 }
@@ -366,7 +380,7 @@ footer {
         font-size: 30px;
     }
 
-    .data-blocks {
+    .panel-data-block {
         font-size: large;
     }
 
@@ -395,7 +409,7 @@ footer {
         font-size: 8em;
     }
 
-    .data-blocks {
+    .panel-data-block {
         font-size: x-large;
     }
 
@@ -416,12 +430,16 @@ footer {
         font-size: 10em;
     }
 
-    .data-blocks {
+    .panel-data-block {
         font-size: xx-large;
     }
 
     .data-block-title {
         font-size: large;
+    }
+
+    #summary-content {
+        padding: 0 50px 50px 100px;
     }
 
 }
@@ -433,7 +451,7 @@ footer {
         height: 700px;
     }
 
-    .data-blocks {
+    .panel-data-block {
         font-size: 2vw;
     }
 
