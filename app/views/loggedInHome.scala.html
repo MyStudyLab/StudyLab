@@ -76,6 +76,19 @@
                 </form>
             </div>
 
+            <div>
+                    <!-- Total hours studied -->
+                @panelDataBlock("Total", "total-hours")
+
+                    <!-- Hours studied today vs. average -->
+                @panelDataBlock("Today / Average", "today-vs-average")
+
+                    <!-- Length of the current streak -->
+                @panelDataBlock("Current Streak", "current-streak")
+            </div>
+
+            <div id="subject-list-container" class="control-panel-element"></div>
+
             <div class="control-panel-element">
 
                 <div id="add-subject-label" class="control-panel-label" onclick="toggleHidden('add-subject-form')">
@@ -119,20 +132,6 @@
                 </form>
 
             </div>
-
-            <div>
-
-                    <!-- Total hours studied -->
-                @panelDataBlock("Total", "total-hours")
-
-                    <!-- Hours studied today vs. average -->
-                @panelDataBlock("Today / Average", "today-vs-average")
-
-                    <!-- Length of the current streak -->
-                @panelDataBlock("Current Streak", "current-streak")
-            </div>
-
-            <div id="subject-list-container" class="control-panel-element"></div>
 
         </div>
 

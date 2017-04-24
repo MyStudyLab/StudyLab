@@ -32,9 +32,10 @@ class Goals(protected val mongoApi: ReactiveMongoApi) {
     */
   def addCumulativeGoal(username: String, goal: CumulativeGoal): Future[ResultInfo] = {
 
-    def cumGoals: BSONCollection = mongoApi.db.collection("cumulative_goals")
+    def goalsCollection: Future[BSONCollection] = mongoApi.database.map(_.collection("cumulative_goals"))
 
-    cumGoals.insert(goal).map(result => ResultInfo(result.ok, result.message, System.currentTimeMillis()))
+    // TODO: Replace the message field
+    goalsCollection.flatMap(_.insert(goal)).map(result => ResultInfo(result.ok, "used to be result.message", System.currentTimeMillis()))
 
   }
 

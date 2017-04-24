@@ -26,7 +26,7 @@ import helpers.Selectors.{emailSelector, usernameSelector}
 class Users(protected val api: ReactiveMongoApi) {
 
   // The users collection
-  protected def usersCollection: BSONCollection = api.db.collection[BSONCollection]("users")
+  protected def usersCollection: Future[BSONCollection] = api.database.map(_.collection[BSONCollection]("users"))
 
 
   /**
@@ -37,8 +37,8 @@ class Users(protected val api: ReactiveMongoApi) {
     */
   def addNewUser(user: User): Future[ResultInfo] = {
 
-    usersCollection.insert(user).map(result =>
-      new ResultInfo(result.ok, result.message)
+    usersCollection.flatMap(_.insert(user)).map(result =>
+      new ResultInfo(result.ok, "used to be result.message")
     ).recover {
       case e: DatabaseException => e.code.fold(ResultInfo.failWithMessage(e.message)) {
 
@@ -64,8 +64,9 @@ class Users(protected val api: ReactiveMongoApi) {
     */
   def deleteUser(username: String): Future[ResultInfo] = {
 
-    usersCollection.remove(usernameSelector(username), firstMatchOnly = true).map(
-      result => new ResultInfo(result.ok, result.message)
+    usersCollection.flatMap(_.remove(usernameSelector(username), firstMatchOnly = true)).map(
+      // TODO: Replace the message field
+      result => new ResultInfo(result.ok, "used to be result.message")
     )
 
   }
@@ -79,7 +80,7 @@ class Users(protected val api: ReactiveMongoApi) {
     */
   def aboutMessage(username: String): Future[Option[AboutMessage]] = {
 
-    usersCollection.find(usernameSelector(username), AboutMessage.projector).one[AboutMessage]
+    usersCollection.flatMap(_.find(usernameSelector(username), AboutMessage.projector).one[AboutMessage])
   }
 
 
@@ -91,7 +92,7 @@ class Users(protected val api: ReactiveMongoApi) {
     */
   def socialProfiles(username: String): Future[Option[ProfilesOnly]] = {
 
-    usersCollection.find(usernameSelector(username), ProfilesOnly.projector).one[ProfilesOnly]
+    usersCollection.flatMap(_.find(usernameSelector(username), ProfilesOnly.projector).one[ProfilesOnly])
   }
 
 
@@ -103,7 +104,7 @@ class Users(protected val api: ReactiveMongoApi) {
     */
   def usernameInUse(username: String): Future[Boolean] = {
 
-    usersCollection.count(Some(usernameSelector(username)), limit = 1).map(count => count != 0)
+    usersCollection.flatMap(_.count(Some(usernameSelector(username)), limit = 1)).map(count => count != 0)
   }
 
 
@@ -115,7 +116,7 @@ class Users(protected val api: ReactiveMongoApi) {
     */
   def emailInUse(email: String): Future[Boolean] = {
 
-    usersCollection.count(Some(emailSelector(email)), limit = 1).map(count => count != 0)
+    usersCollection.flatMap(_.count(Some(emailSelector(email)), limit = 1)).map(count => count != 0)
   }
 
 
@@ -128,7 +129,7 @@ class Users(protected val api: ReactiveMongoApi) {
     */
   def checkCredentials(username: String, given: String): Future[Boolean] = {
 
-    usersCollection.find(usernameSelector(username), Credentials.projector).one[Credentials].map(optCredentials =>
+    usersCollection.flatMap(_.find(usernameSelector(username), Credentials.projector).one[Credentials]).map(optCredentials =>
 
       optCredentials.fold(false)(credentials => credentials.password == given)
     )

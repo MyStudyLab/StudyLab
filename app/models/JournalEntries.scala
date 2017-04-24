@@ -24,7 +24,7 @@ import play.modules.reactivemongo.json.collection.JSONCollection
 class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
 
   // An interface to the journal_entries collection as BSON
-  protected def bsonJournalEntriesCollection: BSONCollection = mongoApi.db.collection[BSONCollection]("journal_entries")
+  protected def bsonJournalEntriesCollection: Future[BSONCollection] = mongoApi.database.map(_.collection[BSONCollection]("journal_entries"))
 
   /**
     * Record a journal entry in the database
@@ -35,9 +35,10 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
     */
   def addJournalEntry(username: String, text: String): Future[ResultInfo] = {
 
-    bsonJournalEntriesCollection.insert(JournalEntry(username, text, System.currentTimeMillis())).map(result =>
+    bsonJournalEntriesCollection.flatMap(_.insert(JournalEntry(username, text, System.currentTimeMillis())).map(result =>
       if (result.ok) ResultInfo.succeedWithMessage("Journal entry recorded")
-      else ResultInfo.failWithMessage(result.errmsg.getOrElse(ResultInfo.noErrMsg)))
+      else ResultInfo.failWithMessage("entry not recorded"))
+    )
   }
 
   /**
