@@ -283,10 +283,9 @@ function denseCumulative(dayGroups) {
  * Return the total hours studied per subject
  *
  * @param {Array} sessions - An array of unprocessed study sessions
- * @param highest_n - The number of totals to return
- * @returns {Array.<*>}
+ * @returns {Map}
  */
-function subjectTotals(sessions, highest_n) {
+function subjectTotals(sessions) {
 
     // The total number of hours studied
     let total = 0;
@@ -321,22 +320,7 @@ function subjectTotals(sessions, highest_n) {
         diffs.push(diff);
     });
 
-
-    function cmp(sub1, sub2) {
-        if (sub1[1] < sub2[1]) {
-            return 1;
-        }
-
-        if (sub1[1] > sub2[1]) {
-            return -1;
-        }
-
-        return 0;
-    }
-
-
-    // Return only the n most studied subjects
-    return Array.from(subTotals.entries()).sort(cmp).slice(0, highest_n);
+    return subTotals;
 }
 
 

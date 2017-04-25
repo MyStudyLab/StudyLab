@@ -32,6 +32,19 @@ body {
     width: 100%;
 }
 
+#highlight-stats col {
+    width: 33.3%;
+}
+
+#highlight-stats {
+    width: 100%;
+    text-align: center;
+}
+
+th {
+    text-align: center;
+}
+
 .studylab-entry-form {
     width: 300px;
     margin-top: 200px;
@@ -47,6 +60,12 @@ body {
 
 .subject-list-name {
     font-size: x-large;
+}
+
+.subject-list-total {
+    margin-left: 5px;
+    font-size: medium;
+    color: #707073;
 }
 
 .subject-list-description {

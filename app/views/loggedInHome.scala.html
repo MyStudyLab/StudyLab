@@ -19,16 +19,6 @@
     </div>
 }
 
-@dataBlock(title: String, id: String, offset: Int, width: Int) = {
-    <div class="col-sm-offset-@offset col-sm-@width">
-        <u class="data-block-title">@title</u>
-        <br>
-        <div id="@id">
-        @loadingDots()
-        </div>
-    </div>
-}
-
 @plotHolder(id: String, classes: List[String] = List()) = {
 
     <div class="padded-plot spaced-plot">
@@ -77,14 +67,40 @@
             </div>
 
             <div>
-                    <!-- Total hours studied -->
-                @panelDataBlock("Total", "total-hours")
 
+                <table id="highlight-stats">
+                    <colgroup>
+                        <col>
+                        <col>
+                        <col>
+                    </colgroup>
+                    <tr>
+                        <th class="data-block-title">Today</th>
+                        <th class="data-block-title">Average</th>
+                        <th class="data-block-title">Streak</th>
+                    </tr>
+                    <tr>
+                        <td id="current-day-total" class="introMessageValue panel-data-block"></td>
+                        <td id="average-day-total" class="introMessageValue panel-data-block"></td>
+                        <td id="streak-count" class="introMessageValue panel-data-block"></td>
+                    </tr>
+                </table>
+
+                <div>
+
+                </div>
+
+                <div>
+
+                </div>
+            </div>
+
+            <div>
                     <!-- Hours studied today vs. average -->
-                @panelDataBlock("Today / Average", "today-vs-average")
+                    <!-- @panelDataBlock("Today / Average", "today-vs-average") -->
 
                     <!-- Length of the current streak -->
-                @panelDataBlock("Current Streak", "current-streak")
+                    <!-- @panelDataBlock("Current Streak", "current-streak") -->
             </div>
 
             <div id="subject-list-container" class="control-panel-element"></div>
@@ -208,15 +224,6 @@
                     }
                 }
             })
-
-    </script>
-
-    <script>
-
-            // Load the user's subjects
-            jQuery.ajax({
-                url: ""
-            });
 
     </script>
 
@@ -662,11 +669,15 @@
 
                 const inner1 = "<span class='introMessageValue'>" + n1 + "</span> <span class=\"introMessageText\">/</span> <span class='introMessageValue'>" + n2 + "</span>";
 
-                document.getElementById("total-hours").innerHTML = "<span class='introMessageValue'>" + Math.round(stats.total).toString() + "</span> <span class=\"introMessageText\">hours</span>";
+                // document.getElementById("total-hours").innerHTML = "<span class='introMessageValue'>" + Math.round(stats.total).toString() + "</span> <span class=\"introMessageText\">hours</span>";
+                // document.getElementById("today-vs-average").innerHTML = inner1;
+                // document.getElementById("current-streak").innerHTML = "<span class='introMessageValue'>" + stats.currentStreak.toString() + "</span> <span class=\"introMessageText\">days</span>";
 
-                document.getElementById("today-vs-average").innerHTML = inner1;
+                document.getElementById("streak-count").innerText = stats.currentStreak.toString() + " d";
 
-                document.getElementById("current-streak").innerHTML = "<span class='introMessageValue'>" + stats.currentStreak.toString() + "</span> <span class=\"introMessageText\">days</span>";
+                document.getElementById("current-day-total").innerText = n1;
+
+                document.getElementById("average-day-total").innerText = n2;
             }
 
 
@@ -690,9 +701,11 @@
                 fillSummaryValues(stats);
 
 
-                function subjectList(subjects) {
+                function fillSubjectList(subjects, subTotalMap) {
 
-                    const subjectName = (subject) => "<div class='subject-list-name'>" + subject['name'] + "</div>";
+                    const subjectName = (subject, total) => "<div class='subject-list-name'>" + subject['name'] + subjectTotal(total) + "</div>";
+
+                    const subjectTotal = (total) => "<span class='subject-list-total'> (" + total.toFixed(2).toString() + " hrs)</span>";
 
                     const subjectDescription = (subject) => "<div class='subject-list-description'>" + subject['description'] + "</div>";
 
@@ -700,13 +713,20 @@
 
                     // Populate the subject list
                     const subjectListHTML = subjects.map(function (subject, i, arr) {
-                        return "<div class='subject-list-element'>" + subjectName(subject) + subjectDescription(subject) + subjectOptions + "</div>";
+
+                        let total = 0;
+
+                        if (subTotalMap.has(subject.name)) {
+                            total = subTotalMap.get(subject.name);
+                        }
+
+                        return "<div class='subject-list-element'>" + subjectName(subject, total) + subjectDescription(subject) + subjectOptions + "</div>";
                     });
 
                     document.getElementById("subject-list-container").innerHTML = subjectListHTML.join("");
                 }
 
-                subjectList(data.subjects);
+                fillSubjectList(data.subjects, stats.subjectTotals);
 
                 // Highchart default theme using CSS chart styling
                 let styledTheme = {
@@ -1260,14 +1280,28 @@
                     }]
                 });
 
+                function cmp(sub1, sub2) {
+                    if (sub1[1] < sub2[1]) {
+                        return 1;
+                    }
+
+                    if (sub1[1] > sub2[1]) {
+                        return -1;
+                    }
+
+                    return 0;
+                }
+
+                // Return only the n most studied subjects
+                const top10 = Array.from(stats.subjectTotals.entries()).sort(cmp).slice(0, 10);
 
                 // X and Y values for the subjectTotals plot
                 let subject_totals_xs = [];
                 let subject_totals_ys = [];
 
-                for (let i = 0; i < stats.subjectTotals.length; i++) {
-                    subject_totals_xs.push(stats.subjectTotals[i][0]);
-                    subject_totals_ys.push(stats.subjectTotals[i][1]);
+                for (let i = 0; i < top10.length; i++) {
+                    subject_totals_xs.push(top10[i][0]);
+                    subject_totals_ys.push(top10[i][1]);
                 }
 
                 // Draw the subject totals plot
