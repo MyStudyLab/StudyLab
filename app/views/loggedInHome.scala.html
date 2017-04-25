@@ -21,7 +21,7 @@
 
 @plotHolder(id: String, classes: List[String] = List()) = {
 
-    <div class="padded-plot spaced-plot">
+    <div class="padded-plot">
         <div id="@id" class="chart-container loading-icon @classes.mkString(" ")">
         @loadingDots()
         </div>
@@ -40,7 +40,7 @@
                 <div id="study-clock"></div>
 
                 <form id="study-start-form" class="study-control-form" hidden>
-                    <input id="study-start-username-input" name="username" value="@username" type="text" required hidden>
+                    <input id="study-start-username-input" name="username" title="username" value="@username" type="text" required hidden>
 
                     <div class="form-group">
                         <input id="study-start-subject-input" class="study-control-input" name="subject" placeholder="Subject" type="text">
@@ -50,7 +50,7 @@
                 </form>
 
                 <form id="study-stop-form" class="study-control-form" hidden>
-                    <input id="study-stop-username-input" name="username" value="@username" type="text" hidden>
+                    <input id="study-stop-username-input" name="username" title="username" value="@username" type="text" hidden>
 
                     <div class="form-group">
                         <input id="study-stop-message-input" class="study-control-input" name="message" placeholder="Message" type="text">
@@ -60,14 +60,13 @@
                 </form>
 
                 <form id="study-cancel-form" class="study-control-form" hidden>
-                    <input id="study-cancel-username-input" class="study-control-input" name="username" value="@username" type="text" required hidden>
+                    <input id="study-cancel-username-input" class="study-control-input" name="username" title="username" value="@username" type="text" required hidden>
 
                     <button type="submit" class="btn btn-default study-control-button">cancel</button>
                 </form>
             </div>
 
             <div>
-
                 <table id="highlight-stats">
                     <colgroup>
                         <col>
@@ -85,22 +84,6 @@
                         <td id="streak-count" class="introMessageValue panel-data-block"></td>
                     </tr>
                 </table>
-
-                <div>
-
-                </div>
-
-                <div>
-
-                </div>
-            </div>
-
-            <div>
-                    <!-- Hours studied today vs. average -->
-                    <!-- @panelDataBlock("Today / Average", "today-vs-average") -->
-
-                    <!-- Length of the current streak -->
-                    <!-- @panelDataBlock("Current Streak", "current-streak") -->
             </div>
 
             <div id="subject-list-container" class="control-panel-element"></div>
@@ -156,7 +139,7 @@
         <div id="summary-content" class="">
 
                 <!-- Today's sessions plot -->
-            <div class="padded-plot">
+            <div class="">
                 <div id="widt-highchart" class="loading-icon"></div>
             </div>
 

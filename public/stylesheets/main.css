@@ -23,7 +23,7 @@ body {
 
 .control-panel-element {
     padding: 10px;
-    margin: 10px;
+    margin-bottom: 10px;
     border: solid gray 2px;
     border-radius: 5px;
 }
@@ -32,16 +32,16 @@ body {
     width: 100%;
 }
 
-#highlight-stats col {
-    width: 33.3%;
-}
-
 #highlight-stats {
     width: 100%;
     text-align: center;
 }
 
-th {
+#highlight-stats col {
+    width: 33.3%;
+}
+
+#highlight-stats th {
     text-align: center;
 }
 
@@ -86,6 +86,7 @@ th {
 
 #summary-content {
     flex: 1 100%;
+    padding-left: 15px;
 }
 
 #study-control {
@@ -168,66 +169,6 @@ th {
     color: #fff;
 }
 
-#github-link {
-    color: #44a340;
-}
-
-#twitter-link {
-    color: #55acee;
-}
-
-#linkedin-link {
-    color: #0077b5;
-}
-
-#stackexchange-link {
-    color: #46A2D9;
-}
-
-#googleplus-link {
-    color: #db4437;
-}
-
-#ycombinator-link {
-    color: #e95b00;
-}
-
-#goodreads-link {
-    color: #b4b1ba;
-}
-
-#codewars-link {
-    color: #bb432c;
-}
-
-#freecodecamp-link {
-    color: darkgreen;
-}
-
-#quora-link {
-    color: #b92b27;
-}
-
-#facebook-link {
-    color: #3b5998;
-}
-
-#imdb-link {
-    color: #e6be00;
-}
-
-#gyroscope-link {
-    color: #44436a;
-}
-
-#duolingo-link {
-    color: #75ca00;
-}
-
-#wordpress-link {
-    color: rgb(39, 136, 193);
-}
-
 .raised-element {
     background-color: transparent;
 }
@@ -293,18 +234,6 @@ footer {
 
 .partial-border {
     border-bottom: solid 2px #707073;
-}
-
-.quote {
-    margin-bottom: 30px;
-    font-size: x-large;
-}
-
-.quote-attribution {
-    margin-top: 7px;
-    text-align: right;
-    color: #707073;
-    font-size: large;
 }
 
 #about-para {
@@ -458,7 +387,7 @@ footer {
     }
 
     #summary-content {
-        padding: 0 50px 50px 100px;
+        padding: 0 0 50px 50px;
     }
 
 }
@@ -476,5 +405,9 @@ footer {
 
     .data-block-title {
         font-size: 1vw;
+    }
+
+    #summary-content {
+        padding: 0 50px 50px 100px;
     }
 }
