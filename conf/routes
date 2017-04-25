@@ -17,14 +17,16 @@ POST        /login                          controllers.Users.login()
 # Logout of the current session
 POST        /logout                         controllers.Application.logout()
 
+GET         /settings                       controllers.Application.settings()
+
 # The About page for Study Lab
-GET         /about                          controllers.Default.todo()
+GET         /about                          controllers.Application.about()
 
 # The Contact page for Study Lab
-GET         /contact                        controllers.Default.todo()
+GET         /contact                        controllers.Application.contact()
 
 # The Help page for Study Lab
-GET         /help                           controllers.Default.todo()
+GET         /help                           controllers.Application.help()
 
 # TODO: Figure out a path for this
 GET         /emailInUse                     controllers.Default.todo()

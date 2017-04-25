@@ -1,22 +1,15 @@
-@(username: String)(implicit messages: Messages)
+@()(implicit messages: Messages)
 
     @siteTemplate("About") {
 
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-8 col-sm-offset-2 raised-element padded-plot text-justify partial-border" id="about-para">
-                    <div id="aboutMessage"></div>
+                    <div id="aboutMessage">
+                        The about page.
+                    </div>
                 </div>
             </div>
         </div>
 
-        <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
-
-        <script>
-                // Load the about message
-                loadJSONFile("/json/about/@username", function (response) {
-
-                    document.getElementById("aboutMessage").textContent = response["about"];
-                });
-        </script>
     }

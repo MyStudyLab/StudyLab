@@ -53,13 +53,29 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
   }
 
 
+  def settings() = Action {
+    Ok(views.html.settings())
+  }
+
   /**
     * The About Page
     *
     * @return
     */
-  def about(username: String) = Action {
-    Ok(views.html.about(username))
+  def about() = Action {
+    Ok(views.html.about())
+  }
+
+  def contact() = Action {
+    Ok(views.html.contact())
+  }
+
+  /**
+    *
+    * @return
+    */
+  def help() = Action {
+    Ok(views.html.help())
   }
 
 

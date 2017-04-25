@@ -32,6 +32,10 @@ body {
     width: 100%;
 }
 
+.control-panel-caret {
+    margin-left: 4px;
+}
+
 #highlight-stats {
     width: 100%;
     text-align: center;
@@ -86,7 +90,6 @@ body {
 
 #summary-content {
     flex: 1 100%;
-    padding-left: 15px;
 }
 
 #study-control {
@@ -143,12 +146,8 @@ body {
 #widt-highchart {
     border-top: solid #707073 2px;
     border-bottom: solid #707073 2px;
-    padding: 30px 0;
+    padding: 10px 0;
     margin-bottom: 20px;
-}
-
-#widt {
-    padding: 15px 15px 0 15px;
 }
 
 .navbar-margin-bottom {
@@ -181,6 +180,8 @@ body {
     margin: 20px;
 }
 
+/* Styling the footer */
+
 footer {
     /* Ensure that the footer stretches the entire page width */
     align-self: stretch;
@@ -205,8 +206,14 @@ footer {
 
 .footer-link {
     text-align: center;
-    margin: 0 20px;
+    margin: 0 10px;
 }
+
+.footer-link a {
+    color: #8f8f8f;
+}
+
+/* End footer styling */
 
 .small-margin-bottom {
     margin-bottom: 30px;
@@ -338,6 +345,7 @@ footer {
 
     #summary-content {
         flex: 3;
+        padding-left: 15px;
     }
 
     #study-control {
@@ -384,6 +392,14 @@ footer {
 
     .data-block-title {
         font-size: large;
+    }
+
+    .footer-link {
+        margin: 0 20px;
+    }
+
+    #widt-highchart {
+        padding: 25px 0;
     }
 
     #summary-content {

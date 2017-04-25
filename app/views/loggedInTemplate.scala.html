@@ -58,7 +58,7 @@
                 </div>
 
                 <ul id="studylab-menu" class="nav navbar-nav navbar-right collapse navbar-collapse">
-                    <li id="menu-settings"><a href="#">Settings</a></li>
+                    <li id="menu-settings"><a href="@routes.Application.settings()">Settings</a></li>
                     <li id="menu-logout">
                         <a href="#" onclick="document.getElementById('menu-logout-form').submit()">Logout</a>
                         <form id="menu-logout-form" class="" action="@routes.Application.logout()" method="post" hidden></form>
