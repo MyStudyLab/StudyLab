@@ -40,7 +40,7 @@
 }
 
 .highcharts-axis-labels {
-    fill: #E0E0E3;
+    fill: rgba(224, 224, 227, .55);
     font-size: 12px;
 }
 
@@ -96,6 +96,10 @@
     fill: #E0E0E3;
     fill-opacity: .75;
     letter-spacing: 1px;
+}
+
+#widt-highchart .highcharts-tooltip-box {
+    stroke: rgb(58, 127, 89);
 }
 
 /*- - - - - - - - - - - - - - - */

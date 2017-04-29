@@ -12,14 +12,14 @@ import play.twirl.api.Html
 /**
   * The Application controller. Handles requests for core pages of site.
   *
-  * @param messagesApi
+  * @param messagesApi For I18n
   */
 class Application @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   /**
     * Set the navbar according to user status (logged in/out)
     *
-    * @param content
+    * @param content The main content of the page
     * @return
     */
   protected def setNavbar(pageTitle: String, content: Html) = Action { implicit request =>
@@ -33,7 +33,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     *
     * @return
     */
-  def home() = Action { implicit request =>
+  def home = Action { implicit request =>
 
     request.session.get("connected").fold(Ok(views.html.home()))(username => Ok(views.html.loggedInHome(username)))
   }

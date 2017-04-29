@@ -31,6 +31,8 @@
 
 @loggedInTemplate("Home") {
 
+    <link href="@routes.Assets.at("stylesheets/styled-charts.css")" rel="stylesheet" type="text/css">
+
     <div id="dashboard-content">
 
         <div id="study-control">
@@ -53,7 +55,7 @@
                     <input id="study-stop-username-input" name="username" title="username" value="@username" type="text" hidden>
 
                     <div class="form-group">
-                        <input id="study-stop-message-input" class="study-control-input" name="message" placeholder="Message" type="text">
+                        <input id="study-stop-message-input" class="study-control-input" name="message" placeholder="Describe your session" type="text">
                     </div>
 
                     <button type="submit" id="study-stop-button" class="btn btn-default study-control-button">stop</button>
@@ -433,12 +435,11 @@
     <script src="@routes.Assets.at("/javascripts/moment-timezone-10-20.js")"></script>
 
         <!-- Highchart assets -->
-    <link href="@routes.Assets.at("stylesheets/styled-charts.css")" rel="stylesheet" type="text/css">
     <script src="@routes.Assets.at("highcharts/highcharts-style.js")" type="text/javascript"></script>
 
     <script>
 
-            const slidingAverageRadius = 90;
+            const movingAverageRadius = 60;
 
             // Convert a moment object to use moment.js moments for the start and end times
             function convertTimestampsToMoments(sessions, tz) {
@@ -631,7 +632,7 @@
                     "daysSinceStart": daysSinceStart(dayGroups),
                     "probability": probability(97, dayGroups),
                     "probabilityWithTime": probabilityWithTime(96, dayGroups),
-                    "movingAverage": movingAverage(dayGroups, slidingAverageRadius),
+                    "movingAverage": movingAverage(dayGroups, movingAverageRadius),
                     "dailyTotals": dTotals,
                     "dailyTotalHistogram": dailyTotalHistogram(dTotals, 12),
                     "dayOfWeekAverages": dayOfWeekAverages(dayGroups),
@@ -642,6 +643,8 @@
 
     </script>
 
+    <script src="@routes.Assets.at("javascripts/SubjectList.js")"></script>
+
     <script>
 
             function fillSummaryValues(stats) {
@@ -649,12 +652,6 @@
                 const n1 = stats.todaysTotal.toFixed(2).toString();
 
                 const n2 = stats.dailyAverage.toFixed(2).toString();
-
-                const inner1 = "<span class='introMessageValue'>" + n1 + "</span> <span class=\"introMessageText\">/</span> <span class='introMessageValue'>" + n2 + "</span>";
-
-                // document.getElementById("total-hours").innerHTML = "<span class='introMessageValue'>" + Math.round(stats.total).toString() + "</span> <span class=\"introMessageText\">hours</span>";
-                // document.getElementById("today-vs-average").innerHTML = inner1;
-                // document.getElementById("current-streak").innerHTML = "<span class='introMessageValue'>" + stats.currentStreak.toString() + "</span> <span class=\"introMessageText\">days</span>";
 
                 document.getElementById("streak-count").innerText = stats.currentStreak.toString() + " d";
 
@@ -684,32 +681,9 @@
                 fillSummaryValues(stats);
 
 
-                function fillSubjectList(subjects, subTotalMap) {
+                const subjectList = new SubjectList("subject-list-container", data.subjects);
 
-                    const subjectName = (subject, total) => "<div class='subject-list-name'>" + subject['name'] + subjectTotal(total) + "</div>";
-
-                    const subjectTotal = (total) => "<span class='subject-list-total'> (" + total.toFixed(2).toString() + " hrs)</span>";
-
-                    const subjectDescription = (subject) => "<div class='subject-list-description'>" + subject['description'] + "</div>";
-
-                    const subjectOptions = "<div class='subject-list-options'>" + "<span><u>rename</u></span>" + "</div>";
-
-                    // Populate the subject list
-                    const subjectListHTML = subjects.map(function (subject, i, arr) {
-
-                        let total = 0;
-
-                        if (subTotalMap.has(subject.name)) {
-                            total = subTotalMap.get(subject.name);
-                        }
-
-                        return "<div class='subject-list-element'>" + subjectName(subject, total) + subjectDescription(subject) + subjectOptions + "</div>";
-                    });
-
-                    document.getElementById("subject-list-container").innerHTML = subjectListHTML.join("");
-                }
-
-                fillSubjectList(data.subjects, stats.subjectTotals);
+                subjectList.sortByHours(stats.subjectTotals);
 
                 // Highchart default theme using CSS chart styling
                 let styledTheme = {
@@ -896,269 +870,6 @@
                 // Set the default theme for all charts on the page
                 Highcharts.theme = styledTheme;
 
-                let oldTheme = {
-
-                    colors: ['rgb(58, 127, 89)', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066', '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
-
-                    chart: {
-                        backgroundColor: "transparent",
-                        style: {
-                            fontFamily: 'Roboto, sans-serif, serif'
-                        }
-                    },
-
-                    title: {
-                        style: {
-                            color: '#E0E0E3',
-                            fontSize: '30px'
-                        },
-                        align: 'left',
-                        margin: 50,
-                        x: 20,
-                        y: 40
-                    },
-
-                    subtitle: {
-                        style: {
-                            color: '#E0E0E3',
-                        },
-                        align: 'left',
-                        x: 20,
-                        y: 60
-                    },
-
-                    xAxis: {
-                        labels: {
-                            style: {
-                                color: '#E0E0E3',
-                                fontSize: "18px"
-                            }
-                        },
-                        lineColor: '#707073',
-                        gridLineColor: '#707073',
-                        minorGridLineColor: '#505053',
-                        tickColor: '#707073',
-                        title: {
-                            style: {
-                                color: '#A0A0A3'
-                            }
-                        }
-                    },
-
-                    yAxis: {
-                        gridLineColor: '#707073',
-                        labels: {
-                            style: {
-                                color: '#E0E0E3',
-                                fontSize: "18px"
-                            }
-                        },
-                        lineColor: '#707073',
-                        minorGridLineColor: '#505053',
-                        tickColor: '#707073',
-                        tickWidth: 1,
-                        title: {
-                            text: null,
-                            align: "middle",
-                            style: {
-                                color: '#A0A0A3'
-                            }
-                        }
-                    },
-
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        style: {
-                            color: '#F0F0F0'
-                        },
-                        valueDecimals: 2,
-                        hideDelay: 150
-                    },
-
-                    plotOptions: {
-
-                        series: {
-                            dataLabels: {
-                                color: '#B0B0B3'
-                            },
-                            marker: {
-                                lineColor: '#333'
-                            }
-                        },
-
-                        area: {
-                            fillColor: {
-                                linearGradient: {
-                                    x1: 0,
-                                    y1: 0,
-                                    x2: 0,
-                                    y2: 1
-                                },
-                                stops: [
-                                    [0, "rgba(58, 127, 89, 1)"],
-                                    [1, "rgba(58, 127, 89, .5)"]
-                                ]
-                            },
-
-                            marker: {
-                                radius: 0
-                            },
-
-                            lineWidth: 1,
-                            states: {
-                                hover: {
-                                    lineWidth: 1
-                                }
-                            }
-                        },
-
-                        areaspline: {
-                            lineColor: "rgb(58, 127, 89)",
-                            fillColor: {
-                                linearGradient: {
-                                    x1: 0,
-                                    y1: 0,
-                                    x2: 0,
-                                    y2: 1
-                                },
-                                stops: [
-                                    [0, "rgba(58, 127, 89, 1)"],
-                                    [1, "rgba(58, 127, 89, .75)"]
-                                ]
-                            },
-                            marker: {
-                                radius: 0
-                            },
-                            lineWidth: 1,
-                            states: {
-                                hover: {
-                                    lineWidth: 1
-                                }
-                            }
-                        },
-
-                        column: {
-                            color: "rgba(58, 127, 89, .9)",
-                            dataLabels: {
-                                enabled: false
-                            },
-                            borderWidth: 0
-                        },
-
-                        bar: {
-                            borderWidth: 0
-                        }
-                    },
-
-                    labels: {
-                        style: {
-                            color: '#707073'
-                        }
-                    },
-
-                    drilldown: {
-                        activeAxisLabelStyle: {
-                            color: '#F0F0F3'
-                        },
-                        activeDataLabelStyle: {
-                            color: '#F0F0F3'
-                        }
-                    },
-
-                    navigation: {
-                        buttonOptions: {
-                            symbolStroke: '#DDDDDD',
-                            theme: {
-                                fill: '#505053'
-                            }
-                        }
-                    },
-
-                    // scroll charts
-                    rangeSelector: {
-                        buttonTheme: {
-                            fill: '#505053',
-                            stroke: '#000000',
-                            style: {
-                                color: '#CCC'
-                            },
-                            states: {
-                                hover: {
-                                    fill: '#707073',
-                                    stroke: '#000000',
-                                    style: {
-                                        color: 'white'
-                                    }
-                                },
-                                select: {
-                                    fill: '#000003',
-                                    stroke: '#000000',
-                                    style: {
-                                        color: 'white'
-                                    }
-                                }
-                            }
-                        },
-                        inputBoxBorderColor: '#505053',
-
-                        inputStyle: {
-                            backgroundColor: '#333',
-                            color: 'silver'
-                        },
-
-                        labelStyle: {
-                            color: 'silver'
-                        }
-                    },
-
-                    navigator: {
-                        handles: {
-                            backgroundColor: '#666',
-                            borderColor: '#AAA'
-                        },
-                        outlineColor: '#CCC',
-                        maskFill: 'rgba(255,255,255,0.1)',
-                        series: {
-                            color: '#7798BF',
-                            lineColor: '#A6C7ED'
-                        },
-                        xAxis: {
-                            gridLineColor: '#505053'
-                        }
-                    },
-
-                    scrollbar: {
-                        barBackgroundColor: '#808083',
-                        barBorderColor: '#808083',
-                        buttonArrowColor: '#CCC',
-                        buttonBackgroundColor: '#606063',
-                        buttonBorderColor: '#606063',
-                        rifleColor: '#FFF',
-                        trackBackgroundColor: '#404043',
-                        trackBorderColor: '#404043'
-                    },
-
-                    legend: {
-                        enabled: false
-                    },
-
-                    credits: {
-                        enabled: false
-                    },
-
-                    exporting: {
-                        enabled: false
-                    },
-
-                    // special colors for some of the
-                    legendBackgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    background2: '#505053',
-                    dataLabelsColor: '#B0B0B3',
-                    textColor: '#C0C0C0',
-                    contrastTextColor: '#F0F0F3',
-                    maskColor: 'rgba(255,255,255,0.3)'
-                };
-
                 // Apply the theme
                 Highcharts.setOptions(Highcharts.theme);
 
@@ -1197,7 +908,8 @@
                     },
 
                     tooltip: {
-                        valueSuffix: " hours"
+                        valueSuffix: " hours",
+                        pointFormat: "{point.name} {point.y}"
                     },
 
                     plotOptions: {
@@ -1381,7 +1093,7 @@
                     },
 
                     subtitle: {
-                        text: 'Moving Average - 90 day window'
+                        text: 'Moving Average - ' + movingAverageRadius.toString() + ' day window'
                     },
 
                     xAxis: {

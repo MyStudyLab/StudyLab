@@ -78,6 +78,8 @@ body {
 }
 
 .subject-list-options {
+    display: inline-block;
+    float: right;
     color: #707073;
     text-align: right;
 }
