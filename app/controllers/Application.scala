@@ -6,13 +6,27 @@ import javax.inject.Inject
 // Play Framework
 import play.api.mvc._
 import play.api.i18n.{I18nSupport, MessagesApi}
+import play.twirl.api.Html
 
 
 /**
+  * The Application controller. Handles requests for core pages of site.
   *
   * @param messagesApi
   */
 class Application @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport {
+
+  /**
+    * Set the navbar according to user status (logged in/out)
+    *
+    * @param content
+    * @return
+    */
+  protected def setNavbar(pageTitle: String, content: Html) = Action { implicit request =>
+
+    request.session.get("connected").fold(Ok(views.html.siteTemplate(pageTitle)(content)))(username => Ok(views.html.loggedInTemplate(pageTitle)(content)))
+  }
+
 
   /**
     * The Home Page
@@ -24,22 +38,35 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     request.session.get("connected").fold(Ok(views.html.home()))(username => Ok(views.html.loggedInHome(username)))
   }
 
+
   /**
     * The Sign-Up Page
     *
     * @return
     */
-  def signup = Action {
-    Ok(views.html.signup())
+  def signup = Action { implicit request =>
+
+    if (request.session.get("connected").isEmpty) {
+      Ok(views.html.signup())
+    } else {
+      Redirect("/")
+    }
   }
+
 
   /**
     * The Login Page
     *
     * @return
     */
-  def loginPage = Action {
-    Ok(views.html.login())
+  def loginPage = Action { implicit request =>
+
+    if (request.session.get("connected").isEmpty) {
+      Ok(views.html.login())
+    } else {
+      Redirect("/")
+    }
+
   }
 
 
@@ -53,38 +80,34 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
   }
 
 
-  def settings() = Action {
-    Ok(views.html.settings())
-  }
+  /**
+    * The Settings Page
+    *
+    * @return
+    */
+  def settings(): Action[AnyContent] = setNavbar("Settings", views.html.settings())
+
 
   /**
     * The About Page
     *
     * @return
     */
-  def about() = Action {
-    Ok(views.html.about())
-  }
-
-  def contact() = Action {
-    Ok(views.html.contact())
-  }
-
-  /**
-    *
-    * @return
-    */
-  def help() = Action {
-    Ok(views.html.help())
-  }
+  def about: Action[AnyContent] = setNavbar("About", views.html.aboutPageBody())
 
 
   /**
-    * The Profiles Page
+    * The Contact Page
     *
     * @return
     */
-  def profiles = Action {
-    Ok(views.html.profiles())
-  }
+  def contact(): Action[AnyContent] = setNavbar("Contact", views.html.contact())
+
+
+  /**
+    * The Help Page
+    *
+    * @return
+    */
+  def help(): Action[AnyContent] = setNavbar("Help", views.html.help())
 }
