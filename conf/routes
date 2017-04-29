@@ -17,6 +17,7 @@ POST        /login                          controllers.Users.login()
 # Logout of the current session
 POST        /logout                         controllers.Application.logout()
 
+# The Settings page
 GET         /settings                       controllers.Application.settings()
 
 # The About page for Study Lab
@@ -28,17 +29,11 @@ GET         /contact                        controllers.Application.contact()
 # The Help page for Study Lab
 GET         /help                           controllers.Application.help()
 
-# TODO: Figure out a path for this
-GET         /emailInUse                     controllers.Default.todo()
-
 # Get sessions as JSON for the username
 GET         /json/sessions/:username        controllers.Sessions.sessionsForUsername(username: String)
 
 # Get the user's status as JSON
 GET         /json/status/:username          controllers.Sessions.userStatus(username: String)
-
-# Get profiles as JSON for the username
-GET         /json/profiles/:username        controllers.Users.profilesForUsername(username: String)
 
 # Get the about message as JSON for the username
 GET         /json/about/:username           controllers.Users.aboutMessage(username: String)

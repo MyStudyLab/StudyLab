@@ -49,7 +49,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     if (request.session.get("connected").isEmpty) {
       Ok(views.html.signup())
     } else {
-      Redirect("/")
+      Redirect(routes.Application.home())
     }
   }
 
@@ -64,7 +64,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     if (request.session.get("connected").isEmpty) {
       Ok(views.html.login())
     } else {
-      Redirect("/")
+      Redirect(routes.Application.home())
     }
 
   }
@@ -85,8 +85,10 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     *
     * @return
     */
-  def settings(): Action[AnyContent] = setNavbar("Settings", views.html.settings())
+  def settings() = Action { implicit request =>
 
+    request.session.get("connected").fold(Redirect(routes.Application.loginPage()))(username => Ok(views.html.settings(username)))
+  }
 
   /**
     * The About Page

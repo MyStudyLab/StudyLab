@@ -1,11 +1,15 @@
-@()(implicit messages: Messages)
+@(username: String)(implicit messages: Messages)
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-8 col-sm-offset-2 raised-element padded-plot text-justify partial-border" id="about-para">
-            <div id="aboutMessage">
-                    The settings page.
+    @loggedInTemplate("Settings") {
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-8 col-sm-offset-2 raised-element padded-plot text-justify partial-border" id="about-para">
+                    <div id="aboutMessage">
+                        Settings page for @username.
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
+
+    }
