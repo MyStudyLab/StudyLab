@@ -17,3 +17,6 @@ dist
 
 # My todo files, etc.
 /*.txt    
+
+# Heroku
+Procfile
