@@ -571,3 +571,114 @@ function probabilityWithTime(numBins, dayGroups) {
         return [24 * (i / numBins), curr]
     });
 }
+
+
+// Convert a moment object to use moment.js moments for the start and end times
+function convertTimestampsToMoments(sessions, tz) {
+    return sessions.map(function (curr, i, arr) {
+        return {
+            "start": moment(curr.startTime).tz(tz),
+            "stop": moment(curr.endTime).tz(tz),
+            "subject": curr.subject
+        }
+    })
+}
+
+
+/*
+ * Return the sum of an array.
+ *
+ * TODO: Find some library function to replace this.
+ */
+function sumArray(arr) {
+    return arr.reduce(function (acc, curr, i) {
+        return acc + curr;
+    }, 0);
+}
+
+
+/*
+ * Return the sessions occurring in the current month in chronological order.
+ */
+function currentMonthSessions(dayGroups) {
+
+    // The moment at which the current month began.
+    const startOfMonth = dayGroups[dayGroups.length - 1]['date'].clone().startOf('month');
+
+    let i = dayGroups.length - 1;
+
+    // Iterate in reverse until encountering a day not in this month
+    while (i >= 0 && dayGroups[i]['date'] > startOfMonth) {
+        i--;
+    }
+
+    let res = [];
+
+    // The original array is not modified
+    dayGroups.slice(i + 1).forEach(function (dayGroup, i, arr) {
+        dayGroup['sessions'].forEach(function (curr, i, arr) {
+            res.push(curr);
+        });
+    });
+
+    return res;
+}
+
+
+/*
+ * Filter day groups by the given day(s) of the week
+ */
+function filterByWeekday(dayGroups, daysOfWeek) {
+
+    return dayGroups.filter(function (day, i, arr) {
+        return daysOfWeek.includes(day.date.day());
+    });
+}
+
+
+/*
+ * Return the total hours studied each day
+ */
+function dailyTotals(dayGroups) {
+    return dayGroups.map(function (curr, i, arr) {
+        return sumSessions(curr.sessions);
+    })
+}
+
+
+/*
+ * Return the duration of a moment-based session.
+ */
+function duration(session) {
+    return session.end - session.start / 3600000;
+}
+
+
+/*
+ * Return the average of the daily totals.
+ */
+function dailyAverage(dayGroups) {
+
+    return sumArray(dailyTotals(dayGroups)) / dayGroups.length;
+}
+
+/*
+ * Return the standard deviation of the distribution of daily totals
+ *
+ * TODO: Use a library function
+ */
+function dailyStdev(dayGroups) {
+
+    const mu = dailyAverage(dayGroups);
+
+    const sse = dayGroups.reduce(function (acc, curr, ind) {
+        return acc + Math.pow(sumSessions(curr.sessions) - mu, 2);
+    }, 0);
+
+    return Math.pow(sse / (dayGroups.length - 1), 0.5);
+}
+
+
+function sessionDuration(session) {
+    return (session.stop - session.start) / 3600000;
+}

@@ -1,8 +1,27 @@
+'use strict';
+
+/**
+ * A class to manage and control subject list widgets.
+ *
+ * @param elementId
+ * @param subjects
+ * @constructor
+ */
 function SubjectList(elementId, subjects) {
 
+
+    // The element Id containing the subject list
     this.elementId = elementId;
+
+    // The list of subjects
     this.subjects = subjects;
 
+
+    /**
+     * Display the subject list
+     *
+     * @param subTotalMap
+     */
     this.display = function fillSubjectList(subTotalMap) {
 
         const subjectName = (subject, total) => "<div class='subject-list-name'>" + subject['name'] + subjectTotal(total) + "</div>";
@@ -28,6 +47,13 @@ function SubjectList(elementId, subjects) {
         document.getElementById(this.elementId).innerHTML = "<table><colgroup><col><col></colgroup>" + subjectListHTML.join("") + "</table>";
     };
 
+
+    /**
+     * Sort the subject list by total hours per subject
+     *
+     * @param subTotalMap
+     * @param descending
+     */
     this.sortByHours = function (subTotalMap, descending = true) {
 
         const cmp = (sub1, sub2) => {
