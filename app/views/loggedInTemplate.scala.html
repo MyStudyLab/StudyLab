@@ -1,84 +1,15 @@
-@(pageTitle: String)(content: Html)
+@(pageTitle: String)(headContent: Html)(bodyContent: Html)
 
 
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <title>@pageTitle</title>
+@siteCore(pageTitle)(headContent) {
 
-        <meta name="author" content="Study Lab">
-
-        <meta name="description" content="Analyze your study habits">
-
-        <meta name="keywords" content="Informatics, Analytics, Time, Tracking, Study">
-
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
-        <meta charset="UTF-8">
-
-            <!-- Favicon -->
-        <link href="@routes.Assets.at("images/favicon.ico")" rel="icon" type="image/x-icon">
-
-            <!-- Roboto font from Google -->
-        <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet" type="text/css">
-
-            <!-- JQuery -->
-        <script src="@routes.Assets.at("javascripts/jquery-3.2.1.min.js")" type="text/javascript"></script>
-
-            <!-- Bootstrap CSS-->
-        <link href="@routes.Assets.at("stylesheets/bootstrap/3.3.6/css/bootstrap.min.css")" rel="stylesheet" type="text/css">
-
-            <!-- Bootstrap JS -->
-        <script src="@routes.Assets.at("javascripts/bootstrap-3.3.7.min.js")" type="text/javascript"></script>
-
-            <!-- Font awesome -->
-        <link href="@routes.Assets.at("stylesheets/font-awesome/4.7.0/css/font-awesome.css")" rel="stylesheet" type="text/css">
-
-            <!-- Static assets -->
-        <link href="@routes.Assets.at("stylesheets/main.css")" rel="stylesheet" type="text/css">
-
-            <!-- Google Analytics -->
-        <script src="@routes.Assets.at("javascripts/googleAnalytics.js")" type="text/javascript"></script>
-    </head>
-    <body>
-
-            <!-- Navbar with links to other pages on the site-->
-        <nav class="navbar navbar-inverse navbar-fixed-top">
-
-            <div class="container-fluid">
-
-                    <!-- Link to the homepage -->
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#studylab-menu">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a href="@routes.Application.home()" class="navbar-brand" hreflang="en">Study Lab</a>
-                </div>
-
-                <ul id="studylab-menu" class="nav navbar-nav navbar-right collapse navbar-collapse">
-                    <li id="menu-settings"><a href="@routes.Application.settings()">Settings</a></li>
-                    <li id="menu-logout">
-                        <a href="#" onclick="document.getElementById('menu-logout-form').submit()">Logout</a>
-                        <form id="menu-logout-form" class="" action="@routes.Application.logout()" method="post" hidden></form>
-                    </li>
-                </ul>
-
-            </div>
-        </nav>
-
-            <!-- Primary page content -->
-        <div class="page-content">
-        @content
-        </div>
-
-            <!-- Footer with assistive information and copyright -->
-        <footer>
-            <span class="footer-link"><a href="@routes.Application.about()" hreflang="en">About</a></span>
-            <span class="footer-link"><a href="@routes.Application.contact()" hreflang="en">Contact</a></span>
-            <span class="footer-link"><a href="@routes.Application.help()" hreflang="en">Help</a></span>
-            <span id="footer-copyright">&copy 2017 Study Lab Inc.</span>
-        </footer>
-    </body>
-</html>
+    <ul id="studylab-menu" class="nav navbar-nav navbar-right collapse navbar-collapse">
+        <li id="menu-settings"><a href="@routes.Application.settings()">Settings</a></li>
+        <li id="menu-logout">
+            <a href="#" onclick="document.getElementById('menu-logout-form').submit()">Logout</a>
+            <form id="menu-logout-form" class="" action="@routes.Application.logout()" method="post" hidden></form>
+        </li>
+    </ul>
+} {
+    @bodyContent
+}

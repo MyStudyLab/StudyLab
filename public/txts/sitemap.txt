@@ -1,4 +1,4 @@
-http://www.jgdodson.com
-http://www.jgdodson.com/resume
-http://www.jgdodson.com/quotes
-http://www.jgdodson.com/about
+http://www.study-lab.herokuapp.com
+http://www.study-lab.herokuapp.com/about
+http://www.study-lab.herokuapp.com/contact
+http://www.study-lab.herokuapp.com/help

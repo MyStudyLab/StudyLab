@@ -24,7 +24,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     */
   protected def setNavbar(pageTitle: String, content: Html) = Action { implicit request =>
 
-    request.session.get("connected").fold(Ok(views.html.siteTemplate(pageTitle)(content)))(username => Ok(views.html.loggedInTemplate(pageTitle)(content)))
+    request.session.get("connected").fold(Ok(views.html.siteTemplate(pageTitle)(content)))(username => Ok(views.html.loggedInTemplate(pageTitle)(play.twirl.api.Html(""))(content)))
   }
 
 
