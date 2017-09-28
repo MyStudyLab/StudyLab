@@ -135,5 +135,15 @@ class Users(protected val api: ReactiveMongoApi) {
     )
   }
 
+  /**
+    * Change a user's password
+    *
+    * @param username    The username for which to change the password
+    * @param newPassword The user's new password
+    * @return
+    */
+  def changePassword(username: String, newPassword: String): Future[Boolean] = {
+    ???
+  }
 
 }

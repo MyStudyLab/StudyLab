@@ -26,8 +26,14 @@ import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMo
 class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   extends Controller with MongoController with ReactiveMongoComponents {
 
-  // Reference to the sessions model
+  // Instance of the sessions model
   protected val sessions = new models.Sessions(reactiveMongoApi)
+
+  // Regex defining a valid subject name
+  protected val subjectNameRegex = "\\A\\w{1,32}\\z".r
+
+  // Regex defining a valid subject description
+  protected val descriptionRegex = "\\A[\\w\\s]{1,256}\\z".r
 
 
   /**
@@ -94,23 +100,27 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   protected def add = Action.async { implicit request =>
 
+
     AddSubjectForm.form.bindFromRequest()(request).fold(
       _ => invalidFormResponse,
-      goodForm => sessions.addSubject(goodForm.username, goodForm.subject, goodForm.description).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      goodForm => {
+
+        // Check the subject name
+        if (subjectNameRegex.findFirstIn(goodForm.subject).isEmpty) {
+          Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable subject name"))))
+        }
+        else if (descriptionRegex.findFirstIn(goodForm.description).isEmpty) {
+          Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable subject description"))))
+        }
+        else {
+
+          // Remove excess whitespace from the subject description
+          val cleanedDescription = "\\s+".r.replaceAllIn(goodForm.description, " ")
+
+          sessions.addSubject(goodForm.username, goodForm.subject, cleanedDescription).map(resultInfo => Ok(Json.toJson(resultInfo)))
+        }
+      }
     )
-  }
-
-  /**
-    * Add a subject via the query string
-    *
-    * @param username
-    * @param subject
-    * @param description
-    * @return
-    */
-  def addSubjectFromParams(username: String, subject: String, description: String) = Action.async { implicit request =>
-
-    sessions.addSubject(username, subject, description).map(resInfo => Ok(Json.toJson(resInfo)))
   }
 
 
@@ -137,7 +147,16 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     RenameSubjectForm.form.bindFromRequest()(request).fold(
       _ => invalidFormResponse,
-      goodForm => sessions.renameSubject(goodForm.username, goodForm.oldName, goodForm.newName).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      goodForm => {
+
+        // Check the subject name
+        if (subjectNameRegex.findFirstIn(goodForm.newName).isEmpty) {
+          Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable subject name"))))
+        } else {
+
+          sessions.renameSubject(goodForm.username, goodForm.oldName, goodForm.newName).map(resultInfo => Ok(Json.toJson(resultInfo)))
+        }
+      }
     )
   }
 
@@ -166,6 +185,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     sessions.getUserSessionData(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve sessions"))))(data => Ok(Json.toJson(data))))
   }
+
 
   /**
     *

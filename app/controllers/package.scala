@@ -47,6 +47,7 @@ package object controllers {
   }
 
   /**
+    * Check the session cookie before processing a request
     *
     * @param action
     * @tparam A

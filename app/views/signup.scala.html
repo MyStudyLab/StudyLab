@@ -31,10 +31,19 @@
                                     $("#successful-signup-message").removeAttr("hidden");
                                     $("#signup-form").remove();
                                 } else {
-                                    if (data['message'].includes("username")) {
+                                    if (data['message'].includes("Unacceptable username")) {
+                                        $("#signup-username-input").val("");
+                                        alert("Unacceptable username");
+                                    }
+                                    else if (data["message"].includes("Unacceptable password")) {
+                                        $("#signup-password-input").val("");
+                                        alert("Unacceptable password");
+                                    }
+                                    else if (data["message"].includes("username")) {
                                         $("#signup-username-input").val("");
                                         alert("Sorry, that username is already taken");
-                                    } else if (data["message"].includes("email")) {
+                                    }
+                                    else if (data["message"].includes("email")) {
                                         $("#signup-email-input").val("");
                                         alert("That email is already in use");
                                     }

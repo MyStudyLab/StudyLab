@@ -6,6 +6,8 @@ import javax.inject.Inject
 import forms.LoginForm
 import play.api.i18n.{I18nSupport, MessagesApi}
 
+import scala.concurrent.Future
+
 // Project
 import constructs.{ResultInfo, User}
 import forms.AddUserForm
@@ -63,13 +65,37 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
       _ => invalidFormResponse,
       goodForm => {
 
-        // User object representing the new user
-        val newUser = User(goodForm.username, goodForm.firstName, goodForm.lastName, goodForm.email, goodForm.password)
+        // Define the form of a valid username
+        val usernameRegex = "\\A\\w{1,32}\\z".r
 
-        // Insert the user object into the database
-        usersModel.addNewUser(newUser).map(
-          resultInfo => Ok(Json.toJson(resultInfo))
-        )
+        // Define the form of a valid password
+        val passwordRegex = "\\A\\w{8,32}\\z".r
+
+        // Check the username
+        if (usernameRegex.findFirstIn(goodForm.username).isEmpty) {
+          Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable username"))))
+        }
+
+        // Check the password
+        else if (passwordRegex.findFirstIn(goodForm.password).isEmpty) {
+          Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable password"))))
+        }
+
+        else {
+          try {
+
+            // Create User object representing the new user
+            val newUser = User(goodForm.username, goodForm.firstName, goodForm.lastName, goodForm.email, goodForm.password)
+
+            // Insert the User object into the database
+            usersModel.addNewUser(newUser).map(
+              resultInfo => Ok(Json.toJson(resultInfo))
+            )
+
+          } catch {
+            case _: Throwable => Future(Ok(Json.toJson(ResultInfo.failWithMessage("Error adding new user"))))
+          }
+        }
       }
     )
   }
@@ -86,6 +112,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
 
 
   /**
+    * Check a user's credentials
     *
     * @return
     */
@@ -103,7 +130,6 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
           })
       }
     )
-
   }
 
 
@@ -132,6 +158,28 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
     usersModel.aboutMessage(username).map(
       optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve about message"))))(data => Ok(Json.toJson(data)))
     )
+  }
+
+
+  /**
+    * Set the about message for the given user
+    *
+    * @param username The username for which to set the about message
+    * @param message  The new about message
+    * @return
+    */
+  def updateAboutMessage(username: String, message: String): Action[AnyContent] = Action.async { implicit request =>
+
+    val aboutRegex = "^[\\w\\s]{0,256}$".r
+
+    // Check the about message
+    if (aboutRegex.findFirstIn(message).isEmpty) {
+      Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable 'about' text"))))
+    }
+
+    val cleanedMessage = "\\s+".r.replaceAllIn(message, " ")
+
+    ???
   }
 
 }
