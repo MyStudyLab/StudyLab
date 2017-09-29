@@ -65,8 +65,9 @@ class Users(protected val api: ReactiveMongoApi) {
   def deleteUser(username: String): Future[ResultInfo] = {
 
     usersCollection.flatMap(_.remove(usernameSelector(username), firstMatchOnly = true)).map(
-      // TODO: Replace the message field
-      result => new ResultInfo(result.ok, "used to be result.message")
+      result =>
+        if (result.ok) ResultInfo.succeedWithMessage("Successfully deleted user account")
+        else ResultInfo.failWithMessage("Failed to delete user account")
     )
 
   }

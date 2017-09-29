@@ -35,33 +35,22 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   // Regex defining a valid subject description
   protected val descriptionRegex = "\\A[\\w\\s]{1,256}\\z".r
 
-
   /**
     * Invoke the model layer to start a new study session.
     *
     * @return
     */
-  protected def start = Action.async { implicit request =>
+  def startSession = Action.async { implicit request =>
 
-    SessionStartForm.startForm.bindFromRequest()(request).fold(
-      _ => invalidFormResponse,
-      goodForm => sessions.startSession(goodForm.username, goodForm.subject).map(resultInfo =>
-        Ok(Json.toJson(resultInfo))
+    withUsername(username => {
+      SessionStartForm.startForm.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => sessions.startSession(username, goodForm.subject).map(resultInfo =>
+          Ok(Json.toJson(resultInfo))
+        )
       )
-    )
-  }
+    })
 
-
-  /**
-    * Start a study session via the query string
-    *
-    * @param username
-    * @param subject
-    * @return
-    */
-  def startSessionFromParams(username: String, subject: String) = Action.async { implicit request =>
-
-    sessions.startSession(username, subject).map(result => Ok(Json.toJson(result)))
   }
 
 
@@ -70,12 +59,14 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  protected def stop = Action.async { implicit request =>
+  def stopSession = Action.async { implicit request =>
 
-    SessionStopForm.stopForm.bindFromRequest()(request).fold(
-      _ => invalidFormResponse,
-      goodForm => sessions.stopSession(goodForm.username, goodForm.message).map(resultInfo => Ok(Json.toJson(resultInfo)))
-    )
+    withUsername(username => {
+      SessionStopForm.stopForm.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => sessions.stopSession(username, goodForm.message).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      )
+    })
   }
 
 
@@ -84,12 +75,15 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  protected def cancel = Action.async { implicit request =>
+  def cancelSession = Action.async { implicit request =>
 
-    SessionCancelForm.form.bindFromRequest()(request).fold(
-      _ => invalidFormResponse,
-      goodForm => sessions.abortSession(goodForm.username).map(resultInfo => Ok(Json.toJson(resultInfo)))
-    )
+    withUsername(username => {
+      SessionCancelForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => sessions.abortSession(username).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      )
+    })
+
   }
 
 
@@ -98,29 +92,31 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  protected def add = Action.async { implicit request =>
+  def addSubject = Action.async { implicit request =>
 
+    withUsername(username => {
+      AddSubjectForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => {
 
-    AddSubjectForm.form.bindFromRequest()(request).fold(
-      _ => invalidFormResponse,
-      goodForm => {
+          // Check the subject name
+          if (subjectNameRegex.findFirstIn(goodForm.subject).isEmpty) {
+            Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable subject name"))))
+          }
+          else if (descriptionRegex.findFirstIn(goodForm.description).isEmpty) {
+            Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable subject description"))))
+          }
+          else {
 
-        // Check the subject name
-        if (subjectNameRegex.findFirstIn(goodForm.subject).isEmpty) {
-          Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable subject name"))))
+            // Remove excess whitespace from the subject description
+            val cleanedDescription = withoutExcessWhitespace(goodForm.description)
+
+            sessions.addSubject(username, goodForm.subject, cleanedDescription).map(resultInfo => Ok(Json.toJson(resultInfo)))
+          }
         }
-        else if (descriptionRegex.findFirstIn(goodForm.description).isEmpty) {
-          Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable subject description"))))
-        }
-        else {
+      )
+    })
 
-          // Remove excess whitespace from the subject description
-          val cleanedDescription = "\\s+".r.replaceAllIn(goodForm.description, " ")
-
-          sessions.addSubject(goodForm.username, goodForm.subject, cleanedDescription).map(resultInfo => Ok(Json.toJson(resultInfo)))
-        }
-      }
-    )
   }
 
 
@@ -129,12 +125,15 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  protected def remove = Action.async { implicit request =>
+  def removeSubject = Action.async { implicit request =>
 
-    RemoveSubjectForm.form.bindFromRequest()(request).fold(
-      _ => invalidFormResponse,
-      goodForm => sessions.removeSubject(goodForm.username, goodForm.subject).map(resultInfo => Ok(Json.toJson(resultInfo)))
-    )
+    withUsername(username => {
+      RemoveSubjectForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => sessions.removeSubject(username, goodForm.subject).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      )
+    })
+
   }
 
 
@@ -143,21 +142,23 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  protected def rename = Action.async { implicit request =>
+  def renameSubject = Action.async { implicit request =>
 
-    RenameSubjectForm.form.bindFromRequest()(request).fold(
-      _ => invalidFormResponse,
-      goodForm => {
+    withUsername(username => {
+      RenameSubjectForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => {
 
-        // Check the subject name
-        if (subjectNameRegex.findFirstIn(goodForm.newName).isEmpty) {
-          Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable subject name"))))
-        } else {
+          // Check the subject name
+          if (subjectNameRegex.findFirstIn(goodForm.newName).isEmpty) {
+            Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable subject name"))))
+          } else {
 
-          sessions.renameSubject(goodForm.username, goodForm.oldName, goodForm.newName).map(resultInfo => Ok(Json.toJson(resultInfo)))
+            sessions.renameSubject(username, goodForm.oldName, goodForm.newName).map(resultInfo => Ok(Json.toJson(resultInfo)))
+          }
         }
-      }
-    )
+      )
+    })
   }
 
 
@@ -166,12 +167,15 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  protected def merge = Action.async { implicit request =>
+  def mergeSubjects = Action.async { implicit request =>
 
-    MergeSubjectsForm.form.bindFromRequest()(request).fold(
-      _ => invalidFormResponse,
-      goodForm => sessions.mergeSubjects(goodForm.username, goodForm.absorbed, goodForm.absorbing).map(resultInfo => Ok(Json.toJson(resultInfo)))
-    )
+    withUsername(username => {
+      MergeSubjectsForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => sessions.mergeSubjects(username, goodForm.absorbed, goodForm.absorbing).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      )
+    })
+
   }
 
 
@@ -201,56 +205,5 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     )
     )
   }
-
-
-  /**
-    * Start a study session
-    *
-    * @return
-    */
-  def startSession() = checkSession(start)
-
-
-  /**
-    * Stop a study session
-    *
-    * @return
-    */
-  def stopSession() = checkSession(stop)
-
-  /**
-    * Abort the current study session
-    *
-    * @return
-    */
-  def cancelSession() = checkSession(cancel)
-
-  /**
-    * Add a subject to a user's subject list
-    *
-    * @return
-    */
-  def addSubject() = checkSession(add)
-
-  /**
-    * Remove a subject from a user's subject list
-    *
-    * @return
-    */
-  def removeSubject() = checked(remove)(reactiveMongoApi)
-
-  /**
-    * Rename one of the subjects in a user's subject list
-    *
-    * @return
-    */
-  def renameSubject() = checkSession(rename)
-
-  /**
-    * Merge two subjects from a user's subject list
-    *
-    * @return
-    */
-  def mergeSubjects() = checked(merge)(reactiveMongoApi)
 
 }

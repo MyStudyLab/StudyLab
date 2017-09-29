@@ -30,12 +30,20 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     *
     * @return
     */
-  protected def add = Action.async { implicit request =>
+  def addJournalEntry = Action.async { implicit request =>
 
-    AddJournalEntryForm.form.bindFromRequest()(request).fold(
-      badForm => invalidFormResponse,
-      goodForm => journalEntries.addJournalEntry(goodForm.username, goodForm.text).map(resultInfo => Ok(Json.toJson(resultInfo)))
-    )
+    withUsername(username => {
+      AddJournalEntryForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => {
+
+          val cleanedEntry = withoutExcessWhitespace(goodForm.text)
+
+          journalEntries.addJournalEntry(username, cleanedEntry).map(resultInfo => Ok(Json.toJson(resultInfo)))
+        }
+      )
+    })
+
   }
 
   /**
@@ -49,11 +57,4 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     journalEntries.journalEntriesForUsername(username).map(entryList => Ok(Json.toJson(entryList)))
 
   }
-
-  /**
-    * Add a journal entry after checking user credentials
-    *
-    * @return
-    */
-  def addJournalEntry() = checked(add)(reactiveMongoApi)
 }
