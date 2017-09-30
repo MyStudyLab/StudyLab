@@ -60,8 +60,6 @@
                 </form>
 
                 <form id="study-cancel-form" class="study-control-form" hidden>
-                    <input id="study-cancel-username-input" class="study-control-input" name="username" title="username" value="@username" type="text" required hidden>
-
                     <button type="submit" class="btn btn-default study-control-button">cancel</button>
                 </form>
             </div>
@@ -224,9 +222,14 @@
 
                                 console.log(request.responseText);
 
+                                let data = {};
+
                                 // Parse the response text as JSON
-                                let data = JSON.parse(request.responseText);
-                                console.log(data);
+                                try {
+                                    data = JSON.parse(request.responseText);
+                                } catch (e) {
+                                    console.log("Error parsing response")
+                                }
 
                                 if (data['success'] === true) {
 
@@ -270,10 +273,14 @@
 
                                 console.log(request.responseText);
 
-                                // Parse the response text as JSON
-                                let data = JSON.parse(request.responseText);
+                                let data = {};
 
-                                console.log(data);
+                                // Parse the response text as JSON
+                                try {
+                                    data = JSON.parse(request.responseText);
+                                } catch (e) {
+                                    console.log("Error parsing response")
+                                }
 
                                 if (data['success'] === true) {
 
@@ -313,8 +320,14 @@
 
                                 console.log(request.responseText);
 
+                                let data = {};
+
                                 // Parse the response text as JSON
-                                let data = JSON.parse(request.responseText);
+                                try {
+                                    data = JSON.parse(request.responseText);
+                                } catch (e) {
+                                    console.log("Error parsing response")
+                                }
 
                                 if (data['success'] === true) {
                                     console.log(data);
@@ -354,8 +367,14 @@
 
                                 console.log(request.responseText);
 
+                                let data = {};
+
                                 // Parse the response text as JSON
-                                let data = JSON.parse(request.responseText);
+                                try {
+                                    data = JSON.parse(request.responseText);
+                                } catch (e) {
+                                    console.log("Error parsing response")
+                                }
 
                                 if (data['success'] === true) {
                                     console.log(data);
@@ -389,8 +408,14 @@
 
                                 console.log(request.responseText);
 
+                                let data = {};
+
                                 // Parse the response text as JSON
-                                let data = JSON.parse(request.responseText);
+                                try {
+                                    data = JSON.parse(request.responseText);
+                                } catch (e) {
+                                    console.log("Error parsing response")
+                                }
 
                                 if (data['success'] === true) {
 

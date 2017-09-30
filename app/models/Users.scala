@@ -1,6 +1,8 @@
 package models
 
 // Standard Library
+import reactivemongo.bson.BSONDocument
+
 import scala.concurrent.Future
 
 // Play Framework
@@ -62,14 +64,20 @@ class Users(protected val api: ReactiveMongoApi) {
     * @param username The username of the user to be removed
     * @return
     */
-  def deleteUser(username: String): Future[ResultInfo] = {
+  def deleteUser(username: String, password: String): Future[ResultInfo] = {
 
-    usersCollection.flatMap(_.remove(usernameSelector(username), firstMatchOnly = true)).map(
-      result =>
-        if (result.ok) ResultInfo.succeedWithMessage("Successfully deleted user account")
-        else ResultInfo.failWithMessage("Failed to delete user account")
-    )
+    checkCredentials(username, password).flatMap(validated => {
 
+      if (validated) {
+        usersCollection.flatMap(_.remove(usernameSelector(username), firstMatchOnly = true)).map(
+          result =>
+            if (result.ok) ResultInfo.succeedWithMessage("Successfully deleted user account")
+            else ResultInfo.failWithMessage("Failed to delete user account")
+        )
+      } else {
+        Future(ResultInfo.badUsernameOrPass)
+      }
+    })
   }
 
 
@@ -144,7 +152,7 @@ class Users(protected val api: ReactiveMongoApi) {
     * @return
     */
   def changePassword(username: String, newPassword: String): Future[Boolean] = {
-    ???
+    usersCollection.flatMap(_.update(usernameSelector(username), BSONDocument("password" -> newPassword))).map(_.ok)
   }
 
 }

@@ -8,8 +8,7 @@ import constructs.ResultInfo
 // Play Framework
 import play.api.libs.json.Json
 import play.api.mvc.{Request, Result}
-import play.api.mvc.Results.Redirect
-import play.api.mvc.Results.Ok
+import play.api.mvc.Results.{Ok, Redirect}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 /**
@@ -23,7 +22,7 @@ package object controllers {
   /**
     * Get the username from the session cookie
     *
-    * @param func    The function producing a result
+    * @param func    The function producing a future result
     * @param request The request being processed
     * @tparam A
     * @return
@@ -40,7 +39,7 @@ package object controllers {
     * @return
     */
   def withoutExcessWhitespace(text: String): String = {
-    "\\s+".r.replaceAllIn(text, " ")
+    "\\s+".r.replaceAllIn(text.trim(), " ")
   }
 
 }

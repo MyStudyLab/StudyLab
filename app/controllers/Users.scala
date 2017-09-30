@@ -3,7 +3,7 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
-import forms.LoginForm
+import forms.{DeactivateProfileForm, LoginForm}
 import play.api.i18n.{I18nSupport, MessagesApi}
 
 import scala.concurrent.Future
@@ -102,12 +102,21 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
 
 
   /**
-    * Remove a user
+    * Remove a user from the system
     *
     * @return
     */
-  def removeUser = Action.async { implicit request =>
-    ???
+  def deleteUser = Action.async { implicit request =>
+
+    withUsername(username => {
+      DeactivateProfileForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => {
+          usersModel.deleteUser(username, goodForm.password).map(result => if (result.success) Redirect(routes.Application.home()).withNewSession else InternalServerError(Json.toJson(result)))
+        }
+      )
+
+    })
   }
 
 

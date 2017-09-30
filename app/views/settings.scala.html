@@ -1,15 +1,48 @@
 @(username: String)(implicit messages: Messages)
 
-    @loggedInTemplate("Settings")(Html("")) {
+@loggedInTemplate("Settings")(Html("")) {
 
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-sm-8 col-sm-offset-2 raised-element padded-plot text-justify partial-border" id="about-para">
-                    <div id="aboutMessage">
-                        Settings page for @username.
-                    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2 raised-element padded-plot text-justify partial-border" id="about-para">
+                <div id="aboutMessage">
+                    Settings page for @username.
+
+                    <form id="delete-profile-form">
+
+                        <div class="form-group">
+                            <label for="delete-profile-password-input">Password</label>
+                            <input name="password" type="password" class="form-control" id="delete-profile-password-input" placeholder="Password">
+                        </div>
+
+                        <button type="submit" class="btn btn-default study-control-button">Delete Account</button>
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
 
-    }
+    <script>
+            $(function () {
+                $("#delete-profile-form").on("submit", function (e) {
+
+                    if (confirm("Are you sure you want to permanently delete your account?") && confirm("Are you absolutely positive?")) {
+                        $.ajax({
+                            type: "post",
+                            url: "@controllers.routes.Users.deleteUser()",
+                            data: $("#delete-profile-form").serialize(),
+                            dataType: "json",
+                            complete: function (response, textStatus) {
+
+                                if (response.status !== 200) {
+
+                                    alert("There was a problem deleting your account.")
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+    </script>
+
+}

@@ -72,7 +72,7 @@ POST        /users/add                      controllers.Users.addNewUser()
 POST        /users/checkCredentials         controllers.Users.checkCredentials()
 
 # Remove a user
-POST        /users/remove                   controllers.Default.todo()
+POST        /users/delete                   controllers.Users.deleteUser()
 
 # Add a cumulative goal for a user
 POST        /goals/addCumulative            controllers.Default.todo()

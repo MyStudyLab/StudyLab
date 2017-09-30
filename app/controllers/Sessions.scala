@@ -78,10 +78,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   def cancelSession = Action.async { implicit request =>
 
     withUsername(username => {
-      SessionCancelForm.form.bindFromRequest()(request).fold(
-        _ => invalidFormResponse,
-        goodForm => sessions.abortSession(username).map(resultInfo => Ok(Json.toJson(resultInfo)))
-      )
+      sessions.abortSession(username).map(resultInfo => Ok(Json.toJson(resultInfo)))
     })
 
   }
