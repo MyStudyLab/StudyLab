@@ -1,62 +1,62 @@
 @(username: String)(implicit messages: Messages)
 
-@loggedInTemplate("Journal")(Html("")) {
+    @loggedInTemplate("Journal")(Html("")) {
 
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-8 col-sm-offset-2">
-                <div class="raised-element text-justify partial-border center-text-content">
-                    <form id="journal-entry-form">
-                        <div class="form-group">
-                            <label for="journal-entry-input">Journal</label>
-                            <textarea name="entry" class="form-control" id="journal-entry-input" form="journal-entry-form" placeholder="Dear Journal..." required></textarea>
-                        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-8 col-sm-offset-2">
+                    <div class="raised-element text-justify partial-border center-text-content">
+                        <form id="journal-entry-form">
+                            <div class="form-group">
+                                <label class="sr-only" for="journal-entry-input">Journal</label>
+                                <textarea name="entry" class="form-control" id="journal-entry-input" form="journal-entry-form" placeholder="Dear Journal..." required></textarea>
+                            </div>
 
-                        <button type="submit" class="btn btn-default">Save</button>
-                    </form>
+                            <button type="submit" class="btn btn-default">Save</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
 
-    <script>
-            $(function () {
-                $("#journal-entry-form").on("submit", function (e) {
+        <script>
+                $(function () {
+                    $("#journal-entry-form").on("submit", function (e) {
 
-                    e.preventDefault();
+                        e.preventDefault();
 
-                    $.ajax({
-                        type: "post",
-                        url: "@controllers.routes.JournalEntries.addJournalEntry()",
-                        data: $("#journal-entry-form").serialize(),
-                        dataType: "json",
-                        complete: function (response, textStatus) {
+                        $.ajax({
+                            type: "post",
+                            url: "@controllers.routes.JournalEntries.addJournalEntry()",
+                            data: $("#journal-entry-form").serialize(),
+                            dataType: "json",
+                            complete: function (response, textStatus) {
 
-                            console.log(response.responseText);
+                                console.log(response.responseText);
 
-                            if (response.status === 200) {
+                                if (response.status === 200) {
 
-                                let data = {};
+                                    let data = {};
 
-                                // Parse the response text as JSON
-                                try {
-                                    data = JSON.parse(response.responseText);
-                                } catch (e) {
-                                    console.log("Error parsing JSON response");
-                                }
+                                    // Parse the response text as JSON
+                                    try {
+                                        data = JSON.parse(response.responseText);
+                                    } catch (e) {
+                                        console.log("Error parsing JSON response");
+                                    }
 
-                                if (data['success'] === true) {
+                                    if (data['success'] === true) {
 
-                                    // Clear the form inputs
-                                    $("#journal-entry-input").val("");
-                                } else {
-                                    // Handle errors: subject already added, etc.
+                                        // Clear the form inputs
+                                        $("#journal-entry-input").val("");
+                                    } else {
+                                        // Handle errors
+                                    }
                                 }
                             }
-                        }
+                        });
                     });
                 });
-            });
-    </script>
-}
+        </script>
+    }

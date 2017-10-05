@@ -152,7 +152,33 @@ class Users(protected val api: ReactiveMongoApi) {
     * @return
     */
   def changePassword(username: String, newPassword: String): Future[Boolean] = {
-    usersCollection.flatMap(_.update(usernameSelector(username), BSONDocument("password" -> newPassword))).map(_.ok)
+
+    val modifier = BSONDocument(
+      "$set" -> BSONDocument(
+        "password" -> newPassword
+      )
+    )
+
+    usersCollection.flatMap(_.update(usernameSelector(username), modifier)).map(_.ok)
+  }
+
+
+  /**
+    * Change a user's email address
+    *
+    * @param username The username for which to change the email
+    * @param newEmail The user's new email
+    * @return
+    */
+  def changeEmail(username: String, newEmail: String): Future[Boolean] = {
+
+    val modifier = BSONDocument(
+      "$set" -> BSONDocument(
+        "contactInfo.email" -> newEmail
+      )
+    )
+
+    usersCollection.flatMap(_.update(usernameSelector(username), modifier)).map(_.ok)
   }
 
 }

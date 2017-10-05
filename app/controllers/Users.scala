@@ -3,7 +3,7 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
-import forms.{DeactivateProfileForm, LoginForm}
+import forms.{DeactivateProfileForm, LoginForm, UpdateEmailForm, UpdatePasswordForm}
 import play.api.i18n.{I18nSupport, MessagesApi}
 
 import scala.concurrent.Future
@@ -116,6 +116,46 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
         }
       )
 
+    })
+  }
+
+
+  /**
+    * Update a user's email address
+    *
+    * @return
+    */
+  def updateEmail = Action.async { implicit request =>
+
+    withUsername(username => {
+      UpdateEmailForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => {
+          usersModel.changeEmail(username, goodForm.email).map(success =>
+            if (success) Ok(Json.toJson(ResultInfo.succeedWithMessage("Email address has been updated")))
+            else InternalServerError(Json.toJson(ResultInfo.failWithMessage("Failed to update email address"))))
+        }
+      )
+    })
+  }
+
+
+  /**
+    * Update a user's email password
+    *
+    * @return
+    */
+  def updatePassword = Action.async { implicit request =>
+
+    withUsername(username => {
+      UpdatePasswordForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => {
+          usersModel.changePassword(username, goodForm.password).map(success =>
+            if (success) Ok(Json.toJson(ResultInfo.succeedWithMessage("Password has been updated")))
+            else InternalServerError(Json.toJson(ResultInfo.failWithMessage("Failed to update password"))))
+        }
+      )
     })
   }
 

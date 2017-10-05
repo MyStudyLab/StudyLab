@@ -49,8 +49,9 @@ body {
     text-align: center;
 }
 
-.studylab-entry-form {
+.entry-form {
     width: 300px;
+    margin: auto;
     margin-top: 200px;
     padding: 10px;
     border: solid gray 2px;
@@ -180,6 +181,18 @@ body {
 
 .center-text-content {
     padding: 20px;
+}
+
+.settings-page-form {
+    margin: 40px 0;
+}
+
+.settings-page-form div {
+    width: 100%;
+}
+
+.settings-page-form button {
+    width: 150px;
 }
 
 /* Styling the footer */

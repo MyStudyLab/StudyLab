@@ -71,6 +71,12 @@ POST        /journal/add                    controllers.JournalEntries.addJourna
 # Add a new user
 POST        /users/add                      controllers.Users.addNewUser()
 
+# Update a user's email address
+POST        /users/updateEmail              controllers.Users.updateEmail()
+
+# Update a user's password
+POST        /users/updatePassword           controllers.Users.updatePassword()
+
 # Remove a user
 POST        /users/delete                   controllers.Users.deleteUser()
 
