@@ -37,7 +37,7 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
         _ => invalidFormResponse,
         goodForm => {
 
-          val cleanedEntry = withoutExcessWhitespace(goodForm.text)
+          val cleanedEntry = withoutExcessWhitespace(goodForm.entry)
 
           journalEntries.addJournalEntry(username, cleanedEntry).map(resultInfo => Ok(Json.toJson(resultInfo)))
         }

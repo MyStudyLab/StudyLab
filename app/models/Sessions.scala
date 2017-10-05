@@ -98,6 +98,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
           )
 
           // Update the status
+          // TODO: There is some bug here invovling the write result
           usersCollection.update(selector, modifier, multi = false).map(result =>
             if (result.ok) ResultInfo.succeedWithMessage(s"Now studying $subject")
             else ResultInfo.failWithMessage(message = result.errmsg.getOrElse(ResultInfo.noErrMsg))

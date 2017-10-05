@@ -20,6 +20,9 @@ POST        /logout                         controllers.Application.logout()
 # The Settings page
 GET         /settings                       controllers.Application.settings()
 
+# The Journal page
+GET         /journal                        controllers.Application.journal()
+
 # The About page for Study Lab
 GET         /about                          controllers.Application.about()
 
@@ -67,9 +70,6 @@ POST        /journal/add                    controllers.JournalEntries.addJourna
 
 # Add a new user
 POST        /users/add                      controllers.Users.addNewUser()
-
-# Check the credentials of a user
-POST        /users/checkCredentials         controllers.Users.checkCredentials()
 
 # Remove a user
 POST        /users/delete                   controllers.Users.deleteUser()

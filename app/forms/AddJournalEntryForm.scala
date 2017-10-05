@@ -4,14 +4,14 @@ import play.api.data.Form
 import play.api.data.Forms._
 
 
-case class AddJournalEntryForm(text: String)
+case class AddJournalEntryForm(entry: String)
 
 
 object AddJournalEntryForm {
 
   val form: Form[AddJournalEntryForm] = Form(
     mapping(
-      "text" -> nonEmptyText
+      "entry" -> nonEmptyText
     )(AddJournalEntryForm.apply)(AddJournalEntryForm.unapply)
   )
 

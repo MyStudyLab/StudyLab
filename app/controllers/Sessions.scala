@@ -50,7 +50,6 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
         )
       )
     })
-
   }
 
 

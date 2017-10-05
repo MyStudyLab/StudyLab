@@ -121,28 +121,6 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
 
 
   /**
-    * Check a user's credentials
-    *
-    * @return
-    */
-  def checkCredentials = Action.async { implicit request =>
-
-    LoginForm.form.bindFromRequest()(request).fold(
-      _ => invalidFormResponse,
-      goodForm => {
-        usersModel.checkCredentials(goodForm.username, goodForm.password).map(valid =>
-
-          if (valid) {
-            Ok(Json.obj("success" -> true, "message" -> "<none>", "timestamp" -> System.currentTimeMillis(), "payload" -> valid)).withSession("connected" -> goodForm.username)
-          } else {
-            Ok(Json.obj("success" -> true, "message" -> "<none>", "timestamp" -> System.currentTimeMillis(), "payload" -> valid))
-          })
-      }
-    )
-  }
-
-
-  /**
     * Get the profiles for the given user
     *
     * @param username The username for which to retrieve data

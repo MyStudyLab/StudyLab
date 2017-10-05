@@ -81,6 +81,17 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
 
 
   /**
+    * The Journal page
+    *
+    * @return
+    */
+  def journal = Action { implicit request =>
+
+    request.session.get("connected").fold(Redirect(routes.Application.loginPage()))(username => Ok(views.html.journal(username)))
+  }
+
+
+  /**
     * The Settings Page
     *
     * @return
