@@ -45,8 +45,9 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
     * @param username The username for which to retrieve data
     * @return
     */
-  def journalEntriesForUsername(username: String): Future[List[JournalEntry]] = {
+  def journalEntriesForUsername(username: String): Future[Vector[JournalEntry]] = {
 
-    bsonJournalEntriesCollection.flatMap(_.find(usernameSelector(username), JournalEntry.projector).cursor[JournalEntry]().collect[List]())
+    bsonJournalEntriesCollection.flatMap(_.find(usernameSelector(username), JournalEntry.projector).
+      cursor[JournalEntry]().collect[Vector]())
   }
 }

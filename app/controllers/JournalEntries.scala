@@ -55,12 +55,14 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   /**
     * Get all journal entries for the given username
     *
-    * @param username The username for which to retrieve data
     * @return
     */
-  def getJournalEntries(username: String) = Action.async { implicit request =>
+  def getJournalEntries = Action.async { implicit request =>
 
-    journalEntries.journalEntriesForUsername(username).map(entryList => Ok(Json.toJson(entryList)))
+    withUsername(username => {
+      journalEntries.journalEntriesForUsername(username).map(entryList => Ok(Json.toJson(entryList)))
+    })
+
 
   }
 }

@@ -17,18 +17,21 @@
                                 <textarea name="entry" class="form-control" id="journal-entry-input" form="journal-entry-form" placeholder="Dear Journal..." required></textarea>
                             </div>
 
-                            <button type="submit" class="btn btn-default">Save</button>
+                            <button type="submit" id="journal-entry-input-button" class=""><i class="fa fa-paper-plane-o fa-2x"></i></button>
                         </form>
+                    </div>
 
-                        <div id="past-journal-entries">
-
-                        </div>
+                    <div id="past-journal-entries">
 
                     </div>
                 </div>
             </div>
         </div>
 
+
+            <!-- Moment JS -->
+        <script src="@routes.Assets.at("/javascripts/moment.js")"></script>
+        <script src="@routes.Assets.at("/javascripts/moment-timezone-10-20.js")"></script>
 
         <script>
                 'use strict';
@@ -39,6 +42,7 @@
                         // Prevent the form from clearing
                         e.preventDefault();
 
+                        let text = $("#journal-entry-input").val();
 
                         // Post the form data to the server
                         function sendForm() {
@@ -83,6 +87,9 @@
                             $("#journal-latitude-input").val(position.coords.latitude);
                             $("#journal-longitude-input").val(position.coords.longitude);
 
+                            // Reset the text field in case it was modified
+                            $("#journal-entry-input").val(text);
+
                             sendForm();
                         }
 
@@ -90,13 +97,70 @@
                         function geoFailure(error) {
                             console.log("Failed to get user location");
 
+                            // Reset the text field in case it was modified
+                            $("#journal-entry-input").val(text);
+
                             sendForm();
                         }
 
                         // Get the user's location at time of submission
                         navigator.geolocation.getCurrentPosition(geoSuccess, geoFailure, options);
-
                     });
+                });
+
+
+                $.ajax({
+                    type: "get",
+                    url: "@controllers.routes.JournalEntries.getJournalEntries()",
+                    complete: function (response, textStatus) {
+
+                        console.log(response.responseText);
+
+                        if (response.status === 200) {
+
+                            let data = {};
+
+                            // Parse the response text as JSON
+                            try {
+                                data = JSON.parse(response.responseText);
+
+                                data.sort((a, b) => {
+
+                                    if (a.timestamp < b.timestamp) {
+                                        return 1;
+                                    }
+
+                                    if (a.timestamp > b.timestamp) {
+                                        return -1;
+                                    }
+
+                                    return 0;
+                                });
+
+                                let entryHtml = data.map((entry) => {
+
+                                    let text = '<div class="journal-entry-text partial-border center-text-content">' + '<p>' + entry.text + '</p>';
+
+                                    let date = '<div class="journal-entry-info">' + moment(entry.timestamp).format('YYYY-MM-DD hh:mm') + '</div>' + '</div>';
+
+                                    return text + date;
+                                });
+
+                                document.getElementById("past-journal-entries").innerHTML = entryHtml.join("");
+
+                            } catch (e) {
+                                console.log("Error parsing JSON response");
+                            }
+
+                            if (data['success'] === true) {
+
+                                // Clear the form inputs
+                                $("#journal-entry-input").val("");
+                            } else {
+                                // Handle errors
+                            }
+                        }
+                    }
                 });
         </script>
     }

@@ -181,6 +181,7 @@ body {
 
 .center-text-content {
     padding: 20px;
+    margin-bottom: 40px;
 }
 
 .settings-page-form {
@@ -269,6 +270,30 @@ footer {
 
 #journal-entry-input {
     height: 100px;
+    color: #E0E0E3;
+    background: transparent;
+    border: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+
+    font-size: 24px;
+}
+
+#journal-entry-input-button {
+    background: transparent;
+    border: none;
+    margin: auto;
+}
+
+.journal-entry-text {
+    font-size: 24px;
+}
+
+.journal-entry-info {
+    font-size: 14px;
+    text-align: right;
+    color: #707073;
 }
 
 /* CSS for loading animation */
