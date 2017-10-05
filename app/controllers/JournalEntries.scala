@@ -3,6 +3,8 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
+import constructs.{JournalEntry, Point}
+
 // Project
 import forms.AddJournalEntryForm
 
@@ -39,7 +41,11 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
           val cleanedEntry = withoutExcessWhitespace(goodForm.entry)
 
-          journalEntries.addJournalEntry(username, cleanedEntry).map(resultInfo => Ok(Json.toJson(resultInfo)))
+          val position = Point(goodForm.longitude, goodForm.latitude)
+
+          val entry = JournalEntry(username, cleanedEntry, System.currentTimeMillis(), position)
+
+          journalEntries.addJournalEntry(entry).map(resultInfo => Ok(Json.toJson(resultInfo)))
         }
       )
     })
@@ -52,7 +58,7 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     * @param username The username for which to retrieve data
     * @return
     */
-  def journalEntriesForUsername(username: String) = Action.async { implicit request =>
+  def getJournalEntries(username: String) = Action.async { implicit request =>
 
     journalEntries.journalEntriesForUsername(username).map(entryList => Ok(Json.toJson(entryList)))
 

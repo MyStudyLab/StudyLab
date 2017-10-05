@@ -1,6 +1,7 @@
 package constructs
 
 // Reactive Mongo
+import play.api.libs.json.Json
 import reactivemongo.bson.BSONDocument
 
 
@@ -10,10 +11,15 @@ import reactivemongo.bson.BSONDocument
   * @param username  The username responsible for the journal entry
   * @param text      The content of the journal entry
   * @param timestamp The time at which the journal entry was recorded
+  * @param pos       The position where the journal entry was recorded
   */
-case class JournalEntry(username: String, text: String, timestamp: Long)
+case class JournalEntry(username: String, text: String, timestamp: Long, pos: Point)
 
 object JournalEntry {
+
+  // Implicitly convert to JSON
+  implicit val journalEntryWrites = Json.writes[JournalEntry]
+
 
   import reactivemongo.bson.Macros
 
@@ -22,6 +28,6 @@ object JournalEntry {
 
   // A MongoDB projector to get only the fields for this class
   val projector = BSONDocument(
-    "username" -> 1, "text" -> 1, "timestamp" -> 1, "_id" -> 0
+    "username" -> 1, "text" -> 1, "timestamp" -> 1, "pos" -> 1, "_id" -> 0
   )
 }

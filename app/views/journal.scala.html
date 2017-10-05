@@ -8,12 +8,22 @@
                     <div class="raised-element text-justify partial-border center-text-content">
                         <form id="journal-entry-form">
                             <div class="form-group">
+
+                                <input type="number" step="any" name="latitude" id="journal-latitude-input" value=0.00 hidden>
+
+                                <input type="number" step="any" name="longitude" id="journal-longitude-input" value=0.00 hidden>
+
                                 <label class="sr-only" for="journal-entry-input">Journal</label>
                                 <textarea name="entry" class="form-control" id="journal-entry-input" form="journal-entry-form" placeholder="Dear Journal..." required></textarea>
                             </div>
 
                             <button type="submit" class="btn btn-default">Save</button>
                         </form>
+
+                        <div id="past-journal-entries">
+
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -21,41 +31,71 @@
 
 
         <script>
+                'use strict';
+
                 $(function () {
                     $("#journal-entry-form").on("submit", function (e) {
 
+                        // Prevent the form from clearing
                         e.preventDefault();
 
-                        $.ajax({
-                            type: "post",
-                            url: "@controllers.routes.JournalEntries.addJournalEntry()",
-                            data: $("#journal-entry-form").serialize(),
-                            dataType: "json",
-                            complete: function (response, textStatus) {
 
-                                console.log(response.responseText);
+                        // Post the form data to the server
+                        function sendForm() {
+                            $.ajax({
+                                type: "post",
+                                url: "@controllers.routes.JournalEntries.addJournalEntry()",
+                                data: $("#journal-entry-form").serialize(),
+                                dataType: "json",
+                                complete: function (response, textStatus) {
 
-                                if (response.status === 200) {
+                                    console.log(response.responseText);
 
-                                    let data = {};
+                                    if (response.status === 200) {
 
-                                    // Parse the response text as JSON
-                                    try {
-                                        data = JSON.parse(response.responseText);
-                                    } catch (e) {
-                                        console.log("Error parsing JSON response");
-                                    }
+                                        let data = {};
 
-                                    if (data['success'] === true) {
+                                        // Parse the response text as JSON
+                                        try {
+                                            data = JSON.parse(response.responseText);
+                                        } catch (e) {
+                                            console.log("Error parsing JSON response");
+                                        }
 
-                                        // Clear the form inputs
-                                        $("#journal-entry-input").val("");
-                                    } else {
-                                        // Handle errors
+                                        if (data['success'] === true) {
+
+                                            // Clear the form inputs
+                                            $("#journal-entry-input").val("");
+                                        } else {
+                                            // Handle errors
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        }
+
+                        let options = {
+                            "maximumAge": 10 * 1000
+                        };
+
+                        // Callback when user position is obtained
+                        function geoSuccess(position) {
+                            $("#journal-latitude-input").val(position.coords.latitude);
+                            $("#journal-longitude-input").val(position.coords.longitude);
+
+                            sendForm();
+                        }
+
+                        // Callback when user position cannot be obtained
+                        function geoFailure(error) {
+                            console.log("Failed to get user location");
+
+                            sendForm();
+                        }
+
+                        // Get the user's location at time of submission
+                        navigator.geolocation.getCurrentPosition(geoSuccess, geoFailure, options);
+
                     });
                 });
         </script>
