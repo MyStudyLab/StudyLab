@@ -1,6 +1,8 @@
 @(username: String)(implicit messages: Messages)
 
-    @loggedInTemplate("Journal")(Html("")) {
+    @loggedInTemplate("Journal") {
+        <link href="@routes.Assets.at("stylesheets/journal.css")" rel="stylesheet" type="text/css">
+    } {
 
         <div class="container-fluid">
             <div class="row">
@@ -42,6 +44,7 @@
                         // Prevent the form from clearing
                         e.preventDefault();
 
+                        // Get the journal text upon submission
                         let text = $("#journal-entry-input").val();
 
                         // Post the form data to the server
@@ -57,7 +60,7 @@
 
                                     if (response.status === 200) {
 
-                                        let data = {};
+                                        let data;
 
                                         // Parse the response text as JSON
                                         try {
@@ -66,9 +69,10 @@
                                             console.log("Error parsing JSON response");
                                         }
 
+                                        // Clear the text input
+                                        // TODO: I should actually clear the entire form here,
+                                        // even the hidden fields.
                                         if (data['success'] === true) {
-
-                                            // Clear the form inputs
                                             $("#journal-entry-input").val("");
                                         } else {
                                             // Handle errors
@@ -78,6 +82,7 @@
                             });
                         }
 
+                        // Options for the GeoLocation lookup
                         let options = {
                             "maximumAge": 10 * 1000
                         };
@@ -109,58 +114,61 @@
                 });
 
 
-                $.ajax({
-                    type: "get",
-                    url: "@controllers.routes.JournalEntries.getJournalEntries()",
-                    complete: function (response, textStatus) {
+                // Load the past journal entries
+                $(function () {
+                    $.ajax({
+                        type: "get",
+                        url: "@controllers.routes.JournalEntries.getJournalEntries()",
+                        complete: function (response, textStatus) {
 
-                        console.log(response.responseText);
+                            console.log(response.responseText);
 
-                        if (response.status === 200) {
+                            if (response.status === 200) {
 
-                            let data = {};
+                                let data = {};
 
-                            // Parse the response text as JSON
-                            try {
-                                data = JSON.parse(response.responseText);
+                                // Parse the response text as JSON
+                                try {
+                                    data = JSON.parse(response.responseText);
 
-                                data.sort((a, b) => {
+                                    data.sort((a, b) => {
 
-                                    if (a.timestamp < b.timestamp) {
-                                        return 1;
-                                    }
+                                        if (a.timestamp < b.timestamp) {
+                                            return 1;
+                                        }
 
-                                    if (a.timestamp > b.timestamp) {
-                                        return -1;
-                                    }
+                                        if (a.timestamp > b.timestamp) {
+                                            return -1;
+                                        }
 
-                                    return 0;
-                                });
+                                        return 0;
+                                    });
 
-                                let entryHtml = data.map((entry) => {
+                                    let entryHtml = data.map((entry) => {
 
-                                    let text = '<div class="journal-entry-text partial-border center-text-content">' + '<p>' + entry.text + '</p>';
+                                        let text = '<div class="journal-entry-text partial-border center-text-content">' + '<p>' + entry.text + '</p>';
 
-                                    let date = '<div class="journal-entry-info">' + moment(entry.timestamp).format('YYYY-MM-DD hh:mm') + '</div>' + '</div>';
+                                        let date = '<div class="journal-entry-info">' + moment(entry.timestamp).format('YYYY-MM-DD HH:mm') + '</div>' + '</div>';
 
-                                    return text + date;
-                                });
+                                        return text + date;
+                                    });
 
-                                document.getElementById("past-journal-entries").innerHTML = entryHtml.join("");
+                                    document.getElementById("past-journal-entries").innerHTML = entryHtml.join("");
 
-                            } catch (e) {
-                                console.log("Error parsing JSON response");
-                            }
+                                } catch (e) {
+                                    console.log("Error parsing JSON response");
+                                }
 
-                            if (data['success'] === true) {
+                                if (data['success'] === true) {
 
-                                // Clear the form inputs
-                                $("#journal-entry-input").val("");
-                            } else {
-                                // Handle errors
+                                    // Clear the form inputs
+                                    $("#journal-entry-input").val("");
+                                } else {
+                                    // Handle errors
+                                }
                             }
                         }
-                    }
+                    });
                 });
         </script>
     }

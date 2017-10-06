@@ -139,7 +139,6 @@
             </div>
 
 
-
                 <!-- Cumulative hours studied plot-->
             @plotHolder("cumulativePlot", List("monotonic"))
 
@@ -170,10 +169,6 @@
                 elem.attr("hidden", !elem.attr("hidden"));
             }
 
-    </script>
-
-    <script>
-
             let studyclock = new StudyClock("study-clock");
 
             // Initialize the page according to the user's status
@@ -201,7 +196,7 @@
                         $("#study-start-form").removeAttr("hidden");
                     }
                 }
-            })
+            });
 
     </script>
 
@@ -210,7 +205,6 @@
                 $("#study-start-form").on("submit", function (e) {
 
                     // TODO: prevent fields from clearing
-
                     e.preventDefault();
 
                     $.ajax({
@@ -261,7 +255,6 @@
                 $("#study-stop-form").on("submit", function (e) {
 
                     // TODO: prevent fields from clearing
-
                     e.preventDefault();
 
                     $.ajax({
@@ -308,7 +301,6 @@
                 $("#study-cancel-form").on("submit", function (e) {
 
                     // TODO: prevent fields from clearing
-
                     e.preventDefault();
 
                     $.ajax({
@@ -355,7 +347,6 @@
                 $("#add-subject-form").on("submit", function (e) {
 
                     // TODO: prevent fields from clearing
-
                     e.preventDefault();
 
                     $.ajax({
@@ -396,7 +387,6 @@
                 $("#rename-subject-form").on("submit", function (e) {
 
                     // TODO: prevent fields from clearing
-
                     e.preventDefault();
 
                     $.ajax({
@@ -447,7 +437,6 @@
         </defs>
     </svg>
 
-    <script src="@routes.Assets.at("/javascripts/loadJSON.js")"></script>
     <script src="@routes.Assets.at("/javascripts/stats.js")"></script>
 
         <!-- Moment JS -->
@@ -560,521 +549,520 @@
             function fillSummaryValues(stats) {
 
                 const n1 = stats.todaysTotal.toFixed(2).toString();
-
                 const n2 = stats.dailyAverage.toFixed(2).toString();
 
                 document.getElementById("streak-count").innerText = stats.currentStreak.toString() + " d";
-
                 document.getElementById("current-day-total").innerText = n1;
-
                 document.getElementById("average-day-total").innerText = n2;
             }
 
 
-            loadJSONFile("/json/sessions/@username", function (data) {
+            jQuery.ajax({
+                url: "@routes.Sessions.sessionsForUsername(username)",
+                type: "get",
+                dataType: "json",
+                success: function (data, textStatus, response) {
 
-                // TODO: The current time could come from the timestamp in the ResultInfo...
+                    // Add the current session to the session array
+                    if (data.status.isStudying) {
+                        data.sessions.push({
+                            "subject": data.status.subject,
+                            "startTime": data.status.start,
+                            "endTime": new Date().getTime()
+                        });
+                    }
 
-                // Add the current session to the session array
-                if (data.status.isStudying) {
-                    data.sessions.push({
-                        "subject": data.status.subject,
-                        "startTime": data.status.start,
-                        "endTime": new Date().getTime()
-                    });
-                }
+                    // Compute all of the stats and chart data from the raw sessions
+                    const stats = computeStats(data.sessions);
 
-                // Compute all of the stats and chart data from the raw sessions
-                const stats = computeStats(data.sessions);
+                    // Fill summary values at top of page
+                    fillSummaryValues(stats);
 
-                // Fill summary values at top of page
-                fillSummaryValues(stats);
+                    const subjectList = new SubjectList("subject-list-container", data.subjects);
 
+                    subjectList.sortByHours(stats.subjectTotals);
 
-                const subjectList = new SubjectList("subject-list-container", data.subjects);
+                    // Highchart default theme using CSS chart styling
+                    let styledTheme = {
 
-                subjectList.sortByHours(stats.subjectTotals);
-
-                // Highchart default theme using CSS chart styling
-                let styledTheme = {
-
-                    title: {
-                        align: 'left',
-                        margin: 50,
-                        x: 20,
-                        y: 40
-                    },
-
-                    subtitle: {
-                        align: 'left',
-                        x: 20,
-                        y: 60
-                    },
-
-                    yAxis: {
-                        tickWidth: 1,
                         title: {
-                            text: null,
-                            align: "middle",
-                        }
-                    },
+                            align: 'left',
+                            margin: 50,
+                            x: 20,
+                            y: 40
+                        },
 
-                    tooltip: {
-                        valueDecimals: 2,
-                        hideDelay: 150
-                    },
+                        subtitle: {
+                            align: 'left',
+                            x: 20,
+                            y: 60
+                        },
 
-                    plotOptions: {
-
-                        series: {
-                            dataLabels: {
-                                color: '#B0B0B3'
-                            },
-                            marker: {
-                                lineColor: '#333'
+                        yAxis: {
+                            tickWidth: 1,
+                            title: {
+                                text: null,
+                                align: "middle",
                             }
                         },
 
-                        area: {
-                            marker: {
-                                radius: 0
-                            },
-
-                            lineWidth: 1,
-                            states: {
-                                hover: {
-                                    lineWidth: 1
-                                }
-                            }
+                        tooltip: {
+                            valueDecimals: 2,
+                            hideDelay: 150
                         },
 
-                        areaspline: {
-                            marker: {
-                                radius: 0
-                            },
-                            lineWidth: 1,
-                            states: {
-                                hover: {
-                                    lineWidth: 1
-                                }
-                            }
-                        },
+                        plotOptions: {
 
-                        column: {
-                            color: "rgba(58, 127, 89, .9)",
-                            dataLabels: {
-                                enabled: false
-                            },
-                            borderWidth: 0
-                        },
-
-                        bar: {
-                            borderWidth: 0
-                        }
-                    },
-
-                    drilldown: {
-                        activeAxisLabelStyle: {
-                            color: '#F0F0F3'
-                        },
-                        activeDataLabelStyle: {
-                            color: '#F0F0F3'
-                        }
-                    },
-
-                    navigation: {
-                        buttonOptions: {
-                            symbolStroke: '#DDDDDD',
-                            theme: {
-                                fill: '#505053'
-                            }
-                        }
-                    },
-
-                    // scroll charts
-                    rangeSelector: {
-                        buttonTheme: {
-                            fill: '#505053',
-                            stroke: '#000000',
-                            style: {
-                                color: '#CCC'
-                            },
-                            states: {
-                                hover: {
-                                    fill: '#707073',
-                                    stroke: '#000000',
-                                    style: {
-                                        color: 'white'
-                                    }
+                            series: {
+                                dataLabels: {
+                                    color: '#B0B0B3'
                                 },
-                                select: {
-                                    fill: '#000003',
-                                    stroke: '#000000',
-                                    style: {
-                                        color: 'white'
+                                marker: {
+                                    lineColor: '#333'
+                                }
+                            },
+
+                            area: {
+                                marker: {
+                                    radius: 0
+                                },
+
+                                lineWidth: 1,
+                                states: {
+                                    hover: {
+                                        lineWidth: 1
                                     }
+                                }
+                            },
+
+                            areaspline: {
+                                marker: {
+                                    radius: 0
+                                },
+                                lineWidth: 1,
+                                states: {
+                                    hover: {
+                                        lineWidth: 1
+                                    }
+                                }
+                            },
+
+                            column: {
+                                color: "rgba(58, 127, 89, .9)",
+                                dataLabels: {
+                                    enabled: false
+                                },
+                                borderWidth: 0
+                            },
+
+                            bar: {
+                                borderWidth: 0
+                            }
+                        },
+
+                        drilldown: {
+                            activeAxisLabelStyle: {
+                                color: '#F0F0F3'
+                            },
+                            activeDataLabelStyle: {
+                                color: '#F0F0F3'
+                            }
+                        },
+
+                        navigation: {
+                            buttonOptions: {
+                                symbolStroke: '#DDDDDD',
+                                theme: {
+                                    fill: '#505053'
                                 }
                             }
                         },
-                        inputBoxBorderColor: '#505053',
 
-                        inputStyle: {
-                            backgroundColor: '#333',
-                            color: 'silver'
+                        // scroll charts
+                        rangeSelector: {
+                            buttonTheme: {
+                                fill: '#505053',
+                                stroke: '#000000',
+                                style: {
+                                    color: '#CCC'
+                                },
+                                states: {
+                                    hover: {
+                                        fill: '#707073',
+                                        stroke: '#000000',
+                                        style: {
+                                            color: 'white'
+                                        }
+                                    },
+                                    select: {
+                                        fill: '#000003',
+                                        stroke: '#000000',
+                                        style: {
+                                            color: 'white'
+                                        }
+                                    }
+                                }
+                            },
+                            inputBoxBorderColor: '#505053',
+
+                            inputStyle: {
+                                backgroundColor: '#333',
+                                color: 'silver'
+                            },
+
+                            labelStyle: {
+                                color: 'silver'
+                            }
                         },
 
-                        labelStyle: {
-                            color: 'silver'
-                        }
-                    },
-
-                    navigator: {
-                        handles: {
-                            backgroundColor: '#666',
-                            borderColor: '#AAA'
+                        navigator: {
+                            handles: {
+                                backgroundColor: '#666',
+                                borderColor: '#AAA'
+                            },
+                            outlineColor: '#CCC',
+                            maskFill: 'rgba(255,255,255,0.1)',
+                            series: {
+                                color: '#7798BF',
+                                lineColor: '#A6C7ED'
+                            },
+                            xAxis: {
+                                gridLineColor: '#505053'
+                            }
                         },
-                        outlineColor: '#CCC',
-                        maskFill: 'rgba(255,255,255,0.1)',
-                        series: {
-                            color: '#7798BF',
-                            lineColor: '#A6C7ED'
+
+                        scrollbar: {
+                            barBackgroundColor: '#808083',
+                            barBorderColor: '#808083',
+                            buttonArrowColor: '#CCC',
+                            buttonBackgroundColor: '#606063',
+                            buttonBorderColor: '#606063',
+                            rifleColor: '#FFF',
+                            trackBackgroundColor: '#404043',
+                            trackBorderColor: '#404043'
                         },
-                        xAxis: {
-                            gridLineColor: '#505053'
-                        }
-                    },
 
-                    scrollbar: {
-                        barBackgroundColor: '#808083',
-                        barBorderColor: '#808083',
-                        buttonArrowColor: '#CCC',
-                        buttonBackgroundColor: '#606063',
-                        buttonBorderColor: '#606063',
-                        rifleColor: '#FFF',
-                        trackBackgroundColor: '#404043',
-                        trackBorderColor: '#404043'
-                    },
+                        legend: {
+                            enabled: false
+                        },
 
-                    legend: {
-                        enabled: false
-                    },
+                        credits: {
+                            enabled: false
+                        },
 
-                    credits: {
-                        enabled: false
-                    },
+                        exporting: {
+                            enabled: false
+                        },
 
-                    exporting: {
-                        enabled: false
-                    },
-
-                    // special colors for some of the
-                    legendBackgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    background2: '#505053',
-                    dataLabelsColor: '#B0B0B3',
-                    textColor: '#C0C0C0',
-                    contrastTextColor: '#F0F0F3',
-                    maskColor: 'rgba(255,255,255,0.3)'
-                };
+                        // special colors for some of the
+                        legendBackgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        background2: '#505053',
+                        dataLabelsColor: '#B0B0B3',
+                        textColor: '#C0C0C0',
+                        contrastTextColor: '#F0F0F3',
+                        maskColor: 'rgba(255,255,255,0.3)'
+                    };
 
 
-                // Set the default theme for all charts on the page
-                Highcharts.theme = styledTheme;
+                    // Set the default theme for all charts on the page
+                    Highcharts.theme = styledTheme;
 
-                // Apply the theme
-                Highcharts.setOptions(Highcharts.theme);
+                    // Apply the theme
+                    Highcharts.setOptions(Highcharts.theme);
 
 
-                // Draw the daily summary chart
-                let widtChart = Highcharts.chart('widt-highchart', {
+                    // Draw the daily summary chart
+                    let widtChart = Highcharts.chart('widt-highchart', {
 
-                    chart: {
-                        type: 'bar',
-                        height: 100,
-                        marginLeft: 20,
-                        marginRight: 20,
-                        // Non-study time is represented with hidden series
-                        ignoreHiddenSeries: false
-                    },
+                        chart: {
+                            type: 'bar',
+                            height: 100,
+                            marginLeft: 20,
+                            marginRight: 20,
+                            // Non-study time is represented with hidden series
+                            ignoreHiddenSeries: false
+                        },
 
-                    title: {
-                        text: null
-                    },
-
-                    xAxis: {
-                        categories: [''],
-                        tickLength: 0
-                    },
-
-                    yAxis: {
-                        min: 0,
-                        max: 24,
-                        tickAmount: 13,
-                        tickLength: 0,
                         title: {
                             text: null
                         },
-                        // Ensure sessions appear in chronological order
-                        reversedStacks: false
-                    },
 
-                    tooltip: {
-                        valueSuffix: " hours",
-                        pointFormat: "{point.name} {point.y}"
-                    },
-
-                    plotOptions: {
-                        series: {
-                            stacking: 'normal'
+                        xAxis: {
+                            categories: [''],
+                            tickLength: 0
                         },
-                        bar: {
-                            dataLabels: {
-                                enabled: true,
-                                format: "{series.name}"
-                            }
-                        }
-                    },
 
-                    series: todayPlotPrep(stats.todaysSessions)
-                });
+                        yAxis: {
+                            min: 0,
+                            max: 24,
+                            tickAmount: 13,
+                            tickLength: 0,
+                            title: {
+                                text: null
+                            },
+                            // Ensure sessions appear in chronological order
+                            reversedStacks: false
+                        },
 
-                // Hide all of the series representing non-study time
-                for (let i = 0; i < widtChart.series.length; i += 2) {
-                    widtChart.series[i].hide();
-                }
+                        tooltip: {
+                            valueSuffix: " hours",
+                            pointFormat: "{point.name} {point.y}"
+                        },
 
-                // Draw the Cumulative Plot
-                let cumulativeChart = Highcharts.chart('cumulativePlot', {
-
-                    chart: {
-                        type: "areaspline",
-                        zoomType: 'x'
-                    },
-
-                    title: {
-                        text: 'Cumulative Hours Studied'
-                    },
-
-                    xAxis: {
-                        type: 'datetime'
-                    },
-
-                    yAxis: {
-                        min: 0,
-                        labels: {
-                            formatter: function () {
-
-                                if (this.value === 0) {
-                                    return "0";
-                                } else {
-                                    return (this.value / 1000).toString() + "K";
+                        plotOptions: {
+                            series: {
+                                stacking: 'normal'
+                            },
+                            bar: {
+                                dataLabels: {
+                                    enabled: true,
+                                    format: "{series.name}"
                                 }
                             }
-                        }
-                    },
-
-                    tooltip: {
-                        pointFormatter: function () {
-                            return Math.round(this.y).toString() + ' hours';
                         },
-                        valueSuffix: " hours"
-                    },
 
-                    series: [{
-                        name: 'Cumulative Hours Studied',
-                        data: stats.denseCumulative
-                    }]
-                });
+                        series: todayPlotPrep(stats.todaysSessions)
+                    });
 
-                function cmp(sub1, sub2) {
-                    if (sub1[1] < sub2[1]) {
-                        return 1;
+                    // Hide all of the series representing non-study time
+                    for (let i = 0; i < widtChart.series.length; i += 2) {
+                        widtChart.series[i].hide();
                     }
 
-                    if (sub1[1] > sub2[1]) {
-                        return -1;
-                    }
+                    // Draw the Cumulative Plot
+                    let cumulativeChart = Highcharts.chart('cumulativePlot', {
 
-                    return 0;
-                }
+                        chart: {
+                            type: "areaspline",
+                            zoomType: 'x'
+                        },
 
-                // Return only the n most studied subjects
-                const top10 = Array.from(stats.subjectTotals.entries()).sort(cmp).slice(0, 10);
-
-                // X and Y values for the subjectTotals plot
-                let subject_totals_xs = [];
-                let subject_totals_ys = [];
-
-                for (let i = 0; i < top10.length; i++) {
-                    subject_totals_xs.push(top10[i][0]);
-                    subject_totals_ys.push(top10[i][1]);
-                }
-
-                // Draw the subject totals plot
-                let subjectTotalsChart = Highcharts.chart('subjectTotalsPlot', {
-
-                    chart: {
-                        type: 'column'
-                    },
-
-                    title: {
-                        text: 'Hours Studied Per Subject'
-                    },
-
-                    subtitle: {
-                        text: "10 most studied subjects"
-                    },
-
-                    xAxis: {
-                        categories: subject_totals_xs
-                    },
-
-                    yAxis: {
-                        min: 0
-                    },
-
-                    tooltip: {
-                        pointFormat: '{point.y}',
-                        valueSuffix: ' hours',
-                        valueDecimals: 0
-                    },
-
-                    series: [{
-                        name: 'Subject Totals',
-                        data: subject_totals_ys
-                    }]
-                });
-
-
-                // Draw the probability plot with the HighChart library
-                let probabilityChart = Highcharts.chart('probabilityPlot', {
-
-                    chart: {
-                        type: 'areaspline',
-                        zoomType: "x"
-                    },
-
-                    title: {
-                        text: "Probability that I'm studying"
-                    },
-
-                    subtitle: {
-                        text: 'At any given hour'
-                    },
-
-                    xAxis: {
                         title: {
-                            text: "Hour of Day"
-                        }
-                    },
-
-                    yAxis: {
-                        tickAmount: 6
-                    },
-
-                    plotOptions: {
-                        series: {
-                            pointStart: 0
+                            text: 'Cumulative Hours Studied'
                         },
-                        areaspline: {
-                            marker: {
-                                enabled: false
+
+                        xAxis: {
+                            type: 'datetime'
+                        },
+
+                        yAxis: {
+                            min: 0,
+                            labels: {
+                                formatter: function () {
+
+                                    if (this.value === 0) {
+                                        return "0";
+                                    } else {
+                                        return (this.value / 1000).toString() + "K";
+                                    }
+                                }
                             }
-                        }
-                    },
+                        },
 
-                    series: [{
-                        name: 'Probability',
-                        data: stats.probabilityWithTime
-                    }]
-
-                });
-
-
-                // Draw the Moving Average Plot
-                let movingAverageChart = Highcharts.chart('movingAveragePlot', {
-
-                    chart: {
-                        type: "areaspline",
-                        zoomType: 'x'
-                    },
-
-                    title: {
-                        text: 'Hours Studied Per Day'
-                    },
-
-                    subtitle: {
-                        text: 'Moving Average - ' + movingAverageRadius.toString() + ' day window'
-                    },
-
-                    xAxis: {
-                        type: 'datetime'
-                    },
-
-                    yAxis: {
-                        min: 0
-                    },
-
-                    tooltip: {
-                        valueSuffix: " hours",
-                        pointFormat: "{point.y}"
-                    },
-
-                    series: [{
-                        name: 'Average Hours Studied per Day',
-                        data: stats.movingAverage
-                    }]
-                });
-
-                let daily_averages_xs = [];
-                let daily_averages_ys = [];
-
-                stats.dayOfWeekAverages.forEach(function (curr, arr, i) {
-                    daily_averages_xs.push(curr[0]);
-                    daily_averages_ys.push(curr[1]);
-                });
-
-                // Draw the subject totals plot
-                let dailyAveragesChart = Highcharts.chart('dayOfWeekAveragesPlot', {
-
-                    chart: {
-                        type: 'column'
-                    },
-
-                    title: {
-                        text: 'Hours Studied Per Weekday'
-                    },
-
-                    subtitle: {
-                        text: "On average"
-                    },
-
-                    xAxis: {
-                        categories: daily_averages_xs
-                    },
-
-                    yAxis: {
-                        min: 0
-                    },
-
-                    tooltip: {
-                        valueSuffix: " hours",
-                        pointFormat: "{point.y}"
-                    },
-
-                    plotOptions: {
-                        column: {
-                            dataLabels: {
-                                enabled: false
+                        tooltip: {
+                            pointFormatter: function () {
+                                return Math.round(this.y).toString() + ' hours';
                             },
-                            borderWidth: 0
-                        }
-                    },
+                            valueSuffix: " hours"
+                        },
 
-                    series: [{
-                        name: 'Daily Average',
-                        data: daily_averages_ys
-                    }]
-                });
+                        series: [{
+                            name: 'Cumulative Hours Studied',
+                            data: stats.denseCumulative
+                        }]
+                    });
+
+                    function cmp(sub1, sub2) {
+                        if (sub1[1] < sub2[1]) {
+                            return 1;
+                        }
+
+                        if (sub1[1] > sub2[1]) {
+                            return -1;
+                        }
+
+                        return 0;
+                    }
+
+                    // Return only the n most studied subjects
+                    const top10 = Array.from(stats.subjectTotals.entries()).sort(cmp).slice(0, 10);
+
+                    // X and Y values for the subjectTotals plot
+                    let subject_totals_xs = [];
+                    let subject_totals_ys = [];
+
+                    for (let i = 0; i < top10.length; i++) {
+                        subject_totals_xs.push(top10[i][0]);
+                        subject_totals_ys.push(top10[i][1]);
+                    }
+
+                    // Draw the subject totals plot
+                    let subjectTotalsChart = Highcharts.chart('subjectTotalsPlot', {
+
+                        chart: {
+                            type: 'column'
+                        },
+
+                        title: {
+                            text: 'Hours Studied Per Subject'
+                        },
+
+                        subtitle: {
+                            text: "10 most studied subjects"
+                        },
+
+                        xAxis: {
+                            categories: subject_totals_xs
+                        },
+
+                        yAxis: {
+                            min: 0
+                        },
+
+                        tooltip: {
+                            pointFormat: '{point.y}',
+                            valueSuffix: ' hours',
+                            valueDecimals: 0
+                        },
+
+                        series: [{
+                            name: 'Subject Totals',
+                            data: subject_totals_ys
+                        }]
+                    });
+
+
+                    // Draw the probability plot with the HighChart library
+                    let probabilityChart = Highcharts.chart('probabilityPlot', {
+
+                        chart: {
+                            type: 'areaspline',
+                            zoomType: "x"
+                        },
+
+                        title: {
+                            text: "Probability that I'm studying"
+                        },
+
+                        subtitle: {
+                            text: 'At any given hour'
+                        },
+
+                        xAxis: {
+                            title: {
+                                text: "Hour of Day"
+                            }
+                        },
+
+                        yAxis: {
+                            tickAmount: 6
+                        },
+
+                        plotOptions: {
+                            series: {
+                                pointStart: 0
+                            },
+                            areaspline: {
+                                marker: {
+                                    enabled: false
+                                }
+                            }
+                        },
+
+                        series: [{
+                            name: 'Probability',
+                            data: stats.probabilityWithTime
+                        }]
+
+                    });
+
+
+                    // Draw the Moving Average Plot
+                    let movingAverageChart = Highcharts.chart('movingAveragePlot', {
+
+                        chart: {
+                            type: "areaspline",
+                            zoomType: 'x'
+                        },
+
+                        title: {
+                            text: 'Hours Studied Per Day'
+                        },
+
+                        subtitle: {
+                            text: 'Moving Average - ' + movingAverageRadius.toString() + ' day window'
+                        },
+
+                        xAxis: {
+                            type: 'datetime'
+                        },
+
+                        yAxis: {
+                            min: 0
+                        },
+
+                        tooltip: {
+                            valueSuffix: " hours",
+                            pointFormat: "{point.y}"
+                        },
+
+                        series: [{
+                            name: 'Average Hours Studied per Day',
+                            data: stats.movingAverage
+                        }]
+                    });
+
+                    let daily_averages_xs = [];
+                    let daily_averages_ys = [];
+
+                    stats.dayOfWeekAverages.forEach(function (curr, arr, i) {
+                        daily_averages_xs.push(curr[0]);
+                        daily_averages_ys.push(curr[1]);
+                    });
+
+                    // Draw the subject totals plot
+                    let dailyAveragesChart = Highcharts.chart('dayOfWeekAveragesPlot', {
+
+                        chart: {
+                            type: 'column'
+                        },
+
+                        title: {
+                            text: 'Hours Studied Per Weekday'
+                        },
+
+                        subtitle: {
+                            text: "On average"
+                        },
+
+                        xAxis: {
+                            categories: daily_averages_xs
+                        },
+
+                        yAxis: {
+                            min: 0
+                        },
+
+                        tooltip: {
+                            valueSuffix: " hours",
+                            pointFormat: "{point.y}"
+                        },
+
+                        plotOptions: {
+                            column: {
+                                dataLabels: {
+                                    enabled: false
+                                },
+                                borderWidth: 0
+                            }
+                        },
+
+                        series: [{
+                            name: 'Daily Average',
+                            data: daily_averages_ys
+                        }]
+                    });
+                }
             });
     </script>
 }

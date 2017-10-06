@@ -184,18 +184,6 @@ body {
     margin-bottom: 40px;
 }
 
-.settings-page-form {
-    margin: 40px 0;
-}
-
-.settings-page-form div {
-    width: 100%;
-}
-
-.settings-page-form button {
-    width: 150px;
-}
-
 /* Styling the footer */
 
 footer {
@@ -249,12 +237,6 @@ footer {
     font-size: large;
 }
 
-.profile-link {
-    font-size: 3.5em;
-    text-align: center;
-    padding: 10px;
-}
-
 .partial-border {
     border-bottom: solid 2px #707073;
 }
@@ -266,34 +248,6 @@ footer {
 
 .chart-container {
     height: 350px;
-}
-
-#journal-entry-input {
-    height: 100px;
-    color: #E0E0E3;
-    background: transparent;
-    border: none;
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-
-    font-size: 24px;
-}
-
-#journal-entry-input-button {
-    background: transparent;
-    border: none;
-    margin: auto;
-}
-
-.journal-entry-text {
-    font-size: 24px;
-}
-
-.journal-entry-info {
-    font-size: 14px;
-    text-align: right;
-    color: #707073;
 }
 
 /* CSS for loading animation */
@@ -349,10 +303,6 @@ footer {
         height: 500px;
     }
 
-    .profile-link {
-        font-size: 6em;
-    }
-
     .quote {
         margin-bottom: 50px;
         font-size: xx-large;
@@ -397,10 +347,6 @@ footer {
 /* Medium Screens */
 @media (min-width: 992px) {
 
-    .profile-link {
-        font-size: 8em;
-    }
-
     .panel-data-block {
         font-size: x-large;
     }
@@ -416,10 +362,6 @@ footer {
 
     .loading-dots span {
         font-size: medium;
-    }
-
-    .profile-link {
-        font-size: 10em;
     }
 
     .panel-data-block {

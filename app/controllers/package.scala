@@ -35,6 +35,8 @@ package object controllers {
   /**
     * Remove excess whitespace from the given text
     *
+    * TODO: Replace 2+ newlines with a single newline
+    *
     * @param text The raw input text
     * @return
     */
