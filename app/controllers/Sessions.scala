@@ -46,7 +46,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
       SessionStartForm.startForm.bindFromRequest()(request).fold(
         _ => invalidFormResponse,
         goodForm => sessions.startSession(username, goodForm.subject).map(resultInfo =>
-          Ok(Json.toJson(resultInfo))
+          Ok(resultInfo.toJson)
         )
       )
     })
@@ -63,7 +63,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     withUsername(username => {
       SessionStopForm.stopForm.bindFromRequest()(request).fold(
         _ => invalidFormResponse,
-        goodForm => sessions.stopSession(username, goodForm.message).map(resultInfo => Ok(Json.toJson(resultInfo)))
+        goodForm => sessions.stopSession(username, goodForm.message).map(resultInfo => Ok(resultInfo.toJson))
       )
     })
   }
@@ -77,7 +77,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   def cancelSession = Action.async { implicit request =>
 
     withUsername(username => {
-      sessions.abortSession(username).map(resultInfo => Ok(Json.toJson(resultInfo)))
+      sessions.abortSession(username).map(resultInfo => Ok(resultInfo.toJson))
     })
 
   }
@@ -97,17 +97,17 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
           // Check the subject name
           if (subjectNameRegex.findFirstIn(goodForm.subject).isEmpty) {
-            Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable subject name"))))
+            Future(Ok(ResultInfo.failWithMessage("Unacceptable subject name").toJson))
           }
           else if (descriptionRegex.findFirstIn(goodForm.description).isEmpty) {
-            Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable subject description"))))
+            Future(Ok(ResultInfo.failWithMessage("Unacceptable subject description").toJson))
           }
           else {
 
             // Remove excess whitespace from the subject description
             val cleanedDescription = withoutExcessWhitespace(goodForm.description)
 
-            sessions.addSubject(username, goodForm.subject, cleanedDescription).map(resultInfo => Ok(Json.toJson(resultInfo)))
+            sessions.addSubject(username, goodForm.subject, cleanedDescription).map(resultInfo => Ok(resultInfo.toJson))
           }
         }
       )
@@ -126,7 +126,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     withUsername(username => {
       RemoveSubjectForm.form.bindFromRequest()(request).fold(
         _ => invalidFormResponse,
-        goodForm => sessions.removeSubject(username, goodForm.subject).map(resultInfo => Ok(Json.toJson(resultInfo)))
+        goodForm => sessions.removeSubject(username, goodForm.subject).map(resultInfo => Ok(resultInfo.toJson))
       )
     })
 
@@ -147,10 +147,10 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
           // Check the subject name
           if (subjectNameRegex.findFirstIn(goodForm.newName).isEmpty) {
-            Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable subject name"))))
+            Future(Ok(ResultInfo.failWithMessage("Unacceptable subject name").toJson))
           } else {
 
-            sessions.renameSubject(username, goodForm.oldName, goodForm.newName).map(resultInfo => Ok(Json.toJson(resultInfo)))
+            sessions.renameSubject(username, goodForm.oldName, goodForm.newName).map(resultInfo => Ok(resultInfo.toJson))
           }
         }
       )
@@ -168,7 +168,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     withUsername(username => {
       MergeSubjectsForm.form.bindFromRequest()(request).fold(
         _ => invalidFormResponse,
-        goodForm => sessions.mergeSubjects(username, goodForm.absorbed, goodForm.absorbing).map(resultInfo => Ok(Json.toJson(resultInfo)))
+        goodForm => sessions.mergeSubjects(username, goodForm.absorbed, goodForm.absorbing).map(resultInfo => Ok(resultInfo.toJson))
       )
     })
 
@@ -183,7 +183,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   def sessionsForUsername(username: String) = Action.async { implicit request =>
 
-    sessions.getUserSessionData(username).map(optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve sessions"))))(data => Ok(Json.toJson(data))))
+    sessions.getUserSessionData(username).map(optData => optData.fold(Ok(ResultInfo.failWithMessage("failed to retrieve sessions").toJson))(data => Ok(Json.toJson(data))))
   }
 
 
@@ -195,9 +195,9 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   def userStatus(username: String) = Action.async { implicit request =>
 
     sessions.getUserStatus(username).map(optData => optData.fold(
-      Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve status")))
+      Ok(ResultInfo.failWithMessage("failed to retrieve status").toJson)
     )(data =>
-      Ok(Json.obj("success" -> true, "message" -> s"retrieved status for $username", "timestamp" -> System.currentTimeMillis(), "payload" -> data.status))
+      Ok(ResultInfo(success = true, s"retrieved status for $username", System.currentTimeMillis(), data.status).toJson)
     )
     )
   }

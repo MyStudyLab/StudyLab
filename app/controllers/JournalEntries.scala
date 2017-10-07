@@ -45,7 +45,7 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
           val entry = JournalEntry(username, cleanedEntry, System.currentTimeMillis(), position)
 
-          journalEntries.addJournalEntry(entry).map(resultInfo => Ok(Json.toJson(resultInfo)))
+          journalEntries.addJournalEntry(entry).map(resultInfo => Ok(resultInfo.toJson))
         }
       )
     })

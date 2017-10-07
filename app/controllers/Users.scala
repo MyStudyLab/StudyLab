@@ -73,12 +73,12 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
 
         // Check the username
         if (usernameRegex.findFirstIn(goodForm.username).isEmpty) {
-          Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable username"))))
+          Future(Ok(ResultInfo.failWithMessage("Unacceptable username").toJson))
         }
 
         // Check the password
         else if (passwordRegex.findFirstIn(goodForm.password).isEmpty) {
-          Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable password"))))
+          Future(Ok(ResultInfo.failWithMessage("Unacceptable password").toJson))
         }
 
         else {
@@ -89,11 +89,11 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
 
             // Insert the User object into the database
             usersModel.addNewUser(newUser).map(
-              resultInfo => Ok(Json.toJson(resultInfo))
+              resultInfo => Ok(resultInfo.toJson)
             )
 
           } catch {
-            case _: Throwable => Future(Ok(Json.toJson(ResultInfo.failWithMessage("Error adding new user"))))
+            case _: Throwable => Future(Ok(ResultInfo.failWithMessage("Error adding new user").toJson))
           }
         }
       }
@@ -112,7 +112,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
       DeactivateProfileForm.form.bindFromRequest()(request).fold(
         _ => invalidFormResponse,
         goodForm => {
-          usersModel.deleteUser(username, goodForm.password).map(result => if (result.success) Redirect(routes.Application.home()).withNewSession else InternalServerError(Json.toJson(result)))
+          usersModel.deleteUser(username, goodForm.password).map(result => if (result.success) Redirect(routes.Application.home()).withNewSession else InternalServerError(result.toJson))
         }
       )
 
@@ -132,8 +132,8 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
         _ => invalidFormResponse,
         goodForm => {
           usersModel.changeEmail(username, goodForm.email).map(success =>
-            if (success) Ok(Json.toJson(ResultInfo.succeedWithMessage("Email address has been updated")))
-            else InternalServerError(Json.toJson(ResultInfo.failWithMessage("Failed to update email address"))))
+            if (success) Ok(ResultInfo.succeedWithMessage("Email address has been updated").toJson)
+            else InternalServerError(ResultInfo.failWithMessage("Failed to update email address").toJson))
         }
       )
     })
@@ -152,8 +152,8 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
         _ => invalidFormResponse,
         goodForm => {
           usersModel.changePassword(username, goodForm.password).map(success =>
-            if (success) Ok(Json.toJson(ResultInfo.succeedWithMessage("Password has been updated")))
-            else InternalServerError(Json.toJson(ResultInfo.failWithMessage("Failed to update password"))))
+            if (success) Ok(ResultInfo.succeedWithMessage("Password has been updated").toJson)
+            else InternalServerError(ResultInfo.failWithMessage("Failed to update password").toJson))
         }
       )
     })
@@ -169,7 +169,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
   def profilesForUsername(username: String): Action[AnyContent] = Action.async { implicit request =>
 
     usersModel.socialProfiles(username).map(
-      optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve profiles"))))(data => Ok(Json.toJson(data)))
+      optData => optData.fold(Ok(ResultInfo.failWithMessage("failed to retrieve profiles").toJson))(data => Ok(Json.toJson(data)))
     )
   }
 
@@ -183,7 +183,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
   def aboutMessage(username: String): Action[AnyContent] = Action.async { implicit request =>
 
     usersModel.aboutMessage(username).map(
-      optData => optData.fold(Ok(Json.toJson(ResultInfo.failWithMessage("failed to retrieve about message"))))(data => Ok(Json.toJson(data)))
+      optData => optData.fold(Ok(ResultInfo.failWithMessage("failed to retrieve about message").toJson))(data => Ok(Json.toJson(data)))
     )
   }
 
@@ -201,7 +201,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
 
     // Check the about message
     if (aboutRegex.findFirstIn(message).isEmpty) {
-      Future(Ok(Json.toJson(ResultInfo.failWithMessage("Unacceptable 'about' text"))))
+      Future(Ok(ResultInfo.failWithMessage("Unacceptable 'about' text").toJson))
     }
 
     val cleanedMessage = "\\s+".r.replaceAllIn(message, " ")

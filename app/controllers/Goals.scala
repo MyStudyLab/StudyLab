@@ -35,6 +35,6 @@ class Goals @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     * @return
     */
   def addCumulativeGoal(username: String) = Action.async { implicit request =>
-    goals.addCumulativeGoal(username, CumulativeGoal("", 0, 0, 0, Vector[Int]())).map(result => Ok(Json.toJson(result)))
+    goals.addCumulativeGoal(username, CumulativeGoal("", 0, 0, 0, Vector[Int]())).map(result => Ok(result.toJson))
   }
 }

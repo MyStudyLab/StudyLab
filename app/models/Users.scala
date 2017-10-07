@@ -37,10 +37,10 @@ class Users(protected val api: ReactiveMongoApi) {
     * @param user The user to add
     * @return
     */
-  def addNewUser(user: User): Future[ResultInfo] = {
+  def addNewUser(user: User): Future[ResultInfo[String]] = {
 
     usersCollection.flatMap(_.insert(user)).map(result =>
-      new ResultInfo(result.ok, "used to be result.message")
+      ResultInfo(result.ok, "used to be result.message")
     ).recover {
       case e: DatabaseException => e.code.fold(ResultInfo.failWithMessage(e.message)) {
 
@@ -64,7 +64,7 @@ class Users(protected val api: ReactiveMongoApi) {
     * @param username The username of the user to be removed
     * @return
     */
-  def deleteUser(username: String, password: String): Future[ResultInfo] = {
+  def deleteUser(username: String, password: String): Future[ResultInfo[String]] = {
 
     checkCredentials(username, password).flatMap(validated => {
 

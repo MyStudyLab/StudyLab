@@ -75,7 +75,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @param subject  The subject of the new study session.
     * @return
     */
-  def startSession(username: String, subject: String): Future[ResultInfo] = {
+  def startSession(username: String, subject: String): Future[ResultInfo[String]] = {
 
     userData[StatusSubjects](username).flatMap(optStatsSubs =>
 
@@ -115,7 +115,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @param message  The commit message for the study session.
     * @return
     */
-  def stopSession(username: String, message: String): Future[ResultInfo] = {
+  def stopSession(username: String, message: String): Future[ResultInfo[String]] = {
 
     userData[StatusSubjects](username).flatMap(opt =>
 
@@ -155,7 +155,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @param username The username for which to abort the current session.
     * @return
     */
-  def abortSession(username: String): Future[ResultInfo] = {
+  def abortSession(username: String): Future[ResultInfo[String]] = {
 
     userData[StatusSubjects](username).flatMap(opt =>
 
@@ -191,7 +191,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @param description
     * @return
     */
-  def addSubject(username: String, subject: String, description: String): Future[ResultInfo] = {
+  def addSubject(username: String, subject: String, description: String): Future[ResultInfo[String]] = {
 
     userData[StatusSubjects](username).flatMap(opt =>
 
@@ -227,7 +227,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @param subject  The subject to remove.
     * @return
     */
-  def removeSubject(username: String, subject: String): Future[ResultInfo] = {
+  def removeSubject(username: String, subject: String): Future[ResultInfo[String]] = {
 
     // Get the user's session data
     userData[StatusSubjectsSessions](username).flatMap(opt =>
@@ -269,7 +269,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @param newName  The new subject name.
     * @return
     */
-  def renameSubject(username: String, oldName: String, newName: String): Future[ResultInfo] = {
+  def renameSubject(username: String, oldName: String, newName: String): Future[ResultInfo[String]] = {
 
     // Get the user's session data
     userData[StatusSubjectsSessions](username).flatMap(opt =>
@@ -327,7 +327,7 @@ class Sessions(protected val mongoApi: ReactiveMongoApi) {
     * @param absorbing The subject that will absorb the other.
     * @return
     */
-  def mergeSubjects(username: String, absorbed: String, absorbing: String): Future[ResultInfo] = {
+  def mergeSubjects(username: String, absorbed: String, absorbing: String): Future[ResultInfo[String]] = {
 
     // Get the user's session data
     userData[StatusSubjectsSessions](username).flatMap(opt =>

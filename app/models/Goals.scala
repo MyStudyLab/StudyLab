@@ -30,7 +30,7 @@ class Goals(protected val mongoApi: ReactiveMongoApi) {
     * @param goal
     * @return
     */
-  def addCumulativeGoal(username: String, goal: CumulativeGoal): Future[ResultInfo] = {
+  def addCumulativeGoal(username: String, goal: CumulativeGoal): Future[ResultInfo[String]] = {
 
     def goalsCollection: Future[BSONCollection] = mongoApi.database.map(_.collection("cumulative_goals"))
 

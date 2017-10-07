@@ -31,7 +31,7 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
     * @param entry The journal entry to record
     * @return
     */
-  def addJournalEntry(entry: JournalEntry): Future[ResultInfo] = {
+  def addJournalEntry(entry: JournalEntry): Future[ResultInfo[String]] = {
 
     bsonJournalEntriesCollection.flatMap(_.insert(entry).map(result =>
       if (result.ok) ResultInfo.succeedWithMessage("Journal entry recorded")

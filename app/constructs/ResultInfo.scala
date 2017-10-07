@@ -1,7 +1,7 @@
 package constructs
 
 // Play Framework
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json._
 
 // TODO: How to add a payload field? Type parameter with implicit Json.Writer?
 /**
@@ -11,16 +11,25 @@ import play.api.libs.json.{Json, Writes}
   * @param message   A message regarding the success/failure of the operation
   * @param timestamp When the response was created by the server
   */
-case class ResultInfo(success: Boolean, message: String, timestamp: Long) {
+case class ResultInfo[T](success: Boolean, message: String, timestamp: Long, payload: T)(implicit payloadWrites: Writes[T]) {
 
+  def toJson: JsValue = JsObject(Seq(
+    "success" -> JsBoolean(success),
+    "message" -> JsString(message),
+    "timestamp" -> JsNumber(timestamp),
+    "payload" -> payloadWrites.writes(payload)
+  ))
 
-  def this(success: Boolean, message: String) = this(success, message, System.currentTimeMillis())
 }
 
 object ResultInfo {
 
+  def apply(success: Boolean, message: String): ResultInfo[String] = new ResultInfo(success, message, System.currentTimeMillis(), "")
+
+  def apply(success: Boolean, message: String, timestamp: Long): ResultInfo[String] = new ResultInfo(success, message, timestamp, "")
+
   // Implicitly convert to JSON
-  implicit val ResultInfoWriter: Writes[ResultInfo] = Json.writes[ResultInfo]
+  //implicit def ResultInfoWriter[T](implicit writes: Writes[T]): Writes[ResultInfo[T]] = Json.writes[ResultInfo[T]]
 
   // Message for when Mongo fails without providing one
   val noErrMsg = "Failed without error message"
@@ -37,7 +46,7 @@ object ResultInfo {
     * @param message A message describing the result
     * @return
     */
-  def failWithMessage(message: String): ResultInfo = ResultInfo(success = false, message, System.currentTimeMillis())
+  def failWithMessage(message: String): ResultInfo[String] = ResultInfo(success = false, message, System.currentTimeMillis())
 
 
   /**
@@ -46,7 +55,7 @@ object ResultInfo {
     * @param message A message describing the result
     * @return
     */
-  def succeedWithMessage(message: String): ResultInfo = ResultInfo(success = true, message, System.currentTimeMillis())
+  def succeedWithMessage(message: String): ResultInfo[String] = ResultInfo(success = true, message, System.currentTimeMillis())
 
 
   /**
@@ -54,20 +63,20 @@ object ResultInfo {
     *
     * @return
     */
-  def badUsernameOrPass: ResultInfo = failWithMessage("Incorrect username or password")
+  def badUsernameOrPass: ResultInfo[String] = failWithMessage("Incorrect username or password")
 
   /**
     *
     * @return
     */
-  def invalidUsername: ResultInfo = failWithMessage("Invalid Username")
+  def invalidUsername: ResultInfo[String] = failWithMessage("Invalid Username")
 
   /**
     * A result indicating that the user was already studying.
     *
     * @return
     */
-  def alreadyStudying: ResultInfo = failWithMessage("Already studying")
+  def alreadyStudying: ResultInfo[String] = failWithMessage("Already studying")
 
 
   /**
@@ -75,7 +84,7 @@ object ResultInfo {
     *
     * @return
     */
-  def notStudying: ResultInfo = failWithMessage("Not studying")
+  def notStudying: ResultInfo[String] = failWithMessage("Not studying")
 
 
   /**
@@ -83,11 +92,11 @@ object ResultInfo {
     *
     * @return
     */
-  def invalidSubject: ResultInfo = failWithMessage("Invalid subject")
+  def invalidSubject: ResultInfo[String] = failWithMessage("Invalid subject")
 
   /**
     *
     * @return
     */
-  def invalidForm: ResultInfo = failWithMessage("Invalid form")
+  def invalidForm: ResultInfo[String] = failWithMessage("Invalid form")
 }

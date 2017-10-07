@@ -17,7 +17,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 package object controllers {
 
   // Response indicating the request form was invalid.
-  def invalidFormResponse = Future(Ok(Json.toJson(ResultInfo.invalidForm)))
+  def invalidFormResponse = Future(Ok(ResultInfo.invalidForm.toJson))
 
   /**
     * Get the username from the session cookie
