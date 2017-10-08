@@ -17,11 +17,14 @@ POST        /login                          controllers.Users.login()
 # Logout of the current session
 POST        /logout                         controllers.Application.logout()
 
-# The Settings page
-GET         /settings                       controllers.Application.settings()
+# The ToDo page
+GET         /todo                           controllers.Application.todo()
 
 # The Journal page
 GET         /journal                        controllers.Application.journal()
+
+# The Settings page
+GET         /settings                       controllers.Application.settings()
 
 # The About page for Study Lab
 GET         /about                          controllers.Application.about()
@@ -81,7 +84,7 @@ POST        /users/updatePassword           controllers.Users.updatePassword()
 POST        /users/delete                   controllers.Users.deleteUser()
 
 # Add a cumulative goal for a user
-POST        /goals/addCumulative            controllers.Default.todo()
+POST        /todo/addTodoItem               controllers.Todo.addTodoItem()
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                   controllers.Assets.at(path="/public", file)

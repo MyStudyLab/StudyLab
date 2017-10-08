@@ -15,7 +15,7 @@ dist
 /RUNNING_PID
 /.settings
 
-# My todo files, etc.
+# My to-do files, etc.
 /*.txt    
 
 # Heroku

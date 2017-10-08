@@ -45,9 +45,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     withUsername(username => {
       SessionStartForm.startForm.bindFromRequest()(request).fold(
         _ => invalidFormResponse,
-        goodForm => sessions.startSession(username, goodForm.subject).map(resultInfo =>
-          Ok(resultInfo.toJson)
-        )
+        form => sessions.startSession(username, form.subject).map(resultInfo => Ok(resultInfo.toJson))
       )
     })
   }
@@ -63,7 +61,7 @@ class Sessions @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     withUsername(username => {
       SessionStopForm.stopForm.bindFromRequest()(request).fold(
         _ => invalidFormResponse,
-        goodForm => sessions.stopSession(username, goodForm.message).map(resultInfo => Ok(resultInfo.toJson))
+        form => sessions.stopSession(username, form.message).map(resultInfo => Ok(resultInfo.toJson))
       )
     })
   }

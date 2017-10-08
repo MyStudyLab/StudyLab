@@ -32,6 +32,11 @@ package object controllers {
     request.session.get("connected").fold(Future(Redirect(routes.Application.loginPage())))(username => func(username))
   }
 
+  def withUsername[A](func: String => Result)(implicit request: Request[A]): Result = {
+
+    request.session.get("connected").fold(Redirect(routes.Application.loginPage()))(username => func(username))
+  }
+
   /**
     * Remove excess whitespace from the given text
     *

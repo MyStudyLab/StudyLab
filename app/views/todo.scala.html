@@ -1,0 +1,111 @@
+@(username: String)(implicit messages: Messages)
+
+@loggedInTemplate("Todo") {
+    <link href="@routes.Assets.at("stylesheets/todo.css")" rel="stylesheet" type="text/css">
+} {
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2">
+                <div class="raised-element padded-plot text-justify partial-border center-text-content">
+
+                    <form id="todo-item-form" class="">
+
+                        <input type="number" step="any" name="latitude" id="todo-latitude-input" value=0.00 hidden>
+
+                        <input type="number" step="any" name="longitude" id="todo-longitude-input" value=0.00 hidden>
+
+                        <div class="form-group">
+                            <label class="sr-only" for="change-password-input">Password</label>
+                            <input type="text" name="text" class="form-control" id="todo-item-input" placeholder="I need to..." required>
+                        </div>
+
+                        <button type="submit" class="btn btn-default">Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+            'use strict';
+
+            $(function () {
+                $("#todo-item-form").on("submit", function (e) {
+
+                    // Prevent the form from clearing
+                    e.preventDefault();
+
+                    // Get the journal text upon submission
+                    let text = $("#todo-item-input").val();
+
+                    // Post the form data to the server
+                    function sendForm() {
+                        $.ajax({
+                            type: "post",
+                            url: "@controllers.routes.Todo.addTodoItem()",
+                            data: $("#todo-item-form").serialize(),
+                            dataType: "json",
+                            complete: function (response, textStatus) {
+
+                                console.log(response.responseText);
+
+                                if (response.status === 200) {
+
+                                    let data;
+
+                                    // Parse the response text as JSON
+                                    try {
+                                        data = JSON.parse(response.responseText);
+                                    } catch (e) {
+                                        console.log("Error parsing JSON response");
+                                    }
+
+                                    // Clear the text input
+                                    // TODO: I should actually clear the entire form here,
+                                    // even the hidden fields.
+                                    if (data['success'] === true) {
+                                        $("#todo-item-input").val("");
+                                    } else {
+                                        // Handle errors
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    // Options for the GeoLocation lookup
+                    let options = {
+                        "maximumAge": 10 * 1000
+                    };
+
+                    // Callback when user position is obtained
+                    function geoSuccess(position) {
+                        $("#todo-latitude-input").val(position.coords.latitude);
+                        $("#todo-longitude-input").val(position.coords.longitude);
+
+                        // Reset the text field in case it was modified
+                        $("#todo-item-input").val(text);
+
+                        sendForm();
+                    }
+
+                    // Callback when user position cannot be obtained
+                    function geoFailure(error) {
+                        console.log("Failed to get user location");
+
+                        // Reset the text field in case it was modified
+                        $("#todo-item-input").val(text);
+
+                        sendForm();
+                    }
+
+                    // Get the user's location at time of submission
+                    navigator.geolocation.getCurrentPosition(geoSuccess, geoFailure, options);
+                });
+            });
+
+    </script>
+
+}

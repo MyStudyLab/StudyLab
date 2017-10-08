@@ -3,6 +3,8 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
+import scala.concurrent.Future
+
 // Play Framework
 import play.api.mvc._
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -80,6 +82,11 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
   }
 
 
+  def todo = Action { implicit request =>
+
+    withUsername(username => Ok(views.html.todo(username)))
+  }
+
   /**
     * The Journal page
     *
@@ -87,7 +94,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     */
   def journal = Action { implicit request =>
 
-    request.session.get("connected").fold(Redirect(routes.Application.loginPage()))(username => Ok(views.html.journal(username)))
+    withUsername(username => Ok(views.html.journal(username)))
   }
 
 
@@ -98,7 +105,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     */
   def settings() = Action { implicit request =>
 
-    request.session.get("connected").fold(Redirect(routes.Application.loginPage()))(username => Ok(views.html.settings(username)))
+    withUsername(username => Ok(views.html.settings(username)))
   }
 
   /**

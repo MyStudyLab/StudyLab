@@ -1,4 +1,6 @@
 http://www.study-lab.herokuapp.com
+http://www.study-lab.herokuapp.com/journal
+http://www.study-lab.herokuapp.com/settings
 http://www.study-lab.herokuapp.com/about
 http://www.study-lab.herokuapp.com/contact
 http://www.study-lab.herokuapp.com/help
