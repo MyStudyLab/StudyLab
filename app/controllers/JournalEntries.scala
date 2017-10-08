@@ -59,9 +59,9 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     */
   def getJournalEntries = Action.async { implicit request =>
 
-    withUsername(username => {
-      journalEntries.journalEntriesForUsername(username).map(entryList => Ok(Json.toJson(entryList)))
-    })
+    withUsername(username =>
+      journalEntries.journalEntriesForUsername(username).map(resInfo => Ok(resInfo.toJson))
+    )
 
 
   }

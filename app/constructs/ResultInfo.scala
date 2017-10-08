@@ -3,7 +3,6 @@ package constructs
 // Play Framework
 import play.api.libs.json._
 
-// TODO: How to add a payload field? Type parameter with implicit Json.Writer?
 /**
   * Defines the structure of responses to API calls
   *
@@ -34,10 +33,6 @@ object ResultInfo {
   // Message for when Mongo fails without providing one
   val noErrMsg = "Failed without error message"
 
-
-  // TODO: See what version of the ReactiveMongo version fixes the bug with custom apply methods
-  //def apply(success: Boolean, message: String): ResultInfo = ResultInfo(success, message, System.currentTimeMillis())
-
   // All of the following helpers are functions so that the timestamp will be generated at the proper time
 
   /**
@@ -57,6 +52,15 @@ object ResultInfo {
     */
   def succeedWithMessage(message: String): ResultInfo[String] = ResultInfo(success = true, message, System.currentTimeMillis())
 
+  /**
+    * Indicate a successful operation with the given message and payload
+    *
+    * @param message A message describing the result
+    * @param payload The data returned with the result
+    * @tparam T The type of payload
+    * @return
+    */
+  def success[T](message: String, payload: T)(implicit w: Writes[T]): ResultInfo[T] = ResultInfo(success = true, message, System.currentTimeMillis(), payload)
 
   /**
     * A result indicating that invalid credentials were provided

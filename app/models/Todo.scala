@@ -1,9 +1,6 @@
 package models
 
 // Standard Library
-import constructs.TodoItem
-import constructs.responses.{StatusSubjects, StatusSubjectsSessions}
-
 import scala.concurrent.Future
 
 // Play Framework
@@ -12,10 +9,9 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 // Reactive Mongo
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
-import reactivemongo.bson.{BSONDocument, BSONDocumentReader}
 
 // Project
-import constructs.{CumulativeGoal, ResultInfo}
+import constructs.{ResultInfo, TodoItem}
 import helpers.Selectors.usernameSelector
 
 /**
@@ -35,9 +31,26 @@ class Todo(protected val mongoApi: ReactiveMongoApi) {
     */
   def addTodoItem(username: String, item: TodoItem): Future[ResultInfo[String]] = {
 
-    // TODO: Replace the message field
-    todoCollection.flatMap(_.insert(item)).map(result => ResultInfo(result.ok, "used to be result.message"))
+    todoCollection.flatMap(_.insert(item)).map(
+      result =>
+        if (result.ok) ResultInfo.succeedWithMessage("used to be result.message")
+        else ResultInfo.failWithMessage("failed to add item")
+    )
 
+  }
+
+  /**
+    *
+    * @param username
+    * @return
+    */
+  def getTodoItems(username: String): Future[ResultInfo[List[TodoItem]]] = {
+
+    todoCollection.flatMap(
+      _.find(usernameSelector(username)).cursor[TodoItem]().collect[List]().map(
+        itemList => ResultInfo.success(s"Retrieved todo items for $username", itemList)
+      )
+    )
   }
 
 }

@@ -23,7 +23,7 @@ import reactivemongo.api.collections.bson.BSONCollection
 class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
 
   // An interface to the journal_entries collection as BSON
-  protected def bsonJournalEntriesCollection: Future[BSONCollection] = mongoApi.database.map(_.collection[BSONCollection]("journal_entries"))
+  protected def journalCollection: Future[BSONCollection] = mongoApi.database.map(_.collection[BSONCollection]("journal_entries"))
 
   /**
     * Record a journal entry in the database
@@ -33,7 +33,7 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
     */
   def addJournalEntry(entry: JournalEntry): Future[ResultInfo[String]] = {
 
-    bsonJournalEntriesCollection.flatMap(_.insert(entry).map(result =>
+    journalCollection.flatMap(_.insert(entry).map(result =>
       if (result.ok) ResultInfo.succeedWithMessage("Journal entry recorded")
       else ResultInfo.failWithMessage("entry not recorded"))
     )
@@ -45,9 +45,12 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
     * @param username The username for which to retrieve data
     * @return
     */
-  def journalEntriesForUsername(username: String): Future[Vector[JournalEntry]] = {
+  def journalEntriesForUsername(username: String): Future[ResultInfo[List[JournalEntry]]] = {
 
-    bsonJournalEntriesCollection.flatMap(_.find(usernameSelector(username), JournalEntry.projector).
-      cursor[JournalEntry]().collect[Vector]())
+    journalCollection.flatMap(
+      _.find(usernameSelector(username)).cursor[JournalEntry]().collect[List]().map(
+        entries => ResultInfo.success(s"retrieved journal entries for $username", entries)
+      )
+    )
   }
 }

@@ -83,8 +83,11 @@ POST        /users/updatePassword           controllers.Users.updatePassword()
 # Remove a user
 POST        /users/delete                   controllers.Users.deleteUser()
 
-# Add a cumulative goal for a user
+# Add a todo item
 POST        /todo/addTodoItem               controllers.Todo.addTodoItem()
+
+# Get the todo items for a user
+GET         /todo/getTodoItems              controllers.Todo.getTodoItems()
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                   controllers.Assets.at(path="/public", file)

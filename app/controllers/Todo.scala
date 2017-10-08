@@ -49,4 +49,16 @@ class Todo @Inject()(val reactiveMongoApi: ReactiveMongoApi)
 
     })
   }
+
+
+  /**
+    *
+    * @return
+    */
+  def getTodoItems = Action.async { implicit request =>
+
+    withUsername(username =>
+      todo.getTodoItems(username).map(resInfo => Ok(resInfo.toJson))
+    )
+  }
 }
