@@ -10,11 +10,6 @@
                 <div class="raised-element text-justify partial-border center-text-content">
                     <form id="journal-entry-form">
                         <div class="form-group">
-
-                            <input type="number" step="any" name="latitude" id="journal-latitude-input" value=0.00 hidden>
-
-                            <input type="number" step="any" name="longitude" id="journal-longitude-input" value=0.00 hidden>
-
                             <label class="sr-only" for="journal-entry-input">Journal</label>
                             <textarea name="entry" class="form-control" id="journal-entry-input" form="journal-entry-form" placeholder="Dear Journal..." required></textarea>
                         </div>
@@ -35,82 +30,14 @@
     <script src="@routes.Assets.at("/javascripts/moment.js")"></script>
     <script src="@routes.Assets.at("/javascripts/moment-timezone-10-20.js")"></script>
 
+    <script src="@routes.Assets.at("/javascripts/JournalEntryList.js")"></script>
+    <script src="@routes.Assets.at("/javascripts/FormHandlers.js")"></script>
+
     <script>
             'use strict';
 
-            $(function () {
-                $("#journal-entry-form").on("submit", function (e) {
-
-                    // Prevent the form from clearing
-                    e.preventDefault();
-
-                    // Get the journal text upon submission
-                    let text = $("#journal-entry-input").val();
-
-                    // Post the form data to the server
-                    function sendForm() {
-                        $.ajax({
-                            type: "post",
-                            url: "@controllers.routes.JournalEntries.addJournalEntry()",
-                            data: $("#journal-entry-form").serialize(),
-                            dataType: "json",
-                            complete: function (response, textStatus) {
-
-                                console.log(response.responseText);
-
-                                if (response.status === 200) {
-
-                                    let data;
-
-                                    // Parse the response text as JSON
-                                    try {
-                                        data = JSON.parse(response.responseText);
-                                    } catch (e) {
-                                        console.log("Error parsing JSON response");
-                                    }
-
-                                    // Clear the text input
-                                    // TODO: I should actually clear the entire form here,
-                                    // even the hidden fields.
-                                    if (data['success'] === true) {
-                                        $("#journal-entry-input").val("");
-                                    } else {
-                                        // Handle errors
-                                    }
-                                }
-                            }
-                        });
-                    }
-
-                    // Options for the GeoLocation lookup
-                    let options = {
-                        "maximumAge": 10 * 1000
-                    };
-
-                    // Callback when user position is obtained
-                    function geoSuccess(position) {
-                        $("#journal-latitude-input").val(position.coords.latitude);
-                        $("#journal-longitude-input").val(position.coords.longitude);
-
-                        // Reset the text field in case it was modified
-                        $("#journal-entry-input").val(text);
-
-                        sendForm();
-                    }
-
-                    // Callback when user position cannot be obtained
-                    function geoFailure(error) {
-                        console.log("Failed to get user location");
-
-                        // Reset the text field in case it was modified
-                        $("#journal-entry-input").val(text);
-
-                        sendForm();
-                    }
-
-                    // Get the user's location at time of submission
-                    navigator.geolocation.getCurrentPosition(geoSuccess, geoFailure, options);
-                });
+            $(() => {
+                submitWithGeo("#journal-entry-form", "@routes.JournalEntries.addJournalEntry()")
             });
 
 
@@ -119,45 +46,19 @@
                 $.ajax({
                     type: "get",
                     url: "@controllers.routes.JournalEntries.getJournalEntries()",
-                    complete: function (response, textStatus) {
+                    dataType: "json",
+                    success: function (responseData, textResponse, jqXHR) {
 
-                        console.log(response.responseText);
+                        console.log(responseData);
 
-                        if (response.status === 200) {
+                        if (responseData['success'] === true) {
 
-                            let data;
+                            let entryList = new JournalEntryList("past-journal-entries", responseData['payload']);
 
-                            // Parse the response text as JSON
-                            try {
-                                data = JSON.parse(response.responseText)['payload'];
-
-                                data.sort((a, b) => {
-
-                                    return Math.sign(b.timestamp - a.timestamp);
-                                });
-
-                                let entryHtml = data.map((entry) => {
-
-                                    let text = '<div class="journal-entry-text partial-border center-text-content">' + '<p>' + entry.text + '</p>';
-
-                                    let date = '<div class="journal-entry-info">' + moment(entry.timestamp).format('YYYY-MM-DD HH:mm') + '</div>' + '</div>';
-
-                                    return text + date;
-                                });
-
-                                document.getElementById("past-journal-entries").innerHTML = entryHtml.join("");
-
-                            } catch (e) {
-                                console.log("Error parsing JSON response");
-                            }
-
-                            if (data['success'] === true) {
-
-                                // Clear the form inputs
-                                $("#journal-entry-input").val("");
-                            } else {
-                                // Handle errors
-                            }
+                            entryList.sort();
+                            entryList.display();
+                        } else {
+                            console.log("There was an problem loading your journal entries")
                         }
                     }
                 });
