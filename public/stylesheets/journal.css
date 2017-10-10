@@ -45,3 +45,18 @@
 #journal-entry-form :-moz-placeholder {
     color: #707073;
 }
+
+#journal-search-bar {
+    padding-bottom: 20px;
+}
+
+#journal-search-text {
+    background: transparent;
+    color: #E0E0E3;
+
+    border: solid #707073 1px;
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}

@@ -1,3 +1,5 @@
+'use strict';
+
 
 function submitWithGeo(formSelector, submitURL) {
     $(formSelector).on("submit", function (e) {

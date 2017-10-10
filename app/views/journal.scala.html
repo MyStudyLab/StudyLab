@@ -18,6 +18,18 @@
                     </form>
                 </div>
 
+                <div id="journal-search-bar">
+                    <form>
+                        <label for="journal-search-text" class="sr-only">Search</label>
+                        <input type="text" name="search-text" id="journal-search-text" class="form-control">
+
+                            <!--
+                        <label class="sr-only">Near Me</label>
+                        <input type="checkbox" name="near-me" class="form-control">
+                        -->
+                    </form>
+                </div>
+
                 <div id="past-journal-entries">
 
                 </div>
@@ -36,13 +48,14 @@
     <script>
             'use strict';
 
-            $(() => {
-                submitWithGeo("#journal-entry-form", "@routes.JournalEntries.addJournalEntry()")
-            });
-
-
-            // Load the past journal entries
+            // Set up handlers and load journal entries
             $(function () {
+
+                let searchText = $('#journal-search-text');
+
+                // Set up the handler for journal entry submission
+                submitWithGeo("#journal-entry-form", "@routes.JournalEntries.addJournalEntry()");
+
                 $.ajax({
                     type: "get",
                     url: "@controllers.routes.JournalEntries.getJournalEntries()",
@@ -57,8 +70,18 @@
 
                             entryList.sort();
                             entryList.display();
+
+                            // Set up the handler for the journal search bar
+                            searchText.keyup(function () {
+                                const searchTerm = searchText.val();
+
+                                console.log("searchTerm: " + searchTerm);
+
+                                entryList.filter(searchTerm);
+                                entryList.display();
+                            });
                         } else {
-                            console.log("There was an problem loading your journal entries")
+                            console.log("There was a problem loading your journal entries")
                         }
                     }
                 });

@@ -1,3 +1,5 @@
+'use strict';
+
 function JournalEntryList(elementId, entries) {
 
 
@@ -7,10 +9,12 @@ function JournalEntryList(elementId, entries) {
     // The list of journal entries
     this.entries = entries;
 
+    this.resultSet = entries;
+
     // Display the entry list in its current state
     this.display = function () {
 
-        let entryHtml = this.entries.map((entry) => {
+        let entryHtml = this.resultSet.map((entry) => {
 
             let text = '<div class="journal-entry-text partial-border center-text-content">' + '<p>' + entry.text + '</p>';
 
@@ -27,10 +31,29 @@ function JournalEntryList(elementId, entries) {
 
         const factor = (oldestFirst === true) ? -1 : 1;
 
-        this.entries.sort((a, b) => {
+        this.resultSet.sort((a, b) => {
 
             return factor * Math.sign(b.timestamp - a.timestamp);
         });
-    }
+    };
+
+    // Find all entries containing a search term
+    this.filter = function (searchTerm) {
+
+        this.resultSet = this.entries.filter(function (elem) {
+            return elem.text.includes(searchTerm);
+        });
+    };
+
+    // Find all entries near the given coordinates
+    this.near = function (coords, radius) {
+
+        this.resultSet = this.entries.filter(function (elem) {
+
+            // TODO: call haversine function
+            return 0;
+        });
+
+    };
 
 }

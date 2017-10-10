@@ -28,6 +28,7 @@
     <script src="@routes.Assets.at("/javascripts/moment.js")"></script>
     <script src="@routes.Assets.at("/javascripts/moment-timezone-10-20.js")"></script>
 
+        <!-- Custom JS -->
     <script src="@routes.Assets.at("javascripts/TodoItemList.js")"></script>
     <script src="@routes.Assets.at("/javascripts/FormHandlers.js")"></script>
 
@@ -37,8 +38,7 @@
 
             $(() => {
                 submitWithGeo("#todo-entry-form", "@routes.Todo.addTodoItem()")
-            }); 
-
+            });
 
             // Load the past journal entries
             $(function () {

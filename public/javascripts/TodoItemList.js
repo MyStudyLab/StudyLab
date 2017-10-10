@@ -1,3 +1,6 @@
+'use strict';
+
+
 function TodoItemList(elementId, items) {
 
 
