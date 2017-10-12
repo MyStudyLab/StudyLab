@@ -36,12 +36,11 @@
 
             'use strict';
 
-            $(() => {
-                submitWithGeo("#todo-entry-form", "@routes.Todo.addTodoItem()")
-            });
-
-            // Load the past journal entries
+            // Set up handlers and initialize page
             $(function () {
+
+                submitWithGeo("#todo-entry-form", "@routes.Todo.addTodoItem()");
+
                 $.ajax({
                     type: "get",
                     url: "@controllers.routes.Todo.getTodoItems()",

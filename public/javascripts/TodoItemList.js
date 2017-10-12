@@ -17,15 +17,24 @@ function TodoItemList(elementId, items) {
 
             let text = '<div class="todo-item-text partial-border center-text-content">' + '<p>' + item.text + '</p>';
 
-            let date = '<div class="todo-item-info">' + moment(item.startTime).format('YYYY-MM-DD HH:mm') + '</div>' + '</div>';
+            let date = '<div class="todo-item-info">' + moment(item.startTime).format('YYYY-MM-DD HH:mm') + '</div>';
 
-            return text + date;
+            let f = '<form class="todo-completion-form"><input type="text" name="id" value="' + item["_id"]["$oid"] + '" hidden><button type="submit" class="todo-completion-button"><i class="fa fa-bullseye fa-lg"></i></button></form>';
+
+            let del = '<form class="todo-deletion-form"><input type="text" name="id" value="' + item["_id"]["$oid"] + '" hidden><button type="submit" class="todo-deletion-button"><i class="fa fa-trash fa-lg"></i></button></form>';
+
+            return text + f + date + del + '</div>';
         });
 
         document.getElementById(this.elementId).innerHTML = entryHtml.join("");
+
+        // Set up handlers for form submission
+        submitWithGeo(".todo-completion-form", "/todo/completeTodoItem");
+
+        submitInBackground(".todo-deletion-form", "/todo/deleteTodoItem", false);
     };
 
-    //
+    // Sort the items by their startTime
     this.sort = function (oldestFirst = false) {
 
         const factor = (oldestFirst === true) ? -1 : 1;

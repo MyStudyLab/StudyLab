@@ -3,7 +3,11 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
+import akka.actor.Status.Success
 import constructs.{CumulativeGoal, Point, TodoItem}
+import reactivemongo.bson.BSONObjectID
+
+import scala.concurrent.Future
 
 // Project
 import constructs.ResultInfo
@@ -50,6 +54,51 @@ class Todo @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     })
   }
 
+  /**
+    * Delete a todo item
+    *
+    * @return
+    */
+  def deleteTodoItem = Action.async { implicit request =>
+
+    withUsername(username => {
+
+      DeleteTodoItemForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        form => {
+
+          BSONObjectID.parse(form.id).toOption.fold(
+            Future(Ok(ResultInfo.failWithMessage("invalid object id").toJson))
+          )(oid => todo.deleteTodoItem(username, oid).map(result => Ok(result.toJson)))
+
+        }
+      )
+
+    })
+
+  }
+
+  /**
+    * Complete a todo item for the given username
+    *
+    * @return
+    */
+  def completeTodoItem = Action.async { implicit request =>
+
+    withUsername(username => {
+
+      CompleteTodoItemForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        form => {
+
+          todo.completeTodoItem(username, form.id, Point(form.longitude, form.latitude)).map(
+            result => Ok(result.toJson)
+          )
+        }
+      )
+
+    })
+  }
 
   /**
     *

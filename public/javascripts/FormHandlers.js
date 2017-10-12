@@ -1,5 +1,43 @@
 'use strict';
 
+function submitInBackground(formSelector, submitURL, reset = true, extraData = [],
+                            errorMessage = "There was a problem submitting your form") {
+    $(formSelector).submit(function (e) {
+
+        // Prevent the form from clearing
+        e.preventDefault();
+
+        // TODO: I learned about this in jQuery
+        let formData = $(this).serializeArray();
+
+        console.log(formData);
+
+        extraData.forEach((item) => {
+            formData.push(item);
+        });
+
+        $.ajax({
+            method: "post",
+            url: submitURL,
+            data: formData,
+            dataType: "json",
+            success: function (responseData, textStatus, jqXHR) {
+
+                console.log(responseData);
+
+                // Clear the text input
+                if (responseData['success'] === true) {
+                    if (reset === true) {
+                        document.querySelector(formSelector).reset();
+                    }
+                } else {
+                    console.log(errorMessage);
+                }
+            }
+        });
+    })
+}
+
 
 function submitWithGeo(formSelector, submitURL) {
     $(formSelector).on("submit", function (e) {

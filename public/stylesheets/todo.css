@@ -1,0 +1,29 @@
+.todo-item-info {
+    color: #707073;
+    display: inline-block;
+}
+
+.todo-completion-form {
+    display: inline-block;
+}
+
+.todo-deletion-form {
+    float: right;
+    display: inline-block;
+}
+
+.todo-deletion-button {
+    background: transparent;
+    color: #707073;
+    border: none;
+    margin: auto;
+    outline: none;
+}
+
+.todo-completion-button {
+    background: transparent;
+    color: #E0E0E3;
+    border: none;
+    margin: auto;
+    outline: none;
+}

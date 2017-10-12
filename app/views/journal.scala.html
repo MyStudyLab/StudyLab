@@ -20,6 +20,7 @@
 
                 <div id="journal-search-bar">
                     <form>
+
                         <label for="journal-search-text" class="sr-only">Search</label>
                         <input type="text" name="search-text" id="journal-search-text" class="form-control">
 
@@ -74,8 +75,6 @@
                             // Set up the handler for the journal search bar
                             searchText.keyup(function () {
                                 const searchTerm = searchText.val();
-
-                                console.log("searchTerm: " + searchTerm);
 
                                 entryList.filter(searchTerm);
                                 entryList.display();

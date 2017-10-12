@@ -1,7 +1,7 @@
 package helpers
 
 // Reactive Mongo
-import reactivemongo.bson.BSONDocument
+import reactivemongo.bson.{BSONDocument, BSONObjectID}
 
 
 /**
@@ -16,6 +16,17 @@ object Selectors {
     * @return
     */
   def usernameSelector(username: String) = BSONDocument("username" -> username)
+
+  /**
+    *
+    * @param username
+    * @param id
+    * @return
+    */
+  def usernameAndID(username: String, id: BSONObjectID) = BSONDocument(
+    "username" -> username,
+    "_id" -> id
+  )
 
   /**
     * Get a selector for the given value of the "email" field

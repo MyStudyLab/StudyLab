@@ -86,6 +86,12 @@ POST        /users/delete                   controllers.Users.deleteUser()
 # Add a todo item
 POST        /todo/addTodoItem               controllers.Todo.addTodoItem()
 
+# Delete a todo item
+POST        /todo/deleteTodoItem            controllers.Todo.deleteTodoItem()
+
+# Complete a todo item
+POST        /todo/completeTodoItem          controllers.Todo.completeTodoItem()
+
 # Get the todo items for a user
 GET         /todo/getTodoItems              controllers.Todo.getTodoItems()
 

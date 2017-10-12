@@ -38,7 +38,10 @@ function JournalEntryList(elementId, entries) {
     };
 
     // Find all entries containing a search term
-    this.filter = function (searchTerm) {
+    this.filter = function (rawSearchTerm) {
+
+        // Ignore case when searching
+        const searchTerm = rawSearchTerm.toLowerCase();
 
         this.resultSet = this.entries.filter(function (elem) {
             return elem.text.includes(searchTerm);
