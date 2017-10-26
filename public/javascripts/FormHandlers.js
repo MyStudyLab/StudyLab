@@ -1,45 +1,38 @@
 'use strict';
 
-function submitInBackground(formSelector, submitURL, reset = true, extraData = [],
-                            errorMessage = "There was a problem submitting your form") {
-    $(formSelector).submit(function (e) {
+// Handler for customized form submission
+function submitInBackground(formSelector, submitURL, successCallback = () => null, extraData = []) {
+
+    let formElem = $(formSelector);
+
+    formElem.submit(function (e) {
 
         // Prevent the form from clearing
         e.preventDefault();
 
-        // TODO: I learned about this in jQuery
+        // Get form data
         let formData = $(this).serializeArray();
 
-        console.log(formData);
-
+        // Add extra data fields to the form
         extraData.forEach((item) => {
             formData.push(item);
         });
 
+        // Submit the form asynchronously
         $.ajax({
             method: "post",
             url: submitURL,
             data: formData,
             dataType: "json",
             success: function (responseData, textStatus, jqXHR) {
-
-                console.log(responseData);
-
-                // Clear the text input
-                if (responseData['success'] === true) {
-                    if (reset === true) {
-                        document.querySelector(formSelector).reset();
-                    }
-                } else {
-                    console.log(errorMessage);
-                }
+                successCallback(responseData, formData, formElem);
             }
         });
     })
 }
 
 
-function submitWithGeo(formSelector, submitURL) {
+function submitWithGeo(formSelector, submitURL, successCallback = () => {}) {
     $(formSelector).on("submit", function (e) {
 
         // Prevent the form from clearing
@@ -61,14 +54,7 @@ function submitWithGeo(formSelector, submitURL) {
                 dataType: "json",
                 success: function (responseData, textStatus, jqXHR) {
 
-                    console.log(responseData);
-
-                    // Clear the text input
-                    if (responseData['success'] === true) {
-                        document.querySelector(formSelector).reset();
-                    } else {
-                        console.log("There was an problem saving your journal entry")
-                    }
+                    successCallback(responseData);
                 }
             });
         }

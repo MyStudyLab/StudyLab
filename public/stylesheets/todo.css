@@ -1,3 +1,17 @@
+#todo-item-input {
+    color: #E0E0E3;
+    font-size: 24px;
+
+    background: transparent;
+    border: none;
+    resize: none;
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+
+
 .todo-item-info {
     color: #707073;
     display: inline-block;

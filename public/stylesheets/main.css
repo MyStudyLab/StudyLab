@@ -184,6 +184,18 @@ body {
     margin-bottom: 40px;
 }
 
+.transparent-button {
+    background: transparent;
+    color: #E0E0E3;
+    border: none;
+    margin: auto;
+    outline: none;
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+
 /* Styling the footer */
 
 footer {

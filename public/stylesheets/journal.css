@@ -13,13 +13,6 @@
     box-shadow: none;
 }
 
-#journal-entry-input-button {
-    background: transparent;
-    color: #E0E0E3;
-    border: none;
-    margin: auto;
-}
-
 .journal-entry-text {
     font-size: 24px;
 }

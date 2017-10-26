@@ -16,7 +16,6 @@ import forms._
 // Play Framework
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.json.Json
 
 // Reactive Mongo
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
@@ -33,7 +32,7 @@ class Todo @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   protected val todo = new models.Todo(reactiveMongoApi)
 
   /**
-    * Add a todo item for the given username
+    * Add a todo item for a username
     *
     * @return
     */
@@ -55,7 +54,7 @@ class Todo @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   }
 
   /**
-    * Delete a todo item
+    * Delete a todo item for a username
     *
     * @return
     */
@@ -70,16 +69,14 @@ class Todo @Inject()(val reactiveMongoApi: ReactiveMongoApi)
           BSONObjectID.parse(form.id).toOption.fold(
             Future(Ok(ResultInfo.failWithMessage("invalid object id").toJson))
           )(oid => todo.deleteTodoItem(username, oid).map(result => Ok(result.toJson)))
-
         }
       )
-
     })
 
   }
 
   /**
-    * Complete a todo item for the given username
+    * Complete a todo item for a username
     *
     * @return
     */
@@ -101,6 +98,7 @@ class Todo @Inject()(val reactiveMongoApi: ReactiveMongoApi)
   }
 
   /**
+    * Get all todo items for a username
     *
     * @return
     */
