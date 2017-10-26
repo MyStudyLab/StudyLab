@@ -39,7 +39,7 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
         _ => invalidFormResponse,
         goodForm => {
 
-          val cleanedEntry = withoutExcessWhitespace(goodForm.entry)
+          val cleanedEntry = withoutExcessWhitespace(goodForm.text)
 
           val position = Point(goodForm.longitude, goodForm.latitude)
 

@@ -5,14 +5,14 @@ import play.api.data.Forms._
 import play.api.data.format.Formats._
 
 
-case class AddJournalEntryForm(entry: String, latitude: Double, longitude: Double)
+case class AddJournalEntryForm(text: String, latitude: Double, longitude: Double)
 
 
 object AddJournalEntryForm {
 
   val form: Form[AddJournalEntryForm] = Form(
     mapping(
-      "entry" -> nonEmptyText,
+      "text" -> nonEmptyText,
       "latitude" -> of[Double],
       "longitude" -> of[Double]
     )(AddJournalEntryForm.apply)(AddJournalEntryForm.unapply)

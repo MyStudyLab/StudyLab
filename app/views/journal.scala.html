@@ -11,7 +11,7 @@
                     <form id="journal-entry-form">
                         <div class="form-group">
                             <label class="sr-only" for="journal-entry-input">Journal</label>
-                            <textarea name="entry" class="form-control" id="journal-entry-input" form="journal-entry-form" placeholder="Dear Journal..." required></textarea>
+                            <textarea name="text" class="form-control" id="journal-entry-input" form="journal-entry-form" placeholder="Dear Journal..." autocomplete="off" required></textarea>
                         </div>
 
                         <button type="submit" id="journal-entry-input-button" class="transparent-button"><i class="fa fa-paper-plane-o fa-2x"></i></button>
@@ -36,14 +36,29 @@
     <script>
             'use strict';
 
+            let entryList;
+
             // Set up handlers and load journal entries
             $(function () {
 
                 // Set up the handler for journal entry submission
                 submitWithGeo("#journal-entry-form", "@routes.JournalEntries.addJournalEntry()",
                         (responseData, formData, formElem) => {
+
                             // Clear the form after submission
                             document.getElementById('journal-entry-form').reset();
+
+                            // Add the new entry to the list
+                            let journalEntry = {};
+
+                            journalEntry['timestamp'] = responseData['timestamp'];
+
+                            // Add proper form fields
+                            formData.forEach((field) => {
+                                journalEntry[field['name']] = field['value'];
+                            });
+
+                            entryList.add(journalEntry);
                         }
                 );
 
@@ -53,12 +68,9 @@
                     dataType: "json",
                     success: function (responseData, textResponse, jqXHR) {
 
-                        // TESTING - DEV
-                        console.log(responseData);
-
                         if (responseData['success'] === true) {
 
-                            let entryList = new JournalEntryList("past-journal-entries", responseData['payload']);
+                            entryList = new JournalEntryList("past-journal-entries", responseData['payload']);
 
                         } else {
                             console.log("There was a problem loading your journal entries")

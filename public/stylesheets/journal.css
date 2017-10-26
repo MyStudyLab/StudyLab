@@ -13,6 +13,19 @@
     box-shadow: none;
 }
 
+.inline-searchbar {
+    display: flex;
+    justify-content: center;
+}
+
+.inline-searchbar-item {
+
+}
+
+.search-highlight {
+    background: rgba(54, 234, 156, 0.25);
+}
+
 .journal-entry-text {
     font-size: 24px;
 }
@@ -44,6 +57,9 @@
 }
 
 #journal-search-text {
+
+    width: 250%;
+
     background: transparent;
     color: #E0E0E3;
 

@@ -12,7 +12,7 @@
                     <form id="todo-entry-form" class="">
                         <div class="form-group">
                             <label class="sr-only" for="change-password-input">Password</label>
-                            <input type="text" name="text" class="form-control" id="todo-item-input" placeholder="I need to..." required>
+                            <input type="text" name="text" class="form-control" id="todo-item-input" placeholder="I need to..." autocomplete="off" required>
                         </div>
 
                         <button type="submit" id="todo-entry-input-button" class="transparent-button"><i class="fa fa-pencil fa-2x"></i></button>
@@ -39,7 +39,14 @@
             // Set up handlers and initialize page
             $(function () {
 
-                submitWithGeo("#todo-entry-form", "@routes.Todo.addTodoItem()");
+                submitWithGeo("#todo-entry-form",
+                        "@routes.Todo.addTodoItem()",
+                        (responseData, formData, formElem) => {
+
+                            // Reset the form upon confirmed submission
+                            document.getElementById('todo-entry-form').reset()
+                        }
+                );
 
                 $.ajax({
                     type: "get",

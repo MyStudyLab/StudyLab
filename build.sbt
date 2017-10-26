@@ -1,4 +1,4 @@
-name := "StudyLab"
+name := "LifeLab"
 
 version := "1.0"
 
