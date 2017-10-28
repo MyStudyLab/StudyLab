@@ -33,7 +33,6 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
   // Reference to the Journal Entry model
   protected val journalEntries = new models.JournalEntries(reactiveMongoApi)
 
-
   /**
     * Invoke the model layer to record a new journal entry.
     *
@@ -52,8 +51,9 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
 
           val indicoSentimentURL = "https://apiv2.indico.io/sentiment"
 
+          // TODO: Update the config access
           val indicoRequest = ws.url(indicoSentimentURL)
-            .withHeaders("X-ApiKey" -> "5c74ed53e9015b5355091e6cac91c303")
+            .withHeaders("X-ApiKey" -> play.Play.application().configuration().getString("indico_key"))
             .withRequestTimeout(3000.millis)
 
           val requestPayload = Json.obj(
