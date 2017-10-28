@@ -3,7 +3,7 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
-import play.api.libs.json.JsNumber
+import play.api.libs.json.{JsArray, JsNumber, JsObject}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -49,23 +49,29 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
 
           val position = Point(goodForm.longitude, goodForm.latitude)
 
-          val indicoSentimentURL = "https://apiv2.indico.io/sentiment"
+          // High-Quality Sentiment Analysis
+          val indicoMultiURL = "https://apiv2.indico.io/apis/multiapi"
 
-          // TODO: Update the config access
-          val indicoRequest = ws.url(indicoSentimentURL)
-            .withHeaders("X-ApiKey" -> play.Play.application().configuration().getString("indico_key"))
+          val indicoRequest = ws.url(indicoMultiURL)
+            .withQueryString("apis" -> "sentimenthq,texttags")
             .withRequestTimeout(3000.millis)
 
+          // TODO: Update the config access
           val requestPayload = Json.obj(
-            "data" -> goodForm.text
+            "api_key" -> play.Play.application().configuration().getString("indico_key"),
+            "data" -> goodForm.text,
+            "top_n" -> 5,
+            "threshold" -> 0.1
           )
 
           // Send them to indico for sentiment analysis
           indicoRequest.post(requestPayload).flatMap(wsResponse => {
 
-            val score = (wsResponse.json \ "results").getOrElse(JsNumber(0.0)).asOpt[Double].getOrElse(0.0)
+            val sentimentScore = (wsResponse.json \ "results" \ "sentimenthq" \ "results").asOpt[Double].getOrElse(0.0)
 
-            val entry = JournalEntry(username, cleanedEntry, System.currentTimeMillis(), position, score)
+            val inferredSubjects = (wsResponse.json \ "results" \ "texttags" \ "results").asOpt[Map[String, Double]].getOrElse(Map())
+
+            val entry = JournalEntry(username, cleanedEntry, System.currentTimeMillis(), position, sentimentScore, inferredSubjects.keys.toList)
 
             journalEntries.addJournalEntry(entry).map(resultInfo => Ok(resultInfo.toJson))
           })

@@ -36,13 +36,14 @@
     <script src="@routes.Assets.at("/javascripts/FormHandlers.js")"></script>
 
         <!-- Mapbox -->
-    <script src='https://api.mapbox.com/mapbox-gl-js/v0.40.0/mapbox-gl.js'></script>
-    <link href='https://api.mapbox.com/mapbox-gl-js/v0.40.0/mapbox-gl.css' rel='stylesheet'/>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.css' rel='stylesheet' />
 
     <script>
             'use strict';
 
             let entryList;
+            let map;
 
             // Set up handlers and load journal entries
             $(function () {
@@ -58,6 +59,7 @@
                             let journalEntry = {};
 
                             journalEntry['timestamp'] = responseData['timestamp'];
+                            journalEntry['inferredSubjects'] = [];
 
                             // Add proper form fields
                             formData.forEach((field) => {
@@ -70,19 +72,21 @@
 
                 $.ajax({
                     type: "get",
-                    url: "@controllers.routes.JournalEntries.getJournalEntries()",
+                    url: "@controllers.routes.JournalEntries.getGeoJsonEntries()",
                     dataType: "json",
                     success: function (responseData, textResponse, jqXHR) {
 
-                        if (responseData['success'] === true) {
+                        console.log(responseData);
 
-                            console.log(responseData);
+                        entryList = new JournalEntryList("past-journal-entries", responseData['features'], (resultSet) => {
 
-                            entryList = new JournalEntryList("past-journal-entries", responseData['payload']);
+                                    map.getSource('journals').setData({
+                                        "type": "FeatureCollection",
+                                        "features": resultSet
+                                    });
 
-                        } else {
-                            console.log("There was a problem loading your journal entries")
-                        }
+                                }
+                        );
                     }
                 });
             });
@@ -90,7 +94,7 @@
 
     <script>
 
-            let map;
+            //let map;
 
             // Get current position, then initialize map
             navigator.geolocation.getCurrentPosition((position) => {
@@ -116,19 +120,71 @@
                         'type': 'circle',
                         'source': 'journals',
                         'paint': {
-                            'circle-color': '#80bdfd',
-                            // make circles larger as the user zooms from z12 to z22
+                            "circle-color": [
+                                "rgb", ["*", 255, ["-", 1, ["to-number", ["get", "sentiment"]]]],
+                                ["*", 255, ["get", "sentiment"]],
+                                0
+                            ],
                             'circle-radius': {
-                                'base': 4,
+                                'base': 10,
                                 'stops': [
-                                    [12, 3.5],
-                                    [20, 3]
+                                    [12, 5],
+                                    [20, 4]
                                 ]
                             },
                             'circle-opacity': 0.75
                         }
                     });
 
+                    /*
+
+                    // Sentiment heatmap layer
+                    map.addLayer({
+                        "id": "sentiment-heat",
+                        "type": "heatmap",
+                        "source": "journals",
+                        "maxzoom": 16,
+                        "paint": {
+                            //Increase the heatmap weight based on frequency and property magnitude
+                            "heatmap-weight": {
+                                "property": "sentiment",
+                                "type": "exponential",
+                                "stops": [
+                                    [0, 1],
+                                    [6, 2]
+                                ]
+                            },
+                            //Increase the heatmap color weight weight by zoom level
+                            //heatmap-ntensity is a multiplier on top of heatmap-weight
+                            "heatmap-intensity": {
+                                "stops": [
+                                    [0, 2],
+                                    [9, 3]
+                                ]
+                            },
+                            //Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+                            //Begin color ramp at 0-stop with a 0-transparancy color
+                            //to create a blur-like effect.
+                            "heatmap-color": {
+                                "stops": [
+                                    [0, "rgb(172,48,28)"],
+                                    [1, "rgb(24,178,43)"]
+                                ]
+                            },
+                            //Adjust the heatmap radius by zoom level
+                            "heatmap-radius": {
+                                "stops": [
+                                    [0, 5],
+                                    [9, 20]
+                                ]
+                            },
+                        }
+                    }, 'waterway-label');
+
+
+                    */
+
+                    // Display journal text when circles are clicked
                     map.on('click', 'journals', function (e) {
                         new mapboxgl.Popup()
                                 .setLngLat(e.features[0].geometry.coordinates)

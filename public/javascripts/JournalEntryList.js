@@ -21,10 +21,12 @@ const distance = (lon1, lat1, lon2, lat2) => {
  * A searchable list of journal entries
  *
  * @param elementId The document ID of the containing HTML element
- * @param entries The list of journal entries to display
+ * @param entries The list of journal entries in GeoJson format
+ * @param filterCallback [function] A function to call each time the entry list is filtered
  * @constructor
  */
-function JournalEntryList(elementId, entries) {
+function JournalEntryList(elementId, entries, filterCallback = () => {
+}) {
 
     // The element Id containing the list
     this.elementId = elementId;
@@ -94,8 +96,9 @@ function JournalEntryList(elementId, entries) {
         let entryHtml = this.resultSet.map((entry) => {
 
             return `<div class='journal-entry-text partial-border center-text-content'>
-                      <p>${entry.text}</p>
-                      <div class="journal-entry-info">${moment(entry.timestamp).format('YYYY-MM-DD HH:mm')}</div>
+                      <p class="inferredSubjectList">${entry.properties.inferredSubjects.join(", ").replace(new RegExp("_", "g"), " ")}</p>
+                      <p>${entry.properties.text}</p>
+                      <div class="journal-entry-info">${moment(entry.properties.timestamp).format('YYYY-MM-DD HH:mm')}</div>
                     </div>`;
         });
 
@@ -130,12 +133,12 @@ function JournalEntryList(elementId, entries) {
         const searchTerm = rawSearchTerm.toLowerCase();
 
         this.resultSet = this.resultSet.filter(function (elem) {
-            return elem.text.toLowerCase().includes(searchTerm);
+            return elem.properties.text.toLowerCase().includes(searchTerm);
         });
 
         // Highlight the search term wherever it is found
         this.resultSet.forEach((elem) => {
-            elem.text = elem.text.replace(new RegExp(searchTerm, 'i'), "<span class='search-highlight'>$&</span>")
+            elem.properties.text = elem.properties.text.replace(new RegExp(searchTerm, 'i'), "<span class='search-highlight'>$&</span>")
         })
     };
 
@@ -149,7 +152,7 @@ function JournalEntryList(elementId, entries) {
     const _filterDates = (from, to) => {
 
         this.resultSet = this.resultSet.filter((elem) => {
-            return from <= elem.timestamp && elem.timestamp <= to;
+            return from <= elem.properties.timestamp && elem.properties.timestamp <= to;
         });
 
     };
@@ -165,7 +168,7 @@ function JournalEntryList(elementId, entries) {
 
         this.resultSet = this.resultSet.filter(function (elem) {
 
-            return distance(coords[0], coords[1], elem.pos[0], elem.pos[1]) < radius;
+            return distance(coords[0], coords[1], elem.geometry.coordinates[0], elem.geometry.coordinates[1]) < radius;
         });
 
     };
@@ -179,38 +182,51 @@ function JournalEntryList(elementId, entries) {
     this.filter = function (formData) {
 
         // Start with a clean result set
-        this.resultSet = this.entries.map((elem) => {
-            return Object.assign({}, elem);
+        this.resultSet = this.entries.map((entry) => {
+            return JSON.parse(JSON.stringify(entry));
         });
 
         formData.forEach((field) => {
 
+            // Substring search of entry text
             if (field['name'] === 'search-text') {
 
                 _filterText(field['value']);
-            } else if (field['name'] === 'near-me') {
+            }
+
+            // Proximity search
+            else if (field['name'] === 'near-me') {
                 _filterNear([0, 0], 100)
-            } else if (field['name'] === 'after') {
+            }
+
+            // Find entries older than
+            else if (field['name'] === 'after') {
 
                 const d = (new Date(field['value'])).getTime();
 
                 if (field['value'] !== "") {
                     this.resultSet = this.resultSet.filter((entry) => {
-                        return d < entry.timestamp;
+                        return d < entry.properties.timestamp;
                     });
                 }
 
-            } else if (field['name'] === 'before') {
+            }
+
+            // Find entries younger than
+            else if (field['name'] === 'before') {
 
                 const d = (new Date(field['value'])).getTime();
 
                 if (field['value'] !== "") {
                     this.resultSet = this.resultSet.filter((entry) => {
-                        return entry.timestamp < d;
+                        return entry.properties.timestamp < d;
                     });
                 }
             }
-        })
+        });
+
+        // Pass the updated result set to the callback
+        filterCallback(this.resultSet);
 
     };
 
