@@ -3,7 +3,7 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
-import constructs.{JournalEntry, Point}
+import constructs.{JournalEntry, Point, ResultInfo}
 
 // Project
 import forms.AddJournalEntryForm
@@ -64,5 +64,26 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi)
     )
 
 
+  }
+
+  /**
+    * Get all journal entries in GeoJson format
+    *
+    * @return
+    */
+  def getGeoJsonEntries = Action.async { implicit request =>
+
+    withUsername(username => {
+
+      journalEntries.journalEntriesForUsername(username).map(resInfo => {
+
+        val geoJson = Json.obj(
+          "type" -> "FeatureCollection",
+          "features" -> resInfo.payload.map(_.toGeoJson)
+        )
+
+        Ok(geoJson)
+      })
+    })
   }
 }

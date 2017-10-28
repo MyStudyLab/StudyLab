@@ -19,6 +19,18 @@ case class ResultInfo[T](success: Boolean, message: String, timestamp: Long, pay
     "payload" -> payloadWrites.writes(payload)
   ))
 
+  /**
+    * Create a ResultInfo with an updated payload
+    *
+    * @param transform
+    * @tparam U The updated payload type
+    * @return
+    */
+  def updatedPayload[U](transform: T => U)(implicit w: Writes[U]): ResultInfo[U] = {
+
+    ResultInfo(success, message, timestamp, transform(payload))
+  }
+
 }
 
 object ResultInfo {

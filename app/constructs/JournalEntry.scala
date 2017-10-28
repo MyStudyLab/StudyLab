@@ -1,7 +1,7 @@
 package constructs
 
 // Reactive Mongo
-import play.api.libs.json.Json
+import play.api.libs.json._
 import reactivemongo.bson.BSONDocument
 
 
@@ -13,7 +13,22 @@ import reactivemongo.bson.BSONDocument
   * @param timestamp The time at which the journal entry was recorded
   * @param pos       The position where the journal entry was recorded
   */
-case class JournalEntry(username: String, text: String, timestamp: Long, pos: Point)
+case class JournalEntry(username: String, text: String, timestamp: Long, pos: Point) {
+
+  def toGeoJson: JsValue = {
+
+    JsObject(Map(
+      "type" -> JsString("Feature"),
+      "properties" -> JsObject(Map(
+        "username" -> JsString(username),
+        "timestamp" -> JsNumber(timestamp),
+        "text" -> JsString(text)
+      )),
+      "geometry" -> Json.toJson(pos)
+    ))
+  }
+
+}
 
 object JournalEntry {
 

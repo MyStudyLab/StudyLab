@@ -1,6 +1,6 @@
 package constructs
 
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json, Writes}
 import reactivemongo.bson.{BSONDocument, BSONHandler}
 
 /**
@@ -13,7 +13,17 @@ case class Point(lon: Double, lat: Double)
 object Point {
 
   // Implicitly convert to JSON
-  implicit val pointWrites = Json.writes[Point]
+  implicit val pointWrites = new Writes[Point] {
+
+    override def writes(o: Point): JsValue = {
+      Json.obj(
+        "type" -> "Point",
+        "coordinates" -> List(o.lon, o.lat)
+      )
+    }
+
+  }
+
 
   // Implicitly convert to/from BSON, using the GeoJson format
   implicit object PointWriter extends BSONHandler[BSONDocument, Point] {

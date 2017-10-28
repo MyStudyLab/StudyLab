@@ -47,6 +47,9 @@ GET         /json/about/:username           controllers.Users.aboutMessage(usern
 # Get the journal entries as JSON for the username
 GET         /json/journal/                  controllers.JournalEntries.getJournalEntries()
 
+# Get the journal entries as GeoJSON for the username
+GET         /json/geoJsonJournal            controllers.JournalEntries.getGeoJsonEntries()
+
 # Start a study session
 POST        /study/start                    controllers.Sessions.startSession()
 
