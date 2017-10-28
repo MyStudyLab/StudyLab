@@ -42,25 +42,49 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
     // The containing element for this searchable list
     const elem = document.getElementById(elementId);
 
+
+    const minTimestamp = Math.min(...entries.map((entry) => {
+        return entry.properties.timestamp;
+    }));
+
+    const maxTimestamp = Math.max(...entries.map((entry) => {
+        return entry.properties.timestamp;
+    }));
+
     // The search bar
     elem.innerHTML = `<div id="journal-search-bar">
                          <form id="journal-search-form" class="inline-searchbar">
 
-                           <label for="journal-search-text" class="sr-only">Search</label>
-                           <input type="text" name="search-text" id="journal-search-text" class="form-control inline-searchbar-item" autocomplete="off">
+                           <div style="width: 50%; display: inline-flex;">
+                             <label for="journal-search-text" class="sr-only">Search</label>
+                             <input type="text" name="search-text" id="journal-search-text" class="form-control inline-searchbar-item" autocomplete="off">
+                           </div>
 
-                           <label for="journal-search-after" class="sr-only">After</label>
-                           <input type="date" name="after" id="journal-search-after" class="form-control inline-searchbar-item">
+                           <div style="width: 50%; display: inline-flex;">
+                             <label for="journal-search-after" class="sr-only">After</label>
+                             <input type="date" name="after" id="journal-search-after" class="form-control inline-searchbar-item">
                        
-                           <label for="journal-search-before" class="sr-only">Before</label>
-                           <input type="date" name="before" id="journal-search-before" class="form-control inline-searchbar-item">
+                             <label for="journal-search-before" class="sr-only">Before</label>
+                             <input type="date" name="before" id="journal-search-before" class="form-control inline-searchbar-item">
+                           </div>
                            
-                           <!--
-                           <label class="sr-only">Near Me</label>
-                           <input type="checkbox" name="near-me" class="form-control">
-                           -->
+                           <div style="width: 45%; display: inline-flex;">
+                             <label for="sentiment-slider" class="sr-only">Sentiment Slider</label>
+                             <input type="range" name="sentiment-slider" id="sentiment-slider" class="form-control inline-searchbar-item" min="0.0" max="1.0" step="0.01">
+                         
+                             <label for="sentiment-toggle" class="sr-only">Sentiment Toggle</label>
+                             <input type="checkbox" name="sentiment-toggle" id="sentiment-toggle" class="form-control inline-searchbar-item journal-form-toggle">
+                           </div>
                            
-                           <button type="submit" class="transparent-button"><i class="fa fa-search fa-2x"></i></button>
+                           <div style="width: 45%; display: inline-flex;">
+                             <label for="timeline-slider" class="sr-only">Sentiment Slider</label>
+                             <input type="range" name="timeline-slider" id="timeline-slider" class="form-control inline-searchbar-item" min="0.0" max="1.0" step="0.01">
+                         
+                             <label for="timeline-toggle" class="sr-only">Sentiment Toggle</label>
+                             <input type="checkbox" name="timeline-toggle" id="timeline-toggle" class="form-control inline-searchbar-item journal-form-toggle">
+                           </div>
+                           
+                           <button type="submit" class="transparent-button inline-searchbar-item"><i class="fa fa-search fa-2x"></i></button>
                          </form>
                        </div>`;
 
@@ -74,13 +98,8 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
 
         // TODO: There is the issue of whether the new entry satisfies the current filter
 
-        this.entries.push(entry);
-        this.entries.sort((a, b) => {
-            return Math.sign(b.timestamp - a.timestamp);
-        });
-
-        this.resultSet.push(entry);
-        this.sort();
+        this.entries.unshift(entry);
+        this.resultSet.unshift(entry);
         this.display();
     };
 
@@ -117,7 +136,7 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
 
         this.resultSet.sort((a, b) => {
 
-            return factor * Math.sign(b.timestamp - a.timestamp);
+            return factor * Math.sign(b.properties.timestamp - a.properties.timestamp);
         });
     };
 
@@ -154,7 +173,6 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
         this.resultSet = this.resultSet.filter((elem) => {
             return from <= elem.properties.timestamp && elem.properties.timestamp <= to;
         });
-
     };
 
 
@@ -170,7 +188,6 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
 
             return distance(coords[0], coords[1], elem.geometry.coordinates[0], elem.geometry.coordinates[1]) < radius;
         });
-
     };
 
 
@@ -181,10 +198,21 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
      */
     this.filter = function (formData) {
 
-        // Start with a clean result set
+        // TESTING - DEV
+        console.log(formData);
+
+        // Start with a clean result set - deep copy
         this.resultSet = this.entries.map((entry) => {
             return JSON.parse(JSON.stringify(entry));
         });
+
+        let sentimentToggle = false;
+        let sentimentSlider = 0.5;
+        const sentimentRadius = 0.2;
+
+        let timelineToggle = false;
+        let timelineSlider = 0.5;
+        const timelineRadius = 0.2;
 
         formData.forEach((field) => {
 
@@ -209,7 +237,6 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
                         return d < entry.properties.timestamp;
                     });
                 }
-
             }
 
             // Find entries younger than
@@ -223,16 +250,69 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
                     });
                 }
             }
+
+            // Record that the sentiment slider should be used
+            else if (field['name'] === 'sentiment-toggle' && field['value'] === 'on') {
+
+                sentimentToggle = true;
+            }
+
+            // Get the value of the sentiment slider
+            else if (field['name'] === 'sentiment-slider') {
+                sentimentSlider = field['value'];
+            }
+
+            // Record that the timeline slider should be used
+            else if (field['name'] === 'timeline-toggle' && field['value'] === 'on') {
+
+                timelineToggle = true;
+            }
+
+            // Get the value of the timeline slider
+            else if (field['name'] === 'timeline-slider') {
+                timelineSlider = field['value'];
+            }
         });
+
+        // Filter by sentiment value
+        if (sentimentToggle === true) {
+            this.resultSet = this.resultSet.filter((entry) => {
+
+                return Math.abs(sentimentSlider - entry.properties.sentiment) <= sentimentRadius;
+            })
+        }
+
+        // Filter by timeline value
+        if (timelineToggle === true) {
+            this.resultSet = this.resultSet.filter((entry) => {
+
+                return Math.abs(timelineSlider - ((entry.properties.timestamp - minTimestamp) / (maxTimestamp - minTimestamp))) <= timelineRadius;
+            })
+        }
 
         // Pass the updated result set to the callback
         filterCallback(this.resultSet);
-
     };
 
     // The containing element for the list
     const entryContainer = document.createElement('div');
     elem.append(entryContainer);
+
+    $('input').on('change', () => {
+
+        const formData = $('#journal-search-form').serializeArray();
+
+        this.filter(formData);
+        this.display();
+    });
+
+    $('input').on('input', () => {
+
+        const formData = $('#journal-search-form').serializeArray();
+
+        this.filter(formData);
+        this.display();
+    });
 
     let searchForm = $('#journal-search-form');
 

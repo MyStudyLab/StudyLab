@@ -52,21 +52,34 @@
                 submitWithGeo("#journal-entry-form", "@routes.JournalEntries.addJournalEntry()",
                         (responseData, formData, formElem) => {
 
+                            // DEBUGGING
+                            console.log(responseData);
+
                             // Clear the form after submission
                             document.getElementById('journal-entry-form').reset();
 
                             // Add the new entry to the list
-                            let journalEntry = {};
+                            let journalEntry = {
+                                'type': 'Feature',
+                                'properties': {},
 
-                            journalEntry['timestamp'] = responseData['timestamp'];
-                            journalEntry['inferredSubjects'] = [];
+                            };
+
+                            journalEntry['properties']['timestamp'] = responseData['timestamp'];
+                            journalEntry['properties']['inferredSubjects'] = [];
 
                             // Add proper form fields
                             formData.forEach((field) => {
-                                journalEntry[field['name']] = field['value'];
+
+                                if (field['name'] === 'pos') {
+                                    journalEntry['geometry'] = field['value'];
+                                } else {
+                                    journalEntry['properties'][field['name']] = field['value'];
+                                }
+
                             });
 
-                            entryList.add(journalEntry);
+                            entryList.add(responseData.payload);
                         }
                 );
 

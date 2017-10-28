@@ -74,6 +74,19 @@ object ResultInfo {
     */
   def success[T](message: String, payload: T)(implicit w: Writes[T]): ResultInfo[T] = ResultInfo(success = true, message, System.currentTimeMillis(), payload)
 
+
+  /**
+    * Indicate an unsuccessful operation with the given message and payload
+    *
+    * @param message
+    * @param payload
+    * @param w
+    * @tparam T
+    * @return
+    */
+  def failure[T](message: String, payload: T)(implicit w: Writes[T]): ResultInfo[T] = ResultInfo(success = false, message, System.currentTimeMillis(), payload)
+
+
   /**
     * A result indicating that invalid credentials were provided
     *

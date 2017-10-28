@@ -15,11 +15,16 @@
 
 .inline-searchbar {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
 }
 
 .inline-searchbar-item {
 
+}
+
+.journal-form-toggle {
+    width: 20%;
 }
 
 .search-highlight {

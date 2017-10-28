@@ -69,9 +69,12 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
 
             val sentimentScore = (wsResponse.json \ "results" \ "sentimenthq" \ "results").asOpt[Double].getOrElse(0.0)
 
-            val inferredSubjects = (wsResponse.json \ "results" \ "texttags" \ "results").asOpt[Map[String, Double]].getOrElse(Map())
+            val inferredSubjects = (wsResponse.json \ "results" \ "texttags" \ "results").asOpt[Map[String, Double]]
+              // Sort by relevance, decreasing
+              .map(_.toList.sortBy(-_._2).map(_._1))
+              .getOrElse(List())
 
-            val entry = JournalEntry(username, cleanedEntry, System.currentTimeMillis(), position, sentimentScore, inferredSubjects.keys.toList)
+            val entry = JournalEntry(username, cleanedEntry, System.currentTimeMillis(), position, sentimentScore, inferredSubjects)
 
             journalEntries.addJournalEntry(entry).map(resultInfo => Ok(resultInfo.toJson))
           })
