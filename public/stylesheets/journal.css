@@ -21,10 +21,12 @@
 
 .inline-searchbar-item {
 
+    margin: 5px;
+
 }
 
 .journal-form-toggle {
-    width: 20%;
+
 }
 
 .search-highlight {

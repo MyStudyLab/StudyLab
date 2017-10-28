@@ -189,11 +189,11 @@ body {
     color: #E0E0E3;
     border: none;
     margin: auto;
-    outline: none;
+    outline: none !important;
 
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+    box-shadow: none !important;
 }
 
 /* Styling the footer */

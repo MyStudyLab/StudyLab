@@ -42,11 +42,12 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
     // The containing element for this searchable list
     const elem = document.getElementById(elementId);
 
-
+    // The earliest timestamp in the list
     const minTimestamp = Math.min(...entries.map((entry) => {
         return entry.properties.timestamp;
     }));
 
+    // The most recent timestamp in the list
     const maxTimestamp = Math.max(...entries.map((entry) => {
         return entry.properties.timestamp;
     }));
@@ -57,34 +58,47 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
 
                            <div style="width: 50%; display: inline-flex;">
                              <label for="journal-search-text" class="sr-only">Search</label>
-                             <input type="text" name="search-text" id="journal-search-text" class="form-control inline-searchbar-item" autocomplete="off">
+                             <input type="text" name="search-text" id="journal-search-text" class="form-control inline-searchbar-item journal-form-input" autocomplete="off">
                            </div>
 
                            <div style="width: 50%; display: inline-flex;">
                              <label for="journal-search-after" class="sr-only">After</label>
-                             <input type="date" name="after" id="journal-search-after" class="form-control inline-searchbar-item">
+                             <input type="date" name="after" id="journal-search-after" class="form-control inline-searchbar-item journal-form-input">
                        
                              <label for="journal-search-before" class="sr-only">Before</label>
-                             <input type="date" name="before" id="journal-search-before" class="form-control inline-searchbar-item">
+                             <input type="date" name="before" id="journal-search-before" class="form-control inline-searchbar-item journal-form-input">
                            </div>
                            
-                           <div style="width: 45%; display: inline-flex;">
+                           <div style="width: 100%; display: inline-flex;">
+                           
                              <label for="sentiment-slider" class="sr-only">Sentiment Slider</label>
-                             <input type="range" name="sentiment-slider" id="sentiment-slider" class="form-control inline-searchbar-item" min="0.0" max="1.0" step="0.01">
+                             <input type="range" name="sentiment-slider" id="sentiment-slider" class="form-control inline-searchbar-item journal-form-input transparent-button" min="0.0" max="1.0" step="0.01">
                          
-                             <label for="sentiment-toggle" class="sr-only">Sentiment Toggle</label>
-                             <input type="checkbox" name="sentiment-toggle" id="sentiment-toggle" class="form-control inline-searchbar-item journal-form-toggle">
-                           </div>
-                           
-                           <div style="width: 45%; display: inline-flex;">
+                         
+                             <div class="form-group">
+                               <div class="checkbox">
+                                 <label for="sentiment-toggle" class="">
+                                   <input type="checkbox" name="sentiment-toggle" id="sentiment-toggle" class="inline-searchbar-item journal-form-toggle transparent-button">
+                                 </label>
+                               </div>
+                             </div>
+                             
                              <label for="timeline-slider" class="sr-only">Sentiment Slider</label>
-                             <input type="range" name="timeline-slider" id="timeline-slider" class="form-control inline-searchbar-item" min="0.0" max="1.0" step="0.01">
+                             <input type="range" name="timeline-slider" id="timeline-slider" class="form-control inline-searchbar-item journal-form-input transparent-button" min="0.0" max="1.0" step="0.01">
                          
-                             <label for="timeline-toggle" class="sr-only">Sentiment Toggle</label>
-                             <input type="checkbox" name="timeline-toggle" id="timeline-toggle" class="form-control inline-searchbar-item journal-form-toggle">
+                        
+                             <div class="checkbox form-group">
+                               <label for="timeline-toggle" class="">
+                                 <input type="checkbox" name="timeline-toggle" id="timeline-toggle" class="form-check-input inline-searchbar-item journal-form-toggle transparent-button">
+                               </label>
+                             </div>
+                             
                            </div>
                            
+                           
+                           <!--
                            <button type="submit" class="transparent-button inline-searchbar-item"><i class="fa fa-search fa-2x"></i></button>
+                           -->
                          </form>
                        </div>`;
 
@@ -98,9 +112,10 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
 
         // TODO: There is the issue of whether the new entry satisfies the current filter
 
-        this.entries.unshift(entry);
-        this.resultSet.unshift(entry);
-        this.display();
+        const dc = JSON.parse(JSON.stringify(entry));
+
+        this.entries.unshift(dc);
+        this.resultSet.unshift(dc);
     };
 
 
@@ -194,12 +209,12 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
     /**
      * Filter the journal entries according to the filter form
      *
+     * TODO: There is a visual bug caused by map circles being redrawn after they are sorted.
+     * The entries directly from the server are
+     *
      * @param formData
      */
-    this.filter = function (formData) {
-
-        // TESTING - DEV
-        console.log(formData);
+    this.filter = (formData) => {
 
         // Start with a clean result set - deep copy
         this.resultSet = this.entries.map((entry) => {
@@ -214,6 +229,7 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
         let timelineSlider = 0.5;
         const timelineRadius = 0.2;
 
+        // Apply each of the filters specified in the form
         formData.forEach((field) => {
 
             // Substring search of entry text
@@ -298,34 +314,28 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
     const entryContainer = document.createElement('div');
     elem.append(entryContainer);
 
-    $('input').on('change', () => {
+    // Handlers for checkboxes
+    $('.journal-form-toggle').on('change', () => {
 
         const formData = $('#journal-search-form').serializeArray();
 
         this.filter(formData);
+        this.sort();
         this.display();
     });
 
-    $('input').on('input', () => {
+    // Handlers for other inputs
+    $('.journal-form-input').on('input', () => {
 
         const formData = $('#journal-search-form').serializeArray();
 
         this.filter(formData);
+        this.sort();
         this.display();
     });
 
-    let searchForm = $('#journal-search-form');
-
-    // Set up the handler for the journal search bar
-    searchForm.submit((event) => {
-
+    $('#journal-search-form').submit((event) => {
         event.preventDefault();
-
-        // TESTING - DEV
-        console.log(searchForm.serializeArray());
-
-        this.filter(searchForm.serializeArray());
-        this.display();
     });
 
     // The initial display

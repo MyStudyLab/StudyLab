@@ -58,28 +58,8 @@
                             // Clear the form after submission
                             document.getElementById('journal-entry-form').reset();
 
-                            // Add the new entry to the list
-                            let journalEntry = {
-                                'type': 'Feature',
-                                'properties': {},
-
-                            };
-
-                            journalEntry['properties']['timestamp'] = responseData['timestamp'];
-                            journalEntry['properties']['inferredSubjects'] = [];
-
-                            // Add proper form fields
-                            formData.forEach((field) => {
-
-                                if (field['name'] === 'pos') {
-                                    journalEntry['geometry'] = field['value'];
-                                } else {
-                                    journalEntry['properties'][field['name']] = field['value'];
-                                }
-
-                            });
-
                             entryList.add(responseData.payload);
+                            entryList.display();
                         }
                 );
 
@@ -204,6 +184,7 @@
                                 .setHTML(e.features[0].properties.text)
                                 .addTo(map);
                     });
+
 
                     // Change the cursor to a pointer when the mouse is over the places layer.
                     map.on('mouseenter', 'journals', function () {
