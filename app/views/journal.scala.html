@@ -76,6 +76,8 @@
 
                         if (responseData['success'] === true) {
 
+                            console.log(responseData);
+
                             entryList = new JournalEntryList("past-journal-entries", responseData['payload']);
 
                         } else {
@@ -103,6 +105,7 @@
 
                 map.on('load', () => {
 
+                    // Journal Entry Data Source
                     map.addSource("journals", {
                         type: 'geojson',
                         data: '/json/geoJsonJournal'
