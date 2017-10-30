@@ -132,11 +132,22 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
             return `<div class='journal-entry-text partial-border center-text-content'>
                       <p class="inferredSubjectList">${entry.properties.inferredSubjects.join(", ").replace(new RegExp("_", "g"), " ")}</p>
                       <p>${entry.properties.text}</p>
-                      <div class="journal-entry-info">${moment(entry.properties.timestamp).format('YYYY-MM-DD HH:mm')}</div>
+                      <div style="display: inline-flex; justify-content: space-around; width: 100%; font-size: medium;">
+                        <form class="journal-delete-form">
+                          <input type="text" name="id" value="${entry.properties.id}" hidden>
+                          <button type="submit" class="transparent-button"><i class="fa fa-trash"></i></button>
+                        </form>
+                        <div class="journal-entry-info">${moment(entry.properties.timestamp).format('YYYY-MM-DD HH:mm')}</div>
+                      </div>
                     </div>`;
         });
 
         entryContainer.innerHTML = entryHtml.join("");
+
+
+        submitInBackground(".journal-delete-form", "/journal/delete", (responseData) => {
+            console.log(responseData);
+        });
     };
 
 

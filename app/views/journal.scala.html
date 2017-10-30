@@ -7,6 +7,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2">
+
                 <div class="raised-element text-justify partial-border center-text-content">
                     <form id="journal-entry-form">
                         <div class="form-group">
@@ -42,8 +43,141 @@
     <script>
             'use strict';
 
+            let w = $(window);
+            let f = $("#journal-entry-form");
+            let j = $("#journal-entry-input");
+
+            // Expand journal input when focused on
+            f.focusin(function (event) {
+
+                j.height(w.height() - 200);
+
+            });
+
+            // Shrink journal input when focused on
+            f.focusout(function (event) {
+
+                j.height(100);
+
+            });
+
+
             let entryList;
             let map;
+
+
+            function toGeoJson(entries) {
+
+                return entries.map((entry) => {
+
+                    return {
+                        type: "Feature",
+                        properties: {
+                            timestamp: entry.timestamp,
+                            text: entry.text,
+                            username: entry.username,
+                            id: entry._id.$oid,
+                            "public": entry.public,
+                            sentiment: entry.sentiment,
+                            inferredSubjects: entry.inferredSubjects
+                        },
+                        geometry: entry.pos
+                    };
+                })
+
+            }
+
+            function pageSetup(responseData, textResponse, jqXHR) {
+
+                console.log(responseData);
+
+                // TODO: Convert to GeoJson
+                let featureList = toGeoJson(responseData.payload);
+
+                entryList = new JournalEntryList("past-journal-entries", featureList, (resultSet) => {
+
+                            map.getSource('journals').setData({
+                                "type": "FeatureCollection",
+                                "features": resultSet
+                            });
+
+                        }
+                );
+
+
+                // Get current position, then initialize map
+                navigator.geolocation.getCurrentPosition((position) => {
+                    mapboxgl.accessToken = 'pk.eyJ1Ijoic2VudGllbnRzYWlsb3IiLCJhIjoiY2o5MjQ0dGhqM2V1cjJ3cDZwbjB2YWtlaSJ9.H7_wVqAUVOu8bJYmwc1rtg';
+                    map = new mapboxgl.Map({
+                        container: 'dashboard-map',
+                        style: 'mapbox://styles/mapbox/light-v9',
+                        zoom: 13,
+                        center: [position.coords.longitude, position.coords.latitude]
+                    });
+
+
+                    map.on('load', () => {
+
+                        // Journal Entry Data Source
+                        map.addSource("journals", {
+                            type: 'geojson',
+                            data: {
+                                "type": "FeatureCollection",
+                                "features": featureList
+                            }
+                        });
+
+                        map.addLayer({
+                            'id': 'journals',
+                            'type': 'circle',
+                            'source': 'journals',
+                            'paint': {
+                                "circle-color": [
+                                    "rgb", ["*", 255, ["-", 1, ["to-number", ["get", "sentiment"]]]],
+                                    ["*", 255, ["get", "sentiment"]],
+                                    0
+                                ],
+                                'circle-radius': {
+                                    'base': 10,
+                                    'stops': [
+                                        [12, 5],
+                                        [20, 4]
+                                    ]
+                                },
+                                'circle-opacity': 0.75
+                            }
+                        });
+
+
+                        // Display journal text when circles are clicked
+                        map.on('click', 'journals', function (e) {
+                            new mapboxgl.Popup()
+                                    .setLngLat(e.features[0].geometry.coordinates)
+                                    .setHTML(e.features[0].properties.text)
+                                    .addTo(map);
+                        });
+
+
+                        // Change the cursor to a pointer when the mouse is over the places layer.
+                        map.on('mouseenter', 'journals', function () {
+                            map.getCanvas().style.cursor = 'pointer';
+                        });
+
+                        // Change it back to a pointer when it leaves.
+                        map.on('mouseleave', 'journals', function () {
+                            map.getCanvas().style.cursor = '';
+                        });
+
+                    });
+
+
+                }, (err) => {
+                    // Error handling
+                    console.log(err);
+                }, {
+                    "maximumAge": 10 * 1000
+                })
+            }
 
             // Set up handlers and load journal entries
             $(function () {
@@ -65,147 +199,10 @@
 
                 $.ajax({
                     type: "get",
-                    url: "@controllers.routes.JournalEntries.getGeoJsonEntries()",
+                    url: "@controllers.routes.JournalEntries.getJournalEntries()",
                     dataType: "json",
-                    success: function (responseData, textResponse, jqXHR) {
-
-                        console.log(responseData);
-
-                        entryList = new JournalEntryList("past-journal-entries", responseData['features'], (resultSet) => {
-
-                                    map.getSource('journals').setData({
-                                        "type": "FeatureCollection",
-                                        "features": resultSet
-                                    });
-
-                                }
-                        );
-                    }
+                    success: pageSetup
                 });
             });
-    </script>
-
-    <script>
-
-            //let map;
-
-            // Get current position, then initialize map
-            navigator.geolocation.getCurrentPosition((position) => {
-                mapboxgl.accessToken = 'pk.eyJ1Ijoic2VudGllbnRzYWlsb3IiLCJhIjoiY2o5MjQ0dGhqM2V1cjJ3cDZwbjB2YWtlaSJ9.H7_wVqAUVOu8bJYmwc1rtg';
-                map = new mapboxgl.Map({
-                    container: 'dashboard-map',
-                    style: 'mapbox://styles/mapbox/light-v9',
-                    zoom: 13,
-                    center: [position.coords.longitude, position.coords.latitude]
-                });
-
-
-                map.on('load', () => {
-
-                    // Journal Entry Data Source
-                    map.addSource("journals", {
-                        type: 'geojson',
-                        data: '/json/geoJsonJournal'
-                    });
-
-                    map.addLayer({
-                        'id': 'journals',
-                        'type': 'circle',
-                        'source': 'journals',
-                        'paint': {
-                            "circle-color": [
-                                "rgb", ["*", 255, ["-", 1, ["to-number", ["get", "sentiment"]]]],
-                                ["*", 255, ["get", "sentiment"]],
-                                0
-                            ],
-                            'circle-radius': {
-                                'base': 10,
-                                'stops': [
-                                    [12, 5],
-                                    [20, 4]
-                                ]
-                            },
-                            'circle-opacity': 0.75
-                        }
-                    });
-
-                    /*
-
-                    // Sentiment heatmap layer
-                    map.addLayer({
-                        "id": "sentiment-heat",
-                        "type": "heatmap",
-                        "source": "journals",
-                        "maxzoom": 16,
-                        "paint": {
-                            //Increase the heatmap weight based on frequency and property magnitude
-                            "heatmap-weight": {
-                                "property": "sentiment",
-                                "type": "exponential",
-                                "stops": [
-                                    [0, 1],
-                                    [6, 2]
-                                ]
-                            },
-                            //Increase the heatmap color weight weight by zoom level
-                            //heatmap-ntensity is a multiplier on top of heatmap-weight
-                            "heatmap-intensity": {
-                                "stops": [
-                                    [0, 2],
-                                    [9, 3]
-                                ]
-                            },
-                            //Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
-                            //Begin color ramp at 0-stop with a 0-transparancy color
-                            //to create a blur-like effect.
-                            "heatmap-color": {
-                                "stops": [
-                                    [0, "rgb(172,48,28)"],
-                                    [1, "rgb(24,178,43)"]
-                                ]
-                            },
-                            //Adjust the heatmap radius by zoom level
-                            "heatmap-radius": {
-                                "stops": [
-                                    [0, 5],
-                                    [9, 20]
-                                ]
-                            },
-                        }
-                    }, 'waterway-label');
-
-
-                    */
-
-                    // Display journal text when circles are clicked
-                    map.on('click', 'journals', function (e) {
-                        new mapboxgl.Popup()
-                                .setLngLat(e.features[0].geometry.coordinates)
-                                .setHTML(e.features[0].properties.text)
-                                .addTo(map);
-                    });
-
-
-                    // Change the cursor to a pointer when the mouse is over the places layer.
-                    map.on('mouseenter', 'journals', function () {
-                        map.getCanvas().style.cursor = 'pointer';
-                    });
-
-                    // Change it back to a pointer when it leaves.
-                    map.on('mouseleave', 'journals', function () {
-                        map.getCanvas().style.cursor = '';
-                    });
-
-                });
-
-
-            }, (err) => {
-                // Error handling
-                console.log(err);
-            }, {
-                "maximumAge": 10 * 1000
-            })
-
-
     </script>
 }

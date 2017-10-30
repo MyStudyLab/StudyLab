@@ -47,9 +47,6 @@ GET         /json/about/:username           controllers.Users.aboutMessage(usern
 # Get the journal entries as JSON for the username
 GET         /json/journal/                  controllers.JournalEntries.getJournalEntries()
 
-# Get the journal entries as GeoJSON for the username
-GET         /json/geoJsonJournal            controllers.JournalEntries.getGeoJsonEntries()
-
 # Start a study session
 POST        /study/start                    controllers.Sessions.startSession()
 
@@ -73,6 +70,9 @@ POST        /study/merge                    controllers.Sessions.mergeSubjects()
 
 # Add a journal entry
 POST        /journal/add                    controllers.JournalEntries.addJournalEntry()
+
+# Delete a journal entry
+POST        /journal/delete                 controllers.JournalEntries.delete()
 
 # Add a new user
 POST        /users/add                      controllers.Users.addNewUser()

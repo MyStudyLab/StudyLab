@@ -1,11 +1,14 @@
 package models
 
 // Standard Library
+import reactivemongo.bson.{BSONDocument, BSONObjectID}
+import reactivemongo.play.json.collection.JSONCollection
+
 import scala.concurrent.Future
 
 // Project
 import constructs.{JournalEntry, ResultInfo}
-import helpers.Selectors.usernameSelector
+import helpers.Selectors.usernameAndID
 
 // Play Framework
 import play.api.libs.json._
@@ -14,6 +17,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 // Reactive Mongo
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
+import play.modules.reactivemongo.json._
 
 /**
   * Model layer to manage journal entries
@@ -24,6 +28,8 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
 
   // An interface to the journal_entries collection as BSON
   protected def journalCollection: Future[BSONCollection] = mongoApi.database.map(_.collection[BSONCollection]("journal_entries"))
+
+  protected def jsonCollection: Future[JSONCollection] = mongoApi.database.map(_.collection[JSONCollection]("journal_entries"))
 
   /**
     * Record a journal entry in the database
@@ -40,17 +46,67 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
   }
 
   /**
+    * Delete a journal entry
+    *
+    * @param username
+    * @param id
+    * @return
+    */
+  def delete(username: String, id: BSONObjectID): Future[ResultInfo[String]] = {
+
+    journalCollection.flatMap(_.remove(usernameAndID(username, id), firstMatchOnly = true).map(result =>
+      if (result.ok) ResultInfo.succeedWithMessage("Journal entry deleted")
+      else ResultInfo.failWithMessage("Entry not deleted")
+    ))
+
+  }
+
+
+  /**
+    * Set the publicity of a journal entry
+    *
+    * @return
+    */
+  def setPublicity(username: String, id: BSONObjectID, public: Boolean): Future[ResultInfo[String]] = {
+
+    val s = BSONDocument(
+      "username" -> username,
+      "_id" -> id
+    )
+
+    val u = BSONDocument(
+      "$set" -> BSONDocument(
+        "public" -> public
+      )
+    )
+
+    journalCollection.flatMap(_.update(s, u).map(result =>
+      if (result.ok) ResultInfo.succeedWithMessage("Journal entry recorded")
+      else ResultInfo.failWithMessage("entry not recorded")
+    ))
+  }
+
+
+  /**
     * Get all of the journal entries for the given username
     *
     * @param username The username for which to retrieve data
     * @return
     */
-  def journalEntriesForUsername(username: String): Future[ResultInfo[List[JournalEntry]]] = {
+  def journalEntriesForUsername(username: String): Future[ResultInfo[List[JsObject]]] = {
 
-    journalCollection.flatMap(
-      _.find(usernameSelector(username)).cursor[JournalEntry]().collect[List]().map(
+    val s = Json.obj(
+      "username" -> username
+    )
+
+    jsonCollection.flatMap(
+      _.find(s).cursor[JsObject]().collect[List]().map(
         entries => ResultInfo.success(s"retrieved journal entries for $username", entries)
       )
     )
+  }
+
+  def journalEntriesWithID(username: String): Future[ResultInfo[List[JournalEntry]]] = {
+    ???
   }
 }

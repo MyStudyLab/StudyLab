@@ -3,7 +3,9 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
+import forms.DeleteJournalEntryForm
 import play.api.libs.json.{JsArray, JsNumber, JsObject}
+import reactivemongo.bson.BSONObjectID
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -74,7 +76,7 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
               .map(_.toList.sortBy(-_._2).map(_._1))
               .getOrElse(List())
 
-            val entry = JournalEntry(username, cleanedEntry, System.currentTimeMillis(), position, sentimentScore, inferredSubjects)
+            val entry = JournalEntry(username, cleanedEntry, System.currentTimeMillis(), position, public = false, sentimentScore, inferredSubjects)
 
             journalEntries.addJournalEntry(entry).map(resultInfo => Ok(resultInfo.toJson))
           })
@@ -84,6 +86,27 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
     })
 
   }
+
+
+  /**
+    * Delete a journal entry
+    *
+    * @return
+    */
+  def delete = Action.async { implicit request =>
+
+    withUsername(username => {
+      DeleteJournalEntryForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => {
+          BSONObjectID.parse(goodForm.id).toOption.fold(
+            Future(Ok(ResultInfo.failWithMessage("Invalid journal entry id").toJson))
+          )(oid => journalEntries.delete(username, oid).map(result => Ok(result.toJson)))
+        }
+      )
+    })
+  }
+
 
   /**
     * Get all journal entries for the given username
@@ -99,31 +122,4 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
 
   }
 
-  /**
-    * Get all journal entries in GeoJson format
-    *
-    * @return
-    */
-  def getGeoJsonEntries = Action.async { implicit request =>
-
-    val indicoSentimentURL = "https://apiv2.indico.io/sentiment/batch"
-
-    val indicoRequest = ws.url(indicoSentimentURL)
-      .withHeaders("X-ApiKey" -> "5c74ed53e9015b5355091e6cac91c303")
-      .withRequestTimeout(3000.millis)
-
-    withUsername(username => {
-
-      // First, get journal entries
-      journalEntries.journalEntriesForUsername(username).map(resInfo => {
-
-        val geoJson = Json.obj(
-          "type" -> "FeatureCollection",
-          "features" -> resInfo.payload.map(_.toGeoJson)
-        )
-
-        Ok(geoJson)
-      })
-    })
-  }
 }

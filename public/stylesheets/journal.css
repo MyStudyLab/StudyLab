@@ -1,5 +1,5 @@
 #journal-entry-input {
-    height: 150px;
+    height: 100px;
 
     color: #E0E0E3;
     font-size: 24px;
@@ -38,6 +38,8 @@
 }
 
 .journal-entry-info {
+    flex-grow: 1;
+    align-self: flex-end;
     font-size: 14px;
     text-align: right;
     color: #707073;
