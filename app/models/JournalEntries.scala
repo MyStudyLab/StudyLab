@@ -55,7 +55,7 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
   def delete(username: String, id: BSONObjectID): Future[ResultInfo[String]] = {
 
     journalCollection.flatMap(_.remove(usernameAndID(username, id), firstMatchOnly = true).map(result =>
-      if (result.ok) ResultInfo.succeedWithMessage("Journal entry deleted")
+      if (result.ok) ResultInfo.success("Journal entry deleted", id.stringify)
       else ResultInfo.failWithMessage("Entry not deleted")
     ))
 

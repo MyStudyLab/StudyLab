@@ -17,28 +17,33 @@ function TodoItemList(elementId, items) {
 
         let container = document.getElementById(elementId);
 
+        // Create and append each item to the list
         this.items.forEach((item) => {
 
             let d = document.createElement('div');
 
             // The containing div for the item
             d.classList.add("todo-item-text", "partial-border", "center-text-content");
-            d.id = "todo-item-" + item["_id"]["$oid"];
+            d.id = `todo-item-${item["_id"]["$oid"]}`;
 
+            // The text content
             let text = document.createElement('p');
             text.innerHTML = item.text;
 
+            // The timestamp
             let date = document.createElement('div');
             date.classList.add("todo-item-info");
             date.textContent = moment(item.startTime).format('YYYY-MM-DD HH:mm');
 
+            // The completion button
             let f1 = document.createElement('form');
             f1.classList.add("todo-completion-form");
-            f1.innerHTML = '<input type="text" name="id" value="' + item["_id"]["$oid"] + '" hidden><button type="submit" class="todo-completion-button"><i class="fa fa-bullseye fa-lg"></i></button>';
+            f1.innerHTML = `<input type="text" name="id" value="${item["_id"]["$oid"]}" hidden><button type="submit" class="todo-completion-button"><i class="fa fa-bullseye fa-lg"></i></button>`;
 
+            // The deletion button
             let f2 = document.createElement('form');
             f2.classList.add("todo-deletion-form");
-            f2.innerHTML = '<input type="text" name="id" value="' + item["_id"]["$oid"] + '" hidden><button type="submit" class="todo-deletion-button"><i class="fa fa-trash fa-lg"></i></button>';
+            f2.innerHTML = `<input type="text" name="id" value="${item["_id"]["$oid"]}" hidden><button type="submit" class="todo-deletion-button"><i class="fa fa-trash fa-lg"></i></button>`;
 
 
             // Assemble the item's HTML element
@@ -51,6 +56,8 @@ function TodoItemList(elementId, items) {
             submitWithGeo(f1, "todo/completeTodoItem", function (responseData) {
                 if (responseData['success'] === true) {
                     // TODO: Do stuff with the item's object
+                    // Add completion date
+                    // Move to the 'completed' portion of the list
                 } else {
                     console.log("There was a problem deleting the item")
                 }

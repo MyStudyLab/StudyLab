@@ -95,10 +95,6 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
                              
                            </div>
                            
-                           
-                           <!--
-                           <button type="submit" class="transparent-button inline-searchbar-item"><i class="fa fa-search fa-2x"></i></button>
-                           -->
                          </form>
                        </div>`;
 
@@ -129,7 +125,7 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
 
         let entryHtml = this.resultSet.map((entry) => {
 
-            return `<div class='journal-entry-text partial-border center-text-content'>
+            return `<div class='journal-entry-text partial-border center-text-content' id="${entry.properties.id}">
                       <p class="inferredSubjectList">${entry.properties.inferredSubjects.join(", ").replace(new RegExp("_", "g"), " ")}</p>
                       <p>${entry.properties.text}</p>
                       <div style="display: inline-flex; justify-content: space-around; width: 100%; font-size: medium;">
@@ -144,10 +140,36 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
 
         entryContainer.innerHTML = entryHtml.join("");
 
+        submitInBackground(".journal-delete-form", "/journal/delete", (responseData, formData, formElem) => {
 
-        submitInBackground(".journal-delete-form", "/journal/delete", (responseData) => {
-            console.log(responseData);
+            if (responseData.payload) {
+                this.remove(responseData.payload)
+            }
         });
+
+    };
+
+
+    /**
+     * Remove an entry from the list
+     *
+     * @param entry_id
+     */
+    this.remove = function (entry_id) {
+
+        // Remove element from page
+        document.getElementById(entry_id).remove();
+
+        // Remove element from entry list
+        this.entries = this.entries.filter((entry) => {
+            return entry.properties.id !== entry_id;
+        });
+
+        // Remove element from result set
+        this.resultSet = this.resultSet.filter((entry) => {
+            return entry.properties.id !== entry_id;
+        });
+
     };
 
 
@@ -221,7 +243,8 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
      * Filter the journal entries according to the filter form
      *
      * TODO: There is a visual bug caused by map circles being redrawn after they are sorted.
-     * The entries directly from the server are
+     *
+     * TODO: Refactor so that the entry list is only iterated over once
      *
      * @param formData
      */
