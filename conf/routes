@@ -74,6 +74,9 @@ POST        /journal/add                    controllers.JournalEntries.addJourna
 # Delete a journal entry
 POST        /journal/delete                 controllers.JournalEntries.delete()
 
+# Set the publicity of a journal entry
+POST        /journal/publicity              controllers.JournalEntries.setPublicity()
+
 # Add a new user
 POST        /users/add                      controllers.Users.addNewUser()
 

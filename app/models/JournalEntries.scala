@@ -69,18 +69,13 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
     */
   def setPublicity(username: String, id: BSONObjectID, public: Boolean): Future[ResultInfo[String]] = {
 
-    val s = BSONDocument(
-      "username" -> username,
-      "_id" -> id
-    )
-
     val u = BSONDocument(
       "$set" -> BSONDocument(
         "public" -> public
       )
     )
 
-    journalCollection.flatMap(_.update(s, u).map(result =>
+    journalCollection.flatMap(_.update(usernameAndID(username, id), u).map(result =>
       if (result.ok) ResultInfo.succeedWithMessage("Journal entry recorded")
       else ResultInfo.failWithMessage("entry not recorded")
     ))

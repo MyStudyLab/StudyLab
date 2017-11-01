@@ -3,7 +3,7 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
-import forms.DeleteJournalEntryForm
+import forms.{DeleteJournalEntryForm, SetJournalPublicityForm}
 import play.api.libs.json.{JsArray, JsNumber, JsObject}
 import reactivemongo.bson.BSONObjectID
 
@@ -105,6 +105,26 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
         }
       )
     })
+  }
+
+  /**
+    * Set the publicity of a journal entry
+    *
+    * @return
+    */
+  def setPublicity = Action.async { implicit request =>
+
+    withUsername(username => {
+      SetJournalPublicityForm.form.bindFromRequest()(request).fold(
+        _ => invalidFormResponse,
+        goodForm => {
+          BSONObjectID.parse(goodForm.id).toOption.fold(
+            Future(Ok(ResultInfo.failWithMessage("Invalid journal entry id").toJson))
+          )(oid => journalEntries.setPublicity(username, oid, goodForm.public).map(result => Ok(result.toJson)))
+        }
+      )
+    })
+
   }
 
 

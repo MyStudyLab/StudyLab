@@ -128,23 +128,73 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
             return `<div class='journal-entry-text partial-border center-text-content' id="${entry.properties.id}">
                       <p class="inferredSubjectList">${entry.properties.inferredSubjects.join(", ").replace(new RegExp("_", "g"), " ")}</p>
                       <p>${entry.properties.text}</p>
-                      <div style="display: inline-flex; justify-content: space-around; width: 100%; font-size: medium;">
-                        <form class="journal-delete-form">
+                      <div class="journal-entry-control-bar">
+                        <form class="journal-publicity-form control-bar-item">
                           <input type="text" name="id" value="${entry.properties.id}" hidden>
-                          <button type="submit" class="transparent-button"><i class="fa fa-trash"></i></button>
+                          <input type="text" name="public" value="${!entry.properties.public}" hidden>
+                          <button type="submit" class="transparent-button" style="color: ${entry.properties.public ? "#78A4FF" : "#707073"};"><i class="fa fa-users"></i></button>
                         </form>
-                        <div class="journal-entry-info">${moment(entry.properties.timestamp).format('YYYY-MM-DD HH:mm')}</div>
+                        <form class="journal-delete-form control-bar-item">
+                          <input type="text" name="id" value="${entry.properties.id}" hidden>
+                          <button type="submit" class="transparent-button journal-delete-button"><i class="fa fa-trash"></i></button>
+                        </form>
+                        <div class="journal-entry-timestamp control-bar-item">${moment(entry.properties.timestamp).format('YYYY-MM-DD HH:mm')}</div>
                       </div>
                     </div>`;
         });
 
         entryContainer.innerHTML = entryHtml.join("");
 
-        submitInBackground(".journal-delete-form", "/journal/delete", (responseData, formData, formElem) => {
+        // Get a reference to the current JournalEntryList object
+        let self = this;
 
-            if (responseData.payload) {
-                this.remove(responseData.payload)
+        // Handler for deletion
+        $('.journal-delete-form').submit(function (e) {
+
+            // Prevent the form from clearing
+            e.preventDefault();
+
+            if (confirm("Delete this entry forever?")) {
+
+                // Submit the form asynchronously
+                $.ajax({
+                    method: "post",
+                    url: "/journal/delete",
+                    data: $(this).serialize(),
+                    dataType: "json",
+                    success: (responseData, textStatus, jqXHR) => {
+                        if (responseData.payload) {
+                            self.remove(responseData.payload);
+                        }
+                    }
+                });
             }
+
+        });
+
+        // Handler for publicity setting
+        $('.journal-publicity-form').submit(function (e) {
+
+            // Prevent the form from clearing
+            e.preventDefault();
+
+            if (confirm("Change the publicity of this entry?")) {
+
+                // Submit the form asynchronously
+                $.ajax({
+                    method: "post",
+                    url: "/journal/publicity",
+                    data: $(this).serialize(),
+                    dataType: "json",
+                    success: (responseData, textStatus, jqXHR) => {
+                        if (responseData['success'] === true) {
+                            console.log(responseData);
+                            // TODO: change publicity on front-end
+                        }
+                    }
+                });
+            }
+
         });
 
     };
@@ -239,6 +289,23 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
     };
 
 
+    const passesFilter = (entry, formData) => {
+
+        let passes = true;
+
+        formData.forEach((field) => {
+
+            if (field.name === 'search-text') {
+
+            }
+
+
+        });
+
+        return passes;
+
+    };
+
     /**
      * Filter the journal entries according to the filter form
      *
@@ -263,6 +330,12 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
         let timelineSlider = 0.5;
         const timelineRadius = 0.2;
 
+        let afterToggle = false;
+        let afterDate = 0;
+
+        let beforeToggle = false;
+        let beforeDate = (new Date()).getTime();
+
         // Apply each of the filters specified in the form
         formData.forEach((field) => {
 
@@ -280,24 +353,18 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
             // Find entries older than
             else if (field['name'] === 'after') {
 
-                const d = (new Date(field['value'])).getTime();
-
                 if (field['value'] !== "") {
-                    this.resultSet = this.resultSet.filter((entry) => {
-                        return d < entry.properties.timestamp;
-                    });
+                    afterToggle = true;
+                    afterDate = (new Date(field['value'])).getTime();
                 }
             }
 
             // Find entries younger than
             else if (field['name'] === 'before') {
 
-                const d = (new Date(field['value'])).getTime();
-
                 if (field['value'] !== "") {
-                    this.resultSet = this.resultSet.filter((entry) => {
-                        return entry.properties.timestamp < d;
-                    });
+                    beforeToggle = true;
+                    beforeDate = (new Date(field['value'])).getTime();
                 }
             }
 
@@ -324,21 +391,41 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
             }
         });
 
-        // Filter by sentiment value
-        if (sentimentToggle === true) {
-            this.resultSet = this.resultSet.filter((entry) => {
+        // Filter the entries by the search criteria
+        this.resultSet = this.resultSet.filter((entry) => {
 
-                return Math.abs(sentimentSlider - entry.properties.sentiment) <= sentimentRadius;
-            })
-        }
+            // Filter by sentiment value
+            if (sentimentToggle === true) {
 
-        // Filter by timeline value
-        if (timelineToggle === true) {
-            this.resultSet = this.resultSet.filter((entry) => {
+                if (Math.abs(sentimentSlider - entry.properties.sentiment) > sentimentRadius) {
+                    return false;
+                }
+            }
 
-                return Math.abs(timelineSlider - ((entry.properties.timestamp - minTimestamp) / (maxTimestamp - minTimestamp))) <= timelineRadius;
-            })
-        }
+            // Filter by timeline value
+            if (timelineToggle === true) {
+                if (Math.abs(timelineSlider - ((entry.properties.timestamp - minTimestamp) / (maxTimestamp - minTimestamp))) > timelineRadius) {
+                    return false;
+                }
+            }
+
+            if (afterToggle === true) {
+                if (entry.properties.timestamp < afterDate) {
+                    return false;
+                }
+            }
+
+            if (beforeToggle === true) {
+                if (entry.properties.timestamp > beforeDate) {
+                    return false;
+                }
+            }
+
+            // The entry didn't fail any filter test. Include it in the result set
+            return true;
+
+        });
+
 
         // Pass the updated result set to the callback
         filterCallback(this.resultSet);

@@ -2,7 +2,7 @@
     height: 100px;
 
     color: #E0E0E3;
-    font-size: 24px;
+    font-size: 20px;
 
     background: transparent;
     border: none;
@@ -25,6 +25,18 @@
 
 }
 
+.journal-entry-control-bar {
+    display: inline-flex;
+    justify-content: space-around;
+    width: 100%;
+    font-size: medium;
+    color: #707073;
+}
+
+.control-bar-item {
+    color: #707073;
+}
+
 .journal-form-toggle {
 
 }
@@ -34,15 +46,21 @@
 }
 
 .journal-entry-text {
-    font-size: 24px;
+    font-size: 20px;
 }
 
-.journal-entry-info {
+.journal-entry-timestamp {
     flex-grow: 1;
     align-self: flex-end;
     font-size: 14px;
     text-align: right;
     color: #707073;
+}
+
+.journal-delete-button {
+
+    color: inherit;
+
 }
 
 #journal-entry-form ::-webkit-input-placeholder {
