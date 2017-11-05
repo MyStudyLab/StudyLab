@@ -1,0 +1,68 @@
+.transparentButton {
+    background: transparent;
+    color: #E0E0E3;
+    border: none;
+    margin: auto;
+    outline: none !important;
+
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+    box-shadow: none !important;
+}
+
+.textHighlight {
+
+    background-color: #78a4ff;
+
+}
+
+.active {
+    color: #78A4FF;
+}
+
+.SearchFormText {
+    width: 100%;
+}
+
+.TodoItemList {
+    margin-bottom: 10px;
+}
+
+.TodoItem {
+    width: 100%;
+    padding-bottom: 5px;
+    border-bottom: solid 2px;
+    border-color: gray;
+}
+
+.TodoItemText {
+    flex-grow: 1;
+}
+
+.TodoItemControl {
+    display: inline-flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.TodoItemButton {
+    outline: none;
+}
+
+.AddItemForm {
+    margin-top: 10px;
+    display: inline-flex;
+    width: 100%;
+}
+
+.AddItemText {
+    flex-grow: 1;
+}
+
+.Red {
+    background-color: rgba(156, 32, 32, .7);
+}
+
+.Blue {
+    background-color: rgba(32, 32, 156, .7);
+}
