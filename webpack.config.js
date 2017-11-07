@@ -1,4 +1,5 @@
 let path = require('path');
+let uglify = require('uglifyjs-webpack-plugin')
 
 const DIR = path.resolve(__dirname, 'public/jsx')
 const OUT_DIR = path.resolve(__dirname, 'public/target')
@@ -9,6 +10,7 @@ module.exports = {
     path: OUT_DIR,
     filename: "JournalBundle.js"
   },
+  plugins: [new uglify()],
   module: {
 
     rules: [
