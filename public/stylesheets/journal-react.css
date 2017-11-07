@@ -1,23 +1,51 @@
-.transparentButton {
+
+.JournalApp {
+    width: 95%;
+    margin: auto;
+}
+
+#journalEntryInput {
+    height: 100px;
+
+    color: #E0E0E3;
+    font-size: 20px;
+
+    background: transparent;
+    border: none;
+    resize: none;
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+
+#entrySubmit {
+    padding: auto;
+}
+
+#journalSearch {
+
     background: transparent;
     color: #E0E0E3;
-    border: none;
-    margin: auto;
-    outline: none !important;
 
-    -webkit-box-shadow: none !important;
-    -moz-box-shadow: none !important;
-    box-shadow: none !important;
+    outline: none;
+    border: solid #707073 1px;
+    border-radius: 3px;
+
+    margin: 10px 0;
+    padding: 3px;
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
 }
 
 .textHighlight {
-
-    background-color: #78a4ff;
-
+    background: rgba(54, 234, 156, 0.25);
 }
 
 .active {
-    color: #78A4FF;
+    color: rgb(120, 164, 255) !important;
 }
 
 .SearchFormText {
@@ -30,39 +58,42 @@
 
 .TodoItem {
     width: 100%;
-    padding-bottom: 5px;
-    border-bottom: solid 2px;
-    border-color: gray;
-}
-
-.TodoItemText {
-    flex-grow: 1;
+    padding: 10px;
 }
 
 .TodoItemControl {
     display: inline-flex;
     justify-content: flex-end;
     width: 100%;
+    color: #707073;
 }
 
-.TodoItemButton {
-    outline: none;
+.entryControlItem {
+    color: inherit;
+}
+
+.journalEntryTimestamp {
+    flex-grow: 1;
+    align-self: flex-end;
+    font-size: 14px;
+    text-align: right;
+    color: #707073;
 }
 
 .AddItemForm {
-    margin-top: 10px;
-    display: inline-flex;
+    margin-bottom: 10px;
     width: 100%;
 }
 
-.AddItemText {
-    flex-grow: 1;
-}
+/* Small Screens */
+@media (min-width: 768px) {
 
-.Red {
-    background-color: rgba(156, 32, 32, .7);
-}
+    .JournalApp {
+        width: 75%;
+    }
 
-.Blue {
-    background-color: rgba(32, 32, 156, .7);
+    .journalEntryTimestamp {
+
+    }
+
 }

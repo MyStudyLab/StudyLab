@@ -179,12 +179,12 @@ body {
     margin: 20px;
 }
 
-.center-text-content {
+.centerTextContent {
     padding: 20px;
     margin-bottom: 40px;
 }
 
-.transparent-button {
+.transparentButton {
     background: transparent;
     color: #E0E0E3;
     border: none;
@@ -249,8 +249,8 @@ footer {
     font-size: large;
 }
 
-.partial-border {
-    border-bottom: solid 2px #707073;
+.partialBorder {
+    border-bottom: solid 1px #707073;
 }
 
 #about-para {
@@ -329,8 +329,8 @@ footer {
         font-size: xx-large;
     }
 
-    .partial-border {
-        border-left: solid 2px #707073;
+    .partialBorder {
+        border-left: solid 1px #707073;
     }
 
     .panel-data-block {

@@ -97,6 +97,16 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     withUsername(username => Ok(views.html.journal(username)))
   }
 
+  /**
+    * The Journal UI build with React
+    *
+    * @return
+    */
+  def journalReact = Action { implicit request =>
+
+    withUsername(username => Ok(views.html.journalReact()))
+  }
+
 
   /**
     * The Settings Page

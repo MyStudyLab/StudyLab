@@ -49,7 +49,7 @@
     font-size: 20px;
 }
 
-.journal-entry-timestamp {
+.journalEntryTimestamp {
     flex-grow: 1;
     align-self: flex-end;
     font-size: 14px;

@@ -72,24 +72,24 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
                            <div style="width: 100%; display: inline-flex;">
                            
                              <label for="sentiment-slider" class="sr-only">Sentiment Slider</label>
-                             <input type="range" name="sentiment-slider" id="sentiment-slider" class="form-control inline-searchbar-item journal-form-input transparent-button" min="0.0" max="1.0" step="0.01">
+                             <input type="range" name="sentiment-slider" id="sentiment-slider" class="form-control inline-searchbar-item journal-form-input transparentButton" min="0.0" max="1.0" step="0.01">
                          
                          
                              <div class="form-group">
                                <div class="checkbox">
                                  <label for="sentiment-toggle" class="">
-                                   <input type="checkbox" name="sentiment-toggle" id="sentiment-toggle" class="inline-searchbar-item journal-form-toggle transparent-button">
+                                   <input type="checkbox" name="sentiment-toggle" id="sentiment-toggle" class="inline-searchbar-item journal-form-toggle transparentButton">
                                  </label>
                                </div>
                              </div>
                              
                              <label for="timeline-slider" class="sr-only">Sentiment Slider</label>
-                             <input type="range" name="timeline-slider" id="timeline-slider" class="form-control inline-searchbar-item journal-form-input transparent-button" min="0.0" max="1.0" step="0.01">
+                             <input type="range" name="timeline-slider" id="timeline-slider" class="form-control inline-searchbar-item journal-form-input transparentButton" min="0.0" max="1.0" step="0.01">
                          
                         
                              <div class="checkbox form-group">
                                <label for="timeline-toggle" class="">
-                                 <input type="checkbox" name="timeline-toggle" id="timeline-toggle" class="form-check-input inline-searchbar-item journal-form-toggle transparent-button">
+                                 <input type="checkbox" name="timeline-toggle" id="timeline-toggle" class="form-check-input inline-searchbar-item journal-form-toggle transparentButton">
                                </label>
                              </div>
                              
@@ -125,20 +125,20 @@ function JournalEntryList(elementId, entries, filterCallback = () => {
 
         let entryHtml = this.resultSet.map((entry) => {
 
-            return `<div class='journal-entry-text partial-border center-text-content' id="${entry.properties.id}">
+            return `<div class='journal-entry-text partialBorder centerTextContent' id="${entry.properties.id}">
                       <p class="inferredSubjectList">${entry.properties.inferredSubjects.join(", ").replace(new RegExp("_", "g"), " ")}</p>
                       <p>${entry.properties.text}</p>
                       <div class="journal-entry-control-bar">
                         <form class="journal-publicity-form control-bar-item">
                           <input type="text" name="id" value="${entry.properties.id}" hidden>
                           <input type="text" name="public" value="${!entry.properties.public}" hidden>
-                          <button type="submit" class="transparent-button" style="color: ${entry.properties.public ? "#78A4FF" : "#707073"};"><i class="fa fa-users"></i></button>
+                          <button type="submit" class="transparentButton" style="color: ${entry.properties.public ? "#78A4FF" : "#707073"};"><i class="fa fa-users"></i></button>
                         </form>
                         <form class="journal-delete-form control-bar-item">
                           <input type="text" name="id" value="${entry.properties.id}" hidden>
-                          <button type="submit" class="transparent-button journal-delete-button"><i class="fa fa-trash"></i></button>
+                          <button type="submit" class="transparentButton journal-delete-button"><i class="fa fa-trash"></i></button>
                         </form>
-                        <div class="journal-entry-timestamp control-bar-item">${moment(entry.properties.timestamp).format('YYYY-MM-DD HH:mm')}</div>
+                        <div class="journalEntryTimestamp control-bar-item">${moment(entry.properties.timestamp).format('YYYY-MM-DD HH:mm')}</div>
                       </div>
                     </div>`;
         });

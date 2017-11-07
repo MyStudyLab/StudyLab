@@ -1,6 +1,7 @@
 package models
 
 // Standard Library
+import constructs.JournalEntryWithID
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json.collection.JSONCollection
 
@@ -44,6 +45,21 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
       else ResultInfo.failure("entry not recorded", Json.obj()))
     )
   }
+
+
+  /**
+    *
+    * @param entry
+    * @return
+    */
+  def addJournalEntryWithId(entry: JournalEntryWithID): Future[ResultInfo[JsValue]] = {
+
+    journalCollection.flatMap(_.insert(entry).map(result =>
+      if (result.ok) ResultInfo.success("Journal entry recorded", Json.toJson(entry))
+      else ResultInfo.failure("Entry not recorded", Json.obj()))
+    )
+  }
+
 
   /**
     * Delete a journal entry

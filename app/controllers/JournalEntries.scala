@@ -3,6 +3,7 @@ package controllers
 // Standard Library
 import javax.inject.Inject
 
+import constructs.JournalEntryWithID
 import forms.{DeleteJournalEntryForm, SetJournalPublicityForm}
 import play.api.libs.json.{JsArray, JsNumber, JsObject}
 import reactivemongo.bson.BSONObjectID
@@ -76,9 +77,9 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
               .map(_.toList.sortBy(-_._2).map(_._1))
               .getOrElse(List())
 
-            val entry = JournalEntry(username, cleanedEntry, System.currentTimeMillis(), position, public = false, sentimentScore, inferredSubjects)
+            val entry = JournalEntryWithID(username, cleanedEntry, System.currentTimeMillis(), position, public = false, sentimentScore, inferredSubjects)
 
-            journalEntries.addJournalEntry(entry).map(resultInfo => Ok(resultInfo.toJson))
+            journalEntries.addJournalEntryWithId(entry).map(resultInfo => Ok(resultInfo.toJson))
           })
 
         }

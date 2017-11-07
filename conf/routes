@@ -23,6 +23,9 @@ GET         /todo                           controllers.Application.todo()
 # The Journal page
 GET         /journal                        controllers.Application.journal()
 
+# The Journal UI built with React
+GET         /react                          controllers.Application.journalReact()
+
 # The Settings page
 GET         /settings                       controllers.Application.settings()
 
@@ -45,7 +48,7 @@ GET         /json/status/:username          controllers.Sessions.userStatus(user
 GET         /json/about/:username           controllers.Users.aboutMessage(username: String)
 
 # Get the journal entries as JSON for the username
-GET         /json/journal/                  controllers.JournalEntries.getJournalEntries()
+GET         /json/journal                   controllers.JournalEntries.getJournalEntries()
 
 # Start a study session
 POST        /study/start                    controllers.Sessions.startSession()
