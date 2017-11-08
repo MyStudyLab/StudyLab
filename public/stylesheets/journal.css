@@ -63,19 +63,19 @@
 
 }
 
-#journal-entry-form ::-webkit-input-placeholder {
+#journalEntryForm ::-webkit-input-placeholder {
     color: #707073;
 }
 
-#journal-entry-form :-ms-input-placeholder {
+#journalEntryForm :-ms-input-placeholder {
     color: #707073;
 }
 
-#journal-entry-form ::-moz-placeholder {
+#journalEntryForm ::-moz-placeholder {
     color: #707073;
 }
 
-#journal-entry-form :-moz-placeholder {
+#journalEntryForm :-moz-placeholder {
     color: #707073;
 }
 
