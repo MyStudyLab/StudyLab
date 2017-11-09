@@ -1,13 +1,17 @@
 import React from 'react';
 import JournalEntry from './JournalEntry.jsx';
 
-class JournalEntryList extends React.Component {
+/**
+ * A filterable list of journal entries
+ *
+ */
+export default class JournalEntryList extends React.Component {
     render() {
 
         let filterText = this.props.filter.toLowerCase();
 
         return (
-            <div>
+            <div className="">
                 {
                     this.props.items
                         .filter(item => item.text.toLowerCase().includes(filterText))
@@ -24,5 +28,3 @@ class JournalEntryList extends React.Component {
         );
     }
 }
-
-module.exports = JournalEntryList;

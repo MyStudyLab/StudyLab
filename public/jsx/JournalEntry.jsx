@@ -3,11 +3,13 @@ import React from 'react';
 /**
  * A single item in the journal list
  */
-class JournalEntry extends React.Component {
+export default class JournalEntry extends React.Component {
 
     render() {
         return (
             <div id={this.props.item.id} className="JournalEntry partialBorder centerTextContent">
+
+                <p className="inferredSubjectList">{this.props.item.inferredSubjects.join(", ").replace(new RegExp("_", "g"), " ")}</p>
 
                 <p className="JournalEntryText">
                     {
@@ -24,10 +26,10 @@ class JournalEntry extends React.Component {
                     }
                 </p>
 
-                <div className="TodoItemControl">
+                <div className="JournalEntryControl">
                     <button
                         onClick={this.props.handlePublic}
-                        className={["TodoItemPublicity",
+                        className={["JournalEntryPublicity",
                             "transparentButton",
                             "entryControlItem",
                             (this.props.item.public ? "active" : "")].join(" ")}
@@ -36,7 +38,7 @@ class JournalEntry extends React.Component {
                     </button>
 
                     <button onClick={this.props.handleDelete}
-                            className="TodoItemDelete transparentButton entryControlItem">
+                            className="JournalEntryDelete transparentButton entryControlItem">
                         <i className="fa fa-trash"/>
                     </button>
                     <div
@@ -47,5 +49,3 @@ class JournalEntry extends React.Component {
         )
     }
 }
-
-module.exports = JournalEntry;

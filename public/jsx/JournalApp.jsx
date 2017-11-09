@@ -59,7 +59,7 @@ class JournalApp extends React.Component {
                 </form>
 
                 <JournalEntryList
-                    className="TodoItemList"
+                    className="JournalEntryList"
                     items={this.state.items}
                     filter={this.state.searchText}
                     handleDelete={this.deleteItem}
@@ -99,6 +99,10 @@ class JournalApp extends React.Component {
     }
 
 
+    /**
+     *
+     * @param e
+     */
     handleSearch(e) {
 
         this.setState({searchText: e.target.value});
@@ -106,6 +110,10 @@ class JournalApp extends React.Component {
     }
 
 
+    /**
+     *
+     * @param e
+     */
     handleChange(e) {
 
         this.setState({text: e.target.value});

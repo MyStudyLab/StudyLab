@@ -70,7 +70,7 @@
     width: 100%;
 }
 
-.TodoItemList {
+.JournalEntryList {
     margin-bottom: 10px;
 }
 
@@ -79,11 +79,17 @@
     padding: 10px;
 }
 
+.inferredSubjectList {
+
+    color: #707073;
+}
+
 .JournalEntryText {
     font-size: 18px;
 }
 
-.TodoItemControl {
+/* Under the journal entry text */
+.JournalEntryControl {
     display: inline-flex;
     justify-content: flex-end;
     width: 100%;
@@ -94,6 +100,7 @@
     color: inherit;
 }
 
+/* The timestamp on each journal entry */
 .journalEntryTimestamp {
     flex-grow: 1;
     align-self: flex-end;

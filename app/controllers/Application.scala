@@ -92,7 +92,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     *
     * @return
     */
-  def journal = Action { implicit request =>
+  def journalOld = Action { implicit request =>
 
     withUsername(username => Ok(views.html.journal(username)))
   }
@@ -102,7 +102,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     *
     * @return
     */
-  def journalReact = Action { implicit request =>
+  def journal = Action { implicit request =>
 
     withUsername(username => Ok(views.html.journalReact()))
   }

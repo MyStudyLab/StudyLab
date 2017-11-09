@@ -23,8 +23,8 @@ GET         /todo                           controllers.Application.todo()
 # The Journal page
 GET         /journal                        controllers.Application.journal()
 
-# The Journal UI built with React
-GET         /react                          controllers.Application.journalReact()
+# The old journal page
+GET         /journalOld                     controllers.Application.journalOld()
 
 # The Settings page
 GET         /settings                       controllers.Application.settings()
@@ -49,6 +49,9 @@ GET         /json/about/:username           controllers.Users.aboutMessage(usern
 
 # Get the journal entries as JSON for the username
 GET         /json/journal                   controllers.JournalEntries.getJournalEntries()
+
+# Get the public journal entries for the username
+GET         /json/journal/public            controllers.JournalEntries.getPublicJournalEntries()
 
 # Start a study session
 POST        /study/start                    controllers.Sessions.startSession()

@@ -117,6 +117,30 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
     )
   }
 
+
+  /**
+    * Get only the public entries for the given username
+    *
+    * @param username The username for which to retrieve data
+    * @return
+    */
+  def publicEntries(username: String): Future[ResultInfo[List[JsObject]]] = {
+
+    val s = Json.obj(
+      "username" -> username,
+      "public" -> true
+    )
+
+    // TODO: how to check if the user exists?
+
+    jsonCollection.flatMap(
+      _.find(s).cursor[JsObject]().collect[List]().map(
+        entries => ResultInfo.success(s"Retrieved public entries for $username", entries)
+      )
+    )
+  }
+
+
   def journalEntriesWithID(username: String): Future[ResultInfo[List[JournalEntry]]] = {
     ???
   }

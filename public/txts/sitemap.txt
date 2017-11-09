@@ -1,6 +1,7 @@
-http://www.study-lab.herokuapp.com
-http://www.study-lab.herokuapp.com/journal
-http://www.study-lab.herokuapp.com/settings
-http://www.study-lab.herokuapp.com/about
-http://www.study-lab.herokuapp.com/contact
-http://www.study-lab.herokuapp.com/help
+https://www.life-lab.herokuapp.com
+https://www.life-lab.herokuapp.com/todo
+https://www.life-lab.herokuapp.com/journal
+https://www.life-lab.herokuapp.com/settings
+https://www.life-lab.herokuapp.com/about
+https://www.life-lab.herokuapp.com/contact
+https://www.life-lab.herokuapp.com/help

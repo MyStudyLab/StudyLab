@@ -5,7 +5,7 @@ import javax.inject.Inject
 
 import constructs.JournalEntryWithID
 import forms.{DeleteJournalEntryForm, SetJournalPublicityForm}
-import play.api.libs.json.{JsArray, JsNumber, JsObject}
+import play.api.libs.json._
 import reactivemongo.bson.BSONObjectID
 
 import scala.concurrent.Future
@@ -139,8 +139,19 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
     withUsername(username =>
       journalEntries.journalEntriesForUsername(username).map(resInfo => Ok(resInfo.toJson))
     )
+  }
 
 
+  /**
+    * Get all public journal entries for the given username
+    *
+    * @return
+    */
+  def getPublicJournalEntries = Action.async { implicit request =>
+
+    request.getQueryString("username").fold(
+      Future(ResultInfo.failure("Invalid query string", List[JsObject]()))
+    )(username => journalEntries.publicEntries(username)).map(res => Ok(res.toJson))
   }
 
 }
