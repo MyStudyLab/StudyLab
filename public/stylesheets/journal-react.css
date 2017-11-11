@@ -88,6 +88,10 @@
     color: rgb(120, 164, 255) !important;
 }
 
+.vanish {
+    color: transparent !important;
+}
+
 .SearchFormText {
     width: 100%;
 }
