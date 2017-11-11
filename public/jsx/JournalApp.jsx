@@ -13,13 +13,26 @@ class JournalApp extends React.Component {
         super(props);
 
         // Set the initial state of the app
-        this.state = {items: [], text: '', searchText: ''};
+        this.state = {
+            items: [],
+            text: '',
+            searchText: '',
+            writingMode: false,
+            useGeo: true
+        };
 
         // Define 'this' in each of the handlers
+
+        this.handleWritingFocus = this.handleWritingFocus.bind(this);
+        this.handleWritingBlur = this.handleWritingBlur.bind(this);
+
         this.handleChange = this.handleChange.bind(this);
-        this.handleSearch = this.handleSearch.bind(this);
-        this.setPublicity = this.setPublicity.bind(this);
+        this.handleGeoToggle = this.handleGeoToggle.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+
+        this.handleSearch = this.handleSearch.bind(this);
+
+        this.setPublicity = this.setPublicity.bind(this);
         this.deleteItem = this.deleteItem.bind(this);
     }
 
@@ -27,11 +40,16 @@ class JournalApp extends React.Component {
         return (
             <div className="JournalApp">
 
-                <form onSubmit={this.handleSubmit} className="AddItemForm" id="journalEntryForm">
+                <form onSubmit={this.handleSubmit}
+                      className="AddItemForm"
+                      id="journalEntryForm"
+                      onFocus={this.handleWritingFocus}
+                      onBlur={this.handleWritingBlur}
+                >
 
                     <textarea
                         name="text"
-                        className=""
+                        className={this.state.writingMode ? "journalEntryActive" : "journalEntryInactive"}
                         id="journalEntryInput"
                         form="journalEntryForm"
                         placeholder="Dear Journal..."
@@ -41,27 +59,47 @@ class JournalApp extends React.Component {
                         required
                     />
 
-                    <button type="submit" id="entrySubmit" className="transparentButton">
-                        <i className="fa fa-paper-plane-o fa-lg"/>
-                    </button>
+                    {
+                        // TODO - Submission doesn't work when including this line
+                        //(this.state.writingMode) &&
+
+                        <div id="journalSubmissionControl" className="transparentButton">
+
+                            <button onClick={this.handleGeoToggle} id="journalSubmissionGeoButton"
+                                    className={`transparentButton ${this.state.useGeo ? "active" : ""}`}>
+                                <i className="fa fa-globe fa-lg"/>
+                            </button>
+
+
+                            <button type="submit" id="journalSubmissionButton" className="transparentButton">
+                                <i className="fa fa-paper-plane-o fa-lg"/>
+                            </button>
+                        </div>
+                    }
+
                 </form>
 
-                <form onSubmit={e => e.preventDefault()}>
-                    <input
-                        type="text"
-                        placeholder="Search"
-                        id="journalSearch"
-                        className="SearchFormText"
-                        onChange={this.handleSearch}
-                        value={this.state.searchText}
-                        autoComplete="off"
-                    />
-                </form>
+
+                {
+                    (!this.state.writingMode) &&
+                    <form onSubmit={e => e.preventDefault()}>
+                        <input
+                            type="text"
+                            placeholder="Search"
+                            id="journalSearch"
+                            className="SearchFormText"
+                            onChange={this.handleSearch}
+                            value={this.state.searchText}
+                            autoComplete="off"
+                        />
+                    </form>
+                }
 
                 <JournalEntryList
                     className="JournalEntryList"
                     items={this.state.items}
                     filter={this.state.searchText}
+                    display={!this.state.writingMode}
                     handleDelete={this.deleteItem}
                     handlePublic={this.setPublicity}
                 />
@@ -100,6 +138,42 @@ class JournalApp extends React.Component {
 
 
     /**
+     * When the user is writing
+     *
+     * @param e
+     */
+    handleWritingFocus(e) {
+
+        this.setState({writingMode: true});
+
+    }
+
+    /**
+     * When the user stops writing
+     *
+     * @param e
+     */
+    handleWritingBlur(e) {
+
+        this.setState({writingMode: false});
+    }
+
+    /**
+     * User clicks the geo button
+     *
+     * @param e
+     */
+    handleGeoToggle(e) {
+
+        e.preventDefault();
+
+        this.setState(prevState => ({
+            useGeo: !prevState.useGeo
+        }));
+
+    }
+
+    /**
      *
      * @param e
      */
@@ -134,7 +208,7 @@ class JournalApp extends React.Component {
             public: publicity
         };
 
-        submitDataInBackground(data, "journal/publicity", (responseData) => {
+        submitDataAsync(data, "journal/publicity", false, (responseData) => {
 
             console.log(responseData);
 
@@ -163,7 +237,7 @@ class JournalApp extends React.Component {
 
         if (confirm("Delete this entry forever?")) {
 
-            submitDataInBackground({id: id}, "/journal/delete", (responseData) => {
+            submitDataAsync({id: id}, "/journal/delete", false, (responseData) => {
 
                 console.log(responseData);
 
@@ -200,7 +274,7 @@ class JournalApp extends React.Component {
             longitude: 0
         };
 
-        submitDataWithGeo(newItem, "/journal/add", (responseData) => {
+        submitDataAsync(newItem, "/journal/add", this.state.useGeo, (responseData) => {
 
             console.log(responseData);
 
@@ -208,7 +282,8 @@ class JournalApp extends React.Component {
             this.setState(prevState => ({
                 items: [responseData.payload].concat(prevState.items),
                 text: '',
-                public: false
+                writingMode: false,
+                useGeo: true
             }));
         });
     }

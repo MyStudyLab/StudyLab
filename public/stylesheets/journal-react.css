@@ -21,7 +21,7 @@
 }
 
 #journalEntryInput {
-    height: 100px;
+    /*height: 100px;*/
     width: 100%;
 
     color: #E0E0E3;
@@ -37,8 +37,27 @@
     box-shadow: none;
 }
 
-#entrySubmit {
-    padding: auto;
+#journalSubmissionGeoButton {
+
+    text-align: left;
+}
+
+#journalSubmissionButton {
+    text-align: right;
+}
+
+#journalSubmissionControl {
+    display: inline-flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.journalEntryActive {
+    height: 70vh;
+}
+
+.journalEntryInactive {
+
 }
 
 #journalSearch {
@@ -76,7 +95,8 @@
 
 .JournalEntry {
     width: 100%;
-    padding: 10px;
+    padding: 5px;
+    margin-bottom: 15px;
 }
 
 .inferredSubjectList {
@@ -121,6 +141,11 @@
         width: 75%;
     }
 
+    .JournalEntry {
+        padding: 10px;
+        margin-bottom: 30px;
+    }
+
     .journalEntryTimestamp {
 
     }
@@ -132,6 +157,10 @@
 
     .JournalApp {
         width: 60%;
+    }
+
+    .JournalEntry {
+        margin-bottom: 40px;
     }
 
 }

@@ -119,8 +119,7 @@ function submitDataInBackground(data, submitURL, successCallback = () => null) {
 
 }
 
-function submitDataWithGeo(data, submitURL, successCallback = () => {
-}) {
+function submitDataAsync(data, submitURL, withGeo = false, successCallback = () => null) {
 
 
     let dataCopy = JSON.parse(JSON.stringify(data));
@@ -162,7 +161,11 @@ function submitDataWithGeo(data, submitURL, successCallback = () => {
         sendData(0, 0);
     };
 
-    // Get the user's location at time of submission
-    navigator.geolocation.getCurrentPosition(geoSuccess, geoFailure, options);
+    if (withGeo === true) {
+        navigator.geolocation.getCurrentPosition(geoSuccess, geoFailure, options);
+    } else {
+        submitDataInBackground(data, submitURL, successCallback)
+    }
+
 
 }

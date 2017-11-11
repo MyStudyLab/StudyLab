@@ -7,7 +7,7 @@ export default class JournalEntry extends React.Component {
 
     render() {
         return (
-            <div id={this.props.item.id} className="JournalEntry partialBorder centerTextContent">
+            <div id={this.props.item.id} className="JournalEntry partialBorder">
 
                 <p className="inferredSubjectList">{this.props.item.inferredSubjects.join(", ").replace(new RegExp("_", "g"), " ")}</p>
 

@@ -131,7 +131,7 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
       "public" -> true
     )
 
-    // TODO: how to check if the user exists?
+    // TODO: how to check if the user exists (as opposed to just having no entries)?
 
     jsonCollection.flatMap(
       _.find(s).cursor[JsObject]().collect[List]().map(

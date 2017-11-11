@@ -134,7 +134,7 @@ class TodoApp extends React.Component {
             public: publicity
         };
 
-        submitDataInBackground(data, "journal/publicity", (responseData) => {
+        submitDataAsync(data, "journal/publicity", false, (responseData) => {
 
             console.log(responseData);
 
@@ -163,7 +163,7 @@ class TodoApp extends React.Component {
 
         if (confirm("Delete this entry forever?")) {
 
-            submitDataInBackground({id: id}, "/journal/delete", (responseData) => {
+            submitDataAsync({id: id}, "/journal/delete", false, (responseData) => {
 
                 console.log(responseData);
 
@@ -200,7 +200,7 @@ class TodoApp extends React.Component {
             longitude: 0
         };
 
-        submitDataWithGeo(newItem, "/journal/add", (responseData) => {
+        submitDataAsync(newItem, "/journal/add", true, (responseData) => {
 
             console.log(responseData);
 

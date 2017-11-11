@@ -10,21 +10,28 @@ export default class JournalEntryList extends React.Component {
 
         let filterText = this.props.filter.toLowerCase();
 
-        return (
-            <div className="">
-                {
-                    this.props.items
-                        .filter(item => item.text.toLowerCase().includes(filterText))
-                        .map(item => (
-                            <JournalEntry
-                                key={item._id.$oid}
-                                item={item}
-                                highlightText={filterText}
-                                handleDelete={() => this.props.handleDelete(item._id.$oid)}
-                                handlePublic={() => this.props.handlePublic(item._id.$oid, !item.public)}
-                            />
-                        ))}
-            </div>
-        );
+        if (this.props.display) {
+            return (
+                <div className="">
+                    {
+                        this.props.items
+                            .filter(item => item.text.toLowerCase().includes(filterText))
+                            .map(item => (
+                                <JournalEntry
+                                    key={item._id.$oid}
+                                    item={item}
+                                    highlightText={filterText}
+                                    handleDelete={() => this.props.handleDelete(item._id.$oid)}
+                                    handlePublic={() => this.props.handlePublic(item._id.$oid, !item.public)}
+                                />
+                            ))}
+                </div>
+            );
+        } else {
+            // In this case, do not render
+            return null;
+        }
+
+
     }
 }
