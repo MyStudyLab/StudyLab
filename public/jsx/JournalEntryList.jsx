@@ -6,6 +6,22 @@ import JournalEntry from './JournalEntry.jsx';
  *
  */
 export default class JournalEntryList extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {selected: ""};
+
+        this.selectHandler = this.selectHandler.bind(this);
+    }
+
+    selectHandler(id) {
+
+        this.setState(prevState => (
+            {selected: (prevState.selected === id ? "" : id)}
+        ));
+    }
+
     render() {
 
         let filterText = this.props.filter.toLowerCase();
@@ -20,9 +36,11 @@ export default class JournalEntryList extends React.Component {
                                 <JournalEntry
                                     key={item._id.$oid}
                                     item={item}
+                                    selected={this.state.selected === item._id.$oid}
                                     highlightText={filterText}
+                                    handleClick={() => this.selectHandler(item._id.$oid)}
                                     handleDelete={() => this.props.handleDelete(item._id.$oid)}
-                                    handlePublic={() => this.props.handlePublic(item._id.$oid, !item.public)}
+                                    handlePublic={(e) => this.props.handlePublic(e, item._id.$oid, !item.public)}
                                 />
                             ))}
                 </div>

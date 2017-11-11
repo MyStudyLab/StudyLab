@@ -7,7 +7,7 @@ export default class JournalEntry extends React.Component {
 
     render() {
         return (
-            <div id={this.props.item.id} className="JournalEntry partialBorder">
+            <div id={this.props.item.id} className="JournalEntry partialBorder" onClick={this.props.handleClick}>
 
                 <p className="inferredSubjectList">{this.props.item.inferredSubjects.join(", ").replace(new RegExp("_", "g"), " ")}</p>
 
@@ -38,6 +38,7 @@ export default class JournalEntry extends React.Component {
                     </button>
 
                     {
+                        // Only display the 'share' button when an entry is public
                         (this.props.item.public) && (
                             <button className="transparentButton entryControlItem">
                                 <i className="fa fa-share"/>
@@ -45,14 +46,19 @@ export default class JournalEntry extends React.Component {
                         )
                     }
 
-                    <button onClick={this.props.handleDelete}
-                            className="JournalEntryDelete transparentButton entryControlItem">
-                        <i className="fa fa-trash"/>
-                    </button>
+                    {
+                        (this.props.selected) && (
+                            <button onClick={this.props.handleDelete}
+                                    className="JournalEntryDelete transparentButton entryControlItem">
+                                <i className="fa fa-trash"/>
+                            </button>
+                        )
+                    }
                     <div
                         className="journalEntryTimestamp entryControlItem">{moment(this.props.item.timestamp).format('YYYY-MM-DD HH:mm')}
                     </div>
                 </div>
+                
             </div>
         )
     }
