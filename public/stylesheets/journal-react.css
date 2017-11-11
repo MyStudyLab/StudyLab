@@ -21,7 +21,6 @@
 }
 
 #journalEntryInput {
-    /*height: 100px;*/
     width: 100%;
 
     color: #E0E0E3;
@@ -37,19 +36,23 @@
     box-shadow: none;
 }
 
-#journalSubmissionGeoButton {
-
-    text-align: left;
-}
-
-#journalSubmissionButton {
-    text-align: right;
-}
-
 #journalSubmissionControl {
     display: inline-flex;
     justify-content: space-between;
     width: 100%;
+}
+
+#journalSubmissionGeoButton {
+
+    margin-left: 0;
+}
+
+#journalSubmissionButton {
+    margin-right: 0;
+}
+
+.displayNone {
+    display: none !important;
 }
 
 .journalEntryActive {

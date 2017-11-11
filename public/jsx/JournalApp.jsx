@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import JournalSubmissionForm from './JournalSubmissionForm.jsx';
 import JournalEntryList from './JournalEntryList.jsx';
 
 /**
@@ -40,45 +41,16 @@ class JournalApp extends React.Component {
         return (
             <div className="JournalApp">
 
-                <form onSubmit={this.handleSubmit}
-                      className="AddItemForm"
-                      id="journalEntryForm"
-                      onFocus={this.handleWritingFocus}
-                      onBlur={this.handleWritingBlur}
-                >
-
-                    <textarea
-                        name="text"
-                        className={this.state.writingMode ? "journalEntryActive" : "journalEntryInactive"}
-                        id="journalEntryInput"
-                        form="journalEntryForm"
-                        placeholder="Dear Journal..."
-                        autoComplete="off"
-                        onChange={this.handleChange}
-                        value={this.state.text}
-                        required
-                    />
-
-                    {
-                        // TODO - Submission doesn't work when including this line
-                        //(this.state.writingMode) &&
-
-                        <div id="journalSubmissionControl" className="transparentButton">
-
-                            <button onClick={this.handleGeoToggle} id="journalSubmissionGeoButton"
-                                    className={`transparentButton ${this.state.useGeo ? "active" : ""}`}>
-                                <i className="fa fa-globe fa-lg"/>
-                            </button>
-
-
-                            <button type="submit" id="journalSubmissionButton" className="transparentButton">
-                                <i className="fa fa-paper-plane-o fa-lg"/>
-                            </button>
-                        </div>
-                    }
-
-                </form>
-
+                <JournalSubmissionForm
+                    text={this.state.text}
+                    writingMode={this.state.writingMode}
+                    useGeo={this.state.useGeo}
+                    handleChange={this.handleChange}
+                    handleSubmit={this.handleSubmit}
+                    handleWritingFocus={this.handleWritingFocus}
+                    handleWritingBlur={this.handleWritingBlur}
+                    handleGeoToggle={this.handleGeoToggle}
+                />
 
                 {
                     (!this.state.writingMode) &&

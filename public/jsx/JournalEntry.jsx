@@ -37,6 +37,14 @@ export default class JournalEntry extends React.Component {
                         <i className="fa fa-users"/>
                     </button>
 
+                    {
+                        (this.props.item.public) && (
+                            <button className="transparentButton entryControlItem">
+                                <i className="fa fa-share"/>
+                            </button>
+                        )
+                    }
+
                     <button onClick={this.props.handleDelete}
                             className="JournalEntryDelete transparentButton entryControlItem">
                         <i className="fa fa-trash"/>
