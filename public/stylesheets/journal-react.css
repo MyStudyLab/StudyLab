@@ -113,18 +113,28 @@
 
 .JournalEntryText {
     font-size: 18px;
+    margin-bottom: 8px;
 }
 
 /* Under the journal entry text */
 .JournalEntryControl {
     display: inline-flex;
     justify-content: flex-end;
+    height: 25px;
     width: 100%;
     color: #707073;
 }
 
 .entryControlItem {
     color: inherit;
+}
+
+.entrySubControl {
+    display: inline-flex;
+    justify-content: flex-end;
+    width: 100%;
+    color: #707073;
+    background-color: #2f2f2f;
 }
 
 /* The timestamp on each journal entry */

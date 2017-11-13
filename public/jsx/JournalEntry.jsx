@@ -5,6 +5,18 @@ import React from 'react';
  */
 export default class JournalEntry extends React.Component {
 
+    constructor(props) {
+        super(props);
+
+        this.handleShare = this.handleShare.bind(this);
+    }
+
+    handleShare(e) {
+
+        e.stopPropagation();
+
+    }
+
     render() {
         return (
             <div id={this.props.item.id} className="JournalEntry partialBorder" onClick={this.props.handleClick}>
@@ -27,38 +39,45 @@ export default class JournalEntry extends React.Component {
                 </p>
 
                 <div className="JournalEntryControl">
-                    <button
-                        onClick={this.props.handlePublic}
-                        className={["JournalEntryPublicity",
-                            "transparentButton",
-                            "entryControlItem",
-                            (this.props.item.public ? "active" : "")].join(" ")}
-                    >
-                        <i className="fa fa-users"/>
-                    </button>
 
                     {
                         // Only display the 'share' button when an entry is public
                         (this.props.item.public) && (
-                            <button className="transparentButton entryControlItem">
+                            <button className="transparentButton entryControlItem" onClick={this.handleShare}>
                                 <i className="fa fa-share"/>
                             </button>
                         )
                     }
 
-                    {
-                        (this.props.selected) && (
-                            <button onClick={this.props.handleDelete}
-                                    className="JournalEntryDelete transparentButton entryControlItem">
-                                <i className="fa fa-trash"/>
-                            </button>
-                        )
-                    }
                     <div
                         className="journalEntryTimestamp entryControlItem">{moment(this.props.item.timestamp).format('YYYY-MM-DD HH:mm')}
                     </div>
                 </div>
-                
+
+                {
+                    (this.props.selected) && (
+                        <div className="entrySubControl">
+
+                            <button
+                                onClick={this.props.handlePublic}
+                                className={["JournalEntryPublicity",
+                                    "transparentButton",
+                                    "entryControlItem",
+                                    (this.props.item.public ? "active" : "")].join(" ")}
+                            >
+                                <i className="fa fa-users"/>
+                            </button>
+
+
+                            <button onClick={this.props.handleDelete}
+                                    className="JournalEntryDelete transparentButton entryControlItem">
+                                <i className="fa fa-trash"/>
+                            </button>
+
+                        </div>
+                    )
+                }
+
             </div>
         )
     }

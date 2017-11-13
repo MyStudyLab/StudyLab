@@ -170,14 +170,10 @@ class JournalApp extends React.Component {
     /**
      * Set the publicity of a journal entry
      *
-     * @param e The event
      * @param id The id of the journal entry
      * @param publicity The publicity status
      */
-    setPublicity(e, id, publicity) {
-
-        // Stop the event from bubbling higher
-        e.stopPropagation();
+    setPublicity(id, publicity) {
 
         const data = {
             id: id,

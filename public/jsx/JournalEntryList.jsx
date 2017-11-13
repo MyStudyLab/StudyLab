@@ -10,7 +10,9 @@ export default class JournalEntryList extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {selected: ""};
+        this.state = {
+            selected: "" // The _id of the selected item
+        };
 
         this.selectHandler = this.selectHandler.bind(this);
     }
@@ -39,8 +41,18 @@ export default class JournalEntryList extends React.Component {
                                     selected={this.state.selected === item._id.$oid}
                                     highlightText={filterText}
                                     handleClick={() => this.selectHandler(item._id.$oid)}
-                                    handleDelete={() => this.props.handleDelete(item._id.$oid)}
-                                    handlePublic={(e) => this.props.handlePublic(e, item._id.$oid, !item.public)}
+                                    handleDelete={(e) => {
+
+                                        e.stopPropagation();
+
+                                        this.props.handleDelete(item._id.$oid)
+                                    }}
+                                    handlePublic={(e) => {
+
+                                        e.stopPropagation();
+
+                                        this.props.handlePublic(item._id.$oid, !item.public)
+                                    }}
                                 />
                             ))}
                 </div>
