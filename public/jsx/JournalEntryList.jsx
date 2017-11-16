@@ -1,5 +1,6 @@
 import React from 'react';
 import JournalEntry from './JournalEntry.jsx';
+import styles from '../stylesheets/JournalEntryList.css'
 
 /**
  * A filterable list of journal entries

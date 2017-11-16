@@ -3,8 +3,10 @@ import ReactDOM from 'react-dom';
 import JournalSubmissionForm from './JournalSubmissionForm.jsx';
 import JournalEntryList from './JournalEntryList.jsx';
 
+import styles from '../stylesheets/JournalApp.css';
+
 /**
- *
+ * The top-level journaling app
  */
 class JournalApp extends React.Component {
 
@@ -117,7 +119,6 @@ class JournalApp extends React.Component {
     handleWritingFocus(e) {
 
         this.setState({writingMode: true});
-
     }
 
     /**
@@ -131,7 +132,7 @@ class JournalApp extends React.Component {
     }
 
     /**
-     * User clicks the geo button
+     * When the user clicks the geo button
      *
      * @param e
      */
@@ -182,8 +183,6 @@ class JournalApp extends React.Component {
 
         submitDataAsync(data, "journal/publicity", false, (responseData) => {
 
-            console.log(responseData);
-
             if (responseData.success === true) {
                 this.setState(prevState => ({
                     items: prevState.items.map((item) => {
@@ -211,8 +210,6 @@ class JournalApp extends React.Component {
 
             submitDataAsync({id: id}, "/journal/delete", false, (responseData) => {
 
-                console.log(responseData);
-
                 if (responseData.success === true) {
                     this.setState(prevState => ({
                         items: prevState.items.filter((item) => {
@@ -220,10 +217,8 @@ class JournalApp extends React.Component {
                         })
                     }));
                 }
-
             });
         }
-
     }
 
 
@@ -247,8 +242,6 @@ class JournalApp extends React.Component {
         };
 
         submitDataAsync(newItem, "/journal/add", this.state.useGeo, (responseData) => {
-
-            console.log(responseData);
 
             // Add the item to the front of the list
             this.setState(prevState => ({

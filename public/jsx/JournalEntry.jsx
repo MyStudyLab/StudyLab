@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from '../stylesheets/JournalEntry.css'
 
 /**
  * A single item in the journal list

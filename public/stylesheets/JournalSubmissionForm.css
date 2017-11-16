@@ -1,0 +1,54 @@
+#journalEntryForm ::-webkit-input-placeholder {
+    color: #707073;
+}
+
+#journalEntryForm :-ms-input-placeholder {
+    color: #707073;
+}
+
+#journalEntryForm ::-moz-placeholder {
+    color: #707073;
+}
+
+#journalEntryForm :-moz-placeholder {
+    color: #707073;
+}
+
+.journalEntryActive {
+    height: 50vh;
+}
+
+.journalEntryInactive {
+
+}
+
+#journalEntryInput {
+    width: 100%;
+
+    color: #E0E0E3;
+    font-size: 20px;
+
+    background: transparent;
+    outline: none;
+    border: none;
+    resize: none;
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+
+#journalSubmissionControl {
+    display: inline-flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+#journalSubmissionGeoButton {
+
+    margin-left: 0;
+}
+
+#journalSubmissionButton {
+    margin-right: 0;
+}

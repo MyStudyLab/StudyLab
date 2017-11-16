@@ -1,12 +1,7 @@
 import React from 'react';
+import styles from '../stylesheets/JournalSubmissionForm.css';
 
 export default class JournalSubmissionForm extends React.Component {
-
-    constructor(props) {
-
-        super(props);
-
-    }
 
     render() {
 
@@ -35,7 +30,6 @@ export default class JournalSubmissionForm extends React.Component {
                     <button onClick={this.props.handleGeoToggle} id="journalSubmissionGeoButton"
                             className={`${this.props.useGeo ? "active" : ""} ${this.props.writingMode ? "" : "vanish"} fa fa-globe fa-lg transparentButton`}
                     />
-
 
                     <button type="submit" id="journalSubmissionButton"
                             className={`fa fa-paper-plane-o fa-lg transparentButton ${this.props.writingMode ? "" : "vanish"}`}

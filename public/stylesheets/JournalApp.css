@@ -1,0 +1,23 @@
+
+.JournalApp {
+    width: 98%;
+    margin: auto;
+}
+
+/* Small Screens */
+@media (min-width: 768px) {
+
+    .JournalApp {
+        width: 75%;
+    }
+
+}
+
+/* Large Screens */
+@media (min-width: 1200px) {
+
+    .JournalApp {
+        width: 60%;
+    }
+
+}
