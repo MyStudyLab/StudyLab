@@ -14,6 +14,7 @@ module.exports = {
     module: {
 
         rules: [
+
             // Files ending in .jsx are loaded with babel
             {
                 test: /\.jsx$/,
@@ -22,6 +23,7 @@ module.exports = {
                     loader: 'babel-loader'
                 }
             },
+
             // CSS files are treated as modules
             {
                 test: /\.css$/,

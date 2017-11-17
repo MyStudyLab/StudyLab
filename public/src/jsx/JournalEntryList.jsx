@@ -20,7 +20,17 @@ export default class JournalEntryList extends React.Component {
         this.selectHandler = this.selectHandler.bind(this);
     }
 
+    /**
+     * Sets the currently selected entry in the list
+     *
+     * @param id The id of the element to select
+     */
     selectHandler(id) {
+
+        if (window.getSelection().toString().length !== 0) {
+            return;
+        }
+
 
         this.setState(prevState => (
             {selected: (prevState.selected === id ? "" : id)}
