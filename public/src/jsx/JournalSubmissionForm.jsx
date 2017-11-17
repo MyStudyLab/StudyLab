@@ -1,5 +1,7 @@
 import React from 'react';
-import styles from '../stylesheets/JournalSubmissionForm.css';
+
+// Stylesheet
+import styles from '../css/JournalSubmissionForm.css';
 
 export default class JournalSubmissionForm extends React.Component {
 

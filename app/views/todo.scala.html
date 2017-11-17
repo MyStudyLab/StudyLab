@@ -1,7 +1,7 @@
 @(username: String)(implicit messages: Messages)
 
 @loggedInTemplate("Todo") {
-    <link href="@routes.Assets.at("stylesheets/todo.css")" rel="stylesheet" type="text/css">
+    <link href="@routes.Assets.at("src/css/todo.css")" rel="stylesheet" type="text/css">
 } {
 
     <div class="container-fluid">
@@ -29,8 +29,8 @@
     <script src="@routes.Assets.at("/javascripts/moment-timezone-10-20.js")"></script>
 
         <!-- Custom JS -->
-    <script src="@routes.Assets.at("javascripts/TodoItemList.js")"></script>
-    <script src="@routes.Assets.at("/javascripts/FormHandlers.js")"></script>
+    <script src="@routes.Assets.at("src/js/TodoItemList.js")"></script>
+    <script src="@routes.Assets.at("src/js/FormHandlers.js")"></script>
 
     <script>
 

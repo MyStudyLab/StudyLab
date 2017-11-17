@@ -1,148 +1,148 @@
 @(username: String)(implicit messages: Messages)
 
-@loggedInTemplate("Settings") {
-    <link href="@routes.Assets.at("stylesheets/settings.css")" rel="stylesheet" type="text/css">
-} {
+    @loggedInTemplate("Settings") {
+        <link href="@routes.Assets.at("src/css/settings.css")" rel="stylesheet" type="text/css">
+    } {
 
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-8 col-sm-offset-2">
-                <div class="raised-element padded-plot text-justify partialBorder centerTextContent">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-8 col-sm-offset-2">
+                    <div class="raised-element padded-plot text-justify partialBorder centerTextContent">
 
-                    <form id="change-password-form" class="settings-page-form">
+                        <form id="change-password-form" class="settings-page-form">
 
-                        <div class="form-group">
-                            <label class="sr-only" for="change-password-input">Password</label>
-                            <input name="password" type="password" class="form-control" id="change-password-input" placeholder="New Password" required>
-                        </div>
+                            <div class="form-group">
+                                <label class="sr-only" for="change-password-input">Password</label>
+                                <input name="password" type="password" class="form-control" id="change-password-input" placeholder="New Password" required>
+                            </div>
 
-                        <button type="submit" class="btn btn-default">Change Password</button>
-                    </form>
+                            <button type="submit" class="btn btn-default">Change Password</button>
+                        </form>
 
-                    <form id="change-email-form" class="settings-page-form">
+                        <form id="change-email-form" class="settings-page-form">
 
-                        <div class="form-group">
-                            <label class="sr-only" for="change-email-input">Password</label>
-                            <input name="email" type="email" class="form-control" id="change-email-input" placeholder="New Email" required>
-                        </div>
+                            <div class="form-group">
+                                <label class="sr-only" for="change-email-input">Password</label>
+                                <input name="email" type="email" class="form-control" id="change-email-input" placeholder="New Email" required>
+                            </div>
 
-                        <button type="submit" class="btn btn-default">Change Email</button>
-                    </form>
+                            <button type="submit" class="btn btn-default">Change Email</button>
+                        </form>
 
-                    To delete your account, you must enter your password
+                        To delete your account, you must enter your password
 
-                    <form id="delete-profile-form" class="settings-page-form">
+                        <form id="delete-profile-form" class="settings-page-form">
 
-                        <div class="form-group">
-                            <label class="sr-only" for="delete-profile-password-input">Password</label>
-                            <input name="password" type="password" class="form-control" id="delete-profile-password-input" placeholder="Password" required>
-                        </div>
+                            <div class="form-group">
+                                <label class="sr-only" for="delete-profile-password-input">Password</label>
+                                <input name="password" type="password" class="form-control" id="delete-profile-password-input" placeholder="Password" required>
+                            </div>
 
-                        <button type="submit" class="btn btn-default btn-danger">Delete Account</button>
-                    </form>
+                            <button type="submit" class="btn btn-default btn-danger">Delete Account</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-            $(function () {
-                $("#delete-profile-form").on("submit", function (e) {
+        <script>
+                $(function () {
+                    $("#delete-profile-form").on("submit", function (e) {
 
-                    if (confirm("Are you sure you want to permanently delete your account?") && confirm("Are you absolutely positive?")) {
+                        if (confirm("Are you sure you want to permanently delete your account?") && confirm("Are you absolutely positive?")) {
+                            $.ajax({
+                                type: "post",
+                                url: "@controllers.routes.Users.deleteUser()",
+                                data: $("#delete-profile-form").serialize(),
+                                dataType: "json",
+                                complete: function (response, textStatus) {
+
+                                    if (response.status !== 200) {
+
+                                        alert("There was a problem deleting your account.")
+                                    }
+                                }
+                            });
+                        }
+                    });
+                });
+
+                $(function () {
+                    $("#change-email-form").on("submit", function (e) {
+
+                        e.preventDefault();
+
                         $.ajax({
                             type: "post",
-                            url: "@controllers.routes.Users.deleteUser()",
-                            data: $("#delete-profile-form").serialize(),
+                            url: "@controllers.routes.Users.updateEmail()",
+                            data: $("#change-email-form").serialize(),
                             dataType: "json",
                             complete: function (response, textStatus) {
 
-                                if (response.status !== 200) {
+                                console.log(response.responseText);
 
-                                    alert("There was a problem deleting your account.")
+                                if (response.status === 200) {
+
+                                    let data = {};
+
+                                    // Parse the response text as JSON
+                                    try {
+                                        data = JSON.parse(response.responseText);
+                                    } catch (e) {
+                                        console.log("Error parsing JSON response");
+                                    }
+
+                                    if (data['success'] === true) {
+
+                                        // Clear the form inputs
+                                        $("#change-email-input").val("");
+                                    } else {
+                                        // Handle errors
+                                    }
                                 }
                             }
                         });
-                    }
-                });
-            });
-
-            $(function () {
-                $("#change-email-form").on("submit", function (e) {
-
-                    e.preventDefault();
-
-                    $.ajax({
-                        type: "post",
-                        url: "@controllers.routes.Users.updateEmail()",
-                        data: $("#change-email-form").serialize(),
-                        dataType: "json",
-                        complete: function (response, textStatus) {
-
-                            console.log(response.responseText);
-
-                            if (response.status === 200) {
-
-                                let data = {};
-
-                                // Parse the response text as JSON
-                                try {
-                                    data = JSON.parse(response.responseText);
-                                } catch (e) {
-                                    console.log("Error parsing JSON response");
-                                }
-
-                                if (data['success'] === true) {
-
-                                    // Clear the form inputs
-                                    $("#change-email-input").val("");
-                                } else {
-                                    // Handle errors
-                                }
-                            }
-                        }
                     });
                 });
-            });
 
 
-            $(function () {
-                $("#change-password-form").on("submit", function (e) {
+                $(function () {
+                    $("#change-password-form").on("submit", function (e) {
 
-                    e.preventDefault();
+                        e.preventDefault();
 
-                    $.ajax({
-                        type: "post",
-                        url: "@controllers.routes.Users.updatePassword()",
-                        data: $("#change-password-form").serialize(),
-                        dataType: "json",
-                        complete: function (response, textStatus) {
+                        $.ajax({
+                            type: "post",
+                            url: "@controllers.routes.Users.updatePassword()",
+                            data: $("#change-password-form").serialize(),
+                            dataType: "json",
+                            complete: function (response, textStatus) {
 
-                            console.log(response.responseText);
+                                console.log(response.responseText);
 
-                            if (response.status === 200) {
+                                if (response.status === 200) {
 
-                                let data = {};
+                                    let data = {};
 
-                                // Parse the response text as JSON
-                                try {
-                                    data = JSON.parse(response.responseText);
-                                } catch (e) {
-                                    console.log("Error parsing JSON response");
-                                }
+                                    // Parse the response text as JSON
+                                    try {
+                                        data = JSON.parse(response.responseText);
+                                    } catch (e) {
+                                        console.log("Error parsing JSON response");
+                                    }
 
-                                if (data['success'] === true) {
+                                    if (data['success'] === true) {
 
-                                    // Clear the form inputs
-                                    $("#change-password-input").val("");
-                                } else {
-                                    // Handle errors
+                                        // Clear the form inputs
+                                        $("#change-password-input").val("");
+                                    } else {
+                                        // Handle errors
+                                    }
                                 }
                             }
-                        }
+                        });
                     });
                 });
-            });
-    </script>
+        </script>
 
-}
+    }

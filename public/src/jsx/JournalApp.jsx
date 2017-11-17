@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import JournalSubmissionForm from './JournalSubmissionForm.jsx';
 import JournalEntryList from './JournalEntryList.jsx';
 
-import styles from '../stylesheets/JournalApp.css';
+import styles from '../css/JournalApp.css';
 
 /**
  * The top-level journaling app

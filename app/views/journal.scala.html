@@ -1,7 +1,7 @@
 @(username: String)(implicit messages: Messages)
 
 @loggedInTemplate("Journal") {
-    <link href="@routes.Assets.at("stylesheets/journal.css")" rel="stylesheet" type="text/css">
+    <link href="@routes.Assets.at("src/css/journal.css")" rel="stylesheet" type="text/css">
 } {
 
     <div class="container-fluid">
@@ -32,8 +32,8 @@
     <script src="@routes.Assets.at("/javascripts/moment.js")"></script>
     <script src="@routes.Assets.at("/javascripts/moment-timezone-10-20.js")"></script>
 
-    <script src="@routes.Assets.at("/javascripts/JournalEntryList.js")"></script>
-    <script src="@routes.Assets.at("/javascripts/FormHandlers.js")"></script>
+    <script src="@routes.Assets.at("src/js/JournalEntryList.js")"></script>
+    <script src="@routes.Assets.at("src/js/FormHandlers.js")"></script>
 
         <!-- Mapbox -->
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.js'></script>
