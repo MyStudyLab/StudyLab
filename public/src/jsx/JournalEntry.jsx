@@ -22,7 +22,7 @@ export default class JournalEntry extends React.Component {
 
     render() {
         return (
-            <div id={this.props.item.id} className="JournalEntry partialBorder" onClickCapture={this.props.handleClick}>
+            <div id={this.props.item.id} className="JournalEntry partialBorder" onClick={this.props.handleClick}>
 
                 <p className="inferredSubjectList">{this.props.item.inferredSubjects.join(", ").replace(new RegExp("_", "g"), " ")}</p>
 

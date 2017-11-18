@@ -138,8 +138,6 @@ class JournalApp extends React.Component {
      */
     handleGeoToggle(e) {
 
-        e.preventDefault();
-
         this.setState(prevState => ({
             useGeo: !prevState.useGeo
         }));

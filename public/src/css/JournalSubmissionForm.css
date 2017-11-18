@@ -44,9 +44,13 @@
     width: 100%;
 }
 
+#journalSubmissionCancelButton {
+    margin-left: 0;
+}
+
 #journalSubmissionGeoButton {
 
-    margin-left: 0;
+    /*margin-left: 0;*/
 }
 
 #journalSubmissionButton {

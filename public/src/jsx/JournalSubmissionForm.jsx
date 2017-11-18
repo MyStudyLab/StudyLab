@@ -12,7 +12,6 @@ export default class JournalSubmissionForm extends React.Component {
                   className="AddItemForm"
                   id="journalEntryForm"
                   onFocus={this.props.handleWritingFocus}
-                  onBlur={this.props.handleWritingBlur}
             >
 
                 <textarea
@@ -29,7 +28,11 @@ export default class JournalSubmissionForm extends React.Component {
 
                 <div id="journalSubmissionControl">
 
-                    <button onClick={this.props.handleGeoToggle} id="journalSubmissionGeoButton"
+                    <button type='button' onClick={this.props.handleWritingBlur} id='journalSubmissionCancelButton'
+                            className={`${this.props.writingMode ? "" : "vanish"} fa fa-lg fa-times transparentButton`}
+                    />
+
+                    <button type='button' onClick={this.props.handleGeoToggle} id="journalSubmissionGeoButton"
                             className={`${this.props.useGeo ? "active" : ""} ${this.props.writingMode ? "" : "vanish"} fa fa-globe fa-lg transparentButton`}
                     />
 
