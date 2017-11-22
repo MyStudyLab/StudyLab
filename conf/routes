@@ -17,15 +17,6 @@ POST        /login                          controllers.Users.login()
 # Logout of the current session
 POST        /logout                         controllers.Application.logout()
 
-# The ToDo page
-GET         /todo                           controllers.Application.todo()
-
-# The Journal page
-GET         /journal                        controllers.Application.journal()
-
-# The old journal page
-GET         /journalOld                     controllers.Application.journalOld()
-
 # The Settings page
 GET         /settings                       controllers.Application.settings()
 

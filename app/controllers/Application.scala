@@ -37,7 +37,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     */
   def home = Action { implicit request =>
 
-    request.session.get("connected").fold(Ok(views.html.home()))(username => Ok(views.html.loggedInHome(username)))
+    request.session.get("connected").fold(Ok(views.html.home()))(username => Ok(views.html.journalReact()))
   }
 
 
@@ -79,22 +79,6 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     */
   def logout = Action {
     Redirect(routes.Application.home()).withNewSession
-  }
-
-
-  def todo = Action { implicit request =>
-
-    withUsername(username => Ok(views.html.todo(username)))
-  }
-
-  /**
-    * The Journal page
-    *
-    * @return
-    */
-  def journalOld = Action { implicit request =>
-
-    withUsername(username => Ok(views.html.journal(username)))
   }
 
   /**
