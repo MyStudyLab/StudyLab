@@ -1,6 +1,6 @@
 @(username: String)(implicit messages: Messages)
 
-    @loggedInTemplate("Settings") {
+    @loggedInTemplate("Settings")(username) {
         <link href="@routes.Assets.at("src/css/settings.css")" rel="stylesheet" type="text/css">
     } {
 

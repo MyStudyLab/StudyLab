@@ -26,7 +26,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     */
   protected def setNavbar(pageTitle: String, content: Html) = Action { implicit request =>
 
-    request.session.get("connected").fold(Ok(views.html.siteTemplate(pageTitle)(content)))(username => Ok(views.html.loggedInTemplate(pageTitle)(play.twirl.api.Html(""))(content)))
+    request.session.get("connected").fold(Ok(views.html.siteTemplate(pageTitle)(content)))(username => Ok(views.html.loggedInTemplate(pageTitle)(username)(play.twirl.api.Html(""))(content)))
   }
 
 
@@ -37,7 +37,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     */
   def home = Action { implicit request =>
 
-    request.session.get("connected").fold(Ok(views.html.home()))(username => Ok(views.html.journalReact()))
+    request.session.get("connected").fold(Ok(views.html.home()))(username => Ok(views.html.journalReact(username)))
   }
 
 
@@ -88,7 +88,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     */
   def journal = Action { implicit request =>
 
-    withUsername(username => Ok(views.html.journalReact()))
+    withUsername(username => Ok(views.html.journalReact(username)))
   }
 
 

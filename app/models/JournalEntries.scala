@@ -28,20 +28,20 @@ import play.modules.reactivemongo.json._
 class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
 
   // An interface to the journal_entries collection as BSON
-  protected def journalCollection: Future[BSONCollection] = mongoApi.database.map(_.collection[BSONCollection]("journal_entries"))
+  protected def bsonCollection: Future[BSONCollection] = mongoApi.database.map(_.collection[BSONCollection]("journal_entries"))
 
   protected def jsonCollection: Future[JSONCollection] = mongoApi.database.map(_.collection[JSONCollection]("journal_entries"))
 
   /**
-    * Record a journal entry in the database
+    * Add a journal entry to the database
     *
-    * @param entry The journal entry to record
+    * @param entry The journal entry to be added
     * @return
     */
-  def addJournalEntry(entry: JournalEntry): Future[ResultInfo[JsValue]] = {
+  def add(entry: JournalEntry): Future[ResultInfo[JsValue]] = {
 
-    journalCollection.flatMap(_.insert(entry).map(result =>
-      if (result.ok) ResultInfo.success("Journal entry recorded", entry.toGeoJson)
+    bsonCollection.flatMap(_.insert(entry).map(result =>
+      if (result.ok) ResultInfo.success("Journal entry recorded", Json.toJson(entry))
       else ResultInfo.failure("entry not recorded", Json.obj()))
     )
   }
@@ -54,7 +54,7 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
     */
   def addJournalEntryWithId(entry: JournalEntryWithID): Future[ResultInfo[JsValue]] = {
 
-    journalCollection.flatMap(_.insert(entry).map(result =>
+    bsonCollection.flatMap(_.insert(entry).map(result =>
       if (result.ok) ResultInfo.success("Journal entry recorded", Json.toJson(entry))
       else ResultInfo.failure("Entry not recorded", Json.obj()))
     )
@@ -64,23 +64,25 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
   /**
     * Delete a journal entry
     *
-    * @param username
-    * @param id
+    * @param username The author of the entry
+    * @param id       The object ID of the entry
     * @return
     */
   def delete(username: String, id: BSONObjectID): Future[ResultInfo[String]] = {
 
-    journalCollection.flatMap(_.remove(usernameAndID(username, id), firstMatchOnly = true).map(result =>
+    bsonCollection.flatMap(_.remove(usernameAndID(username, id), firstMatchOnly = true).map(result =>
       if (result.ok) ResultInfo.success("Journal entry deleted", id.stringify)
       else ResultInfo.failWithMessage("Entry not deleted")
     ))
-
   }
 
 
   /**
     * Set the publicity of a journal entry
     *
+    * @param username The author of the entry
+    * @param id       The object ID of the entry
+    * @param public   The publicity
     * @return
     */
   def setPublicity(username: String, id: BSONObjectID, public: Boolean): Future[ResultInfo[String]] = {
@@ -91,7 +93,7 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
       )
     )
 
-    journalCollection.flatMap(_.update(usernameAndID(username, id), u).map(result =>
+    bsonCollection.flatMap(_.update(usernameAndID(username, id), u).map(result =>
       if (result.ok) ResultInfo.succeedWithMessage("Journal entry recorded")
       else ResultInfo.failWithMessage("entry not recorded")
     ))
@@ -104,7 +106,7 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
     * @param username The username for which to retrieve data
     * @return
     */
-  def journalEntriesForUsername(username: String): Future[ResultInfo[List[JsObject]]] = {
+  def getAllEntries(username: String): Future[ResultInfo[List[JsObject]]] = {
 
     val s = Json.obj(
       "username" -> username
@@ -124,7 +126,7 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
     * @param username The username for which to retrieve data
     * @return
     */
-  def publicEntries(username: String): Future[ResultInfo[List[JsObject]]] = {
+  def getPublicEntries(username: String): Future[ResultInfo[List[JsObject]]] = {
 
     val s = Json.obj(
       "username" -> username,
@@ -138,10 +140,5 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
         entries => ResultInfo.success(s"Retrieved public entries for $username", entries)
       )
     )
-  }
-
-
-  def journalEntriesWithID(username: String): Future[ResultInfo[List[JournalEntry]]] = {
-    ???
   }
 }

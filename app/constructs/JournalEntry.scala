@@ -12,25 +12,7 @@ import play.api.libs.json._
   * @param timestamp The time at which the journal entry was recorded
   * @param pos       The position where the journal entry was recorded
   */
-case class JournalEntry(username: String, text: String, timestamp: Long, pos: Point, public: Boolean, sentiment: Double, inferredSubjects: List[String]) {
-
-  def toGeoJson: JsValue = {
-
-    JsObject(Map(
-      "type" -> JsString("Feature"),
-      "properties" -> JsObject(Map(
-        "username" -> JsString(username),
-        "timestamp" -> JsNumber(timestamp),
-        "text" -> JsString(text),
-        "public" -> JsBoolean(public),
-        "sentiment" -> JsNumber(sentiment),
-        "inferredSubjects" -> Json.toJson(inferredSubjects)
-      )),
-      "geometry" -> Json.toJson(pos)
-    ))
-  }
-
-}
+case class JournalEntry(username: String, text: String, timestamp: Long, pos: Point, public: Boolean, sentiment: Double, inferredSubjects: List[String])
 
 object JournalEntry {
 

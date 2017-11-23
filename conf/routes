@@ -3,103 +3,100 @@
 # ~~~~
 
 # Home page
-GET         /                               controllers.Application.home()
+GET         /                                     controllers.Application.home()
 
 # The Sign-Up page for new users
-GET         /signup                         controllers.Application.signup()
+GET         /signup                               controllers.Application.signup()
 
 # The Login page for existing users
-GET         /login                          controllers.Application.loginPage()
+GET         /login                                controllers.Application.loginPage()
 
 # Log in a user
-POST        /login                          controllers.Users.login()
+POST        /login                                controllers.Users.login()
 
 # Logout of the current session
-POST        /logout                         controllers.Application.logout()
+POST        /logout                               controllers.Application.logout()
 
 # The Settings page
-GET         /settings                       controllers.Application.settings()
+GET         /settings                             controllers.Application.settings()
 
 # The About page for Study Lab
-GET         /about                          controllers.Application.about()
+GET         /about                                controllers.Application.about()
 
 # The Contact page for Study Lab
-GET         /contact                        controllers.Application.contact()
+GET         /contact                              controllers.Application.contact()
 
 # The Help page for Study Lab
-GET         /help                           controllers.Application.help()
+GET         /help                                 controllers.Application.help()
 
 # Get sessions as JSON for the username
-GET         /json/sessions/:username        controllers.Sessions.sessionsForUsername(username: String)
+GET         /json/sessions/:username              controllers.Sessions.sessionsForUsername(username: String)
 
 # Get the user's status as JSON
-GET         /json/status/:username          controllers.Sessions.userStatus(username: String)
-
-# Get the about message as JSON for the username
-GET         /json/about/:username           controllers.Users.aboutMessage(username: String)
+GET         /json/status/:username                controllers.Sessions.userStatus(username: String)
 
 # Get the journal entries as JSON for the username
-GET         /json/journal                   controllers.JournalEntries.getJournalEntries()
+GET         /json/journal                         controllers.JournalEntries.getAllEntries()
 
 # Get the public journal entries for the username
-GET         /json/journal/public            controllers.JournalEntries.getPublicJournalEntries()
+GET         /json/journal/public/:username        controllers.JournalEntries.getPublicEntries(username: String)
 
 # Start a study session
-POST        /study/start                    controllers.Sessions.startSession()
+POST        /study/start                          controllers.Sessions.startSession()
 
 # Stop a study session
-POST        /study/stop                     controllers.Sessions.stopSession()
+POST        /study/stop                           controllers.Sessions.stopSession()
 
 # Abort a study session
-POST        /study/cancel                   controllers.Sessions.cancelSession()
+POST        /study/cancel                         controllers.Sessions.cancelSession()
 
 # Add a study subject
-POST        /study/add                      controllers.Sessions.addSubject()
+POST        /study/add                            controllers.Sessions.addSubject()
 
 # Remove a study subject
-POST        /study/remove                   controllers.Sessions.removeSubject()
+POST        /study/remove                         controllers.Sessions.removeSubject()
 
 # Rename a study subject
-POST        /study/rename                   controllers.Sessions.renameSubject()
+POST        /study/rename                         controllers.Sessions.renameSubject()
 
 # Merge one subject into another
-POST        /study/merge                    controllers.Sessions.mergeSubjects()
+POST        /study/merge                          controllers.Sessions.mergeSubjects()
 
 # Add a journal entry
-POST        /journal/add                    controllers.JournalEntries.addJournalEntry()
+POST        /journal/add                          controllers.JournalEntries.addJournalEntry()
 
 # Delete a journal entry
-POST        /journal/delete                 controllers.JournalEntries.delete()
+POST        /journal/delete                       controllers.JournalEntries.delete()
 
 # Set the publicity of a journal entry
-POST        /journal/publicity              controllers.JournalEntries.setPublicity()
+POST        /journal/publicity                    controllers.JournalEntries.setPublicity()
 
 # Add a new user
-POST        /users/add                      controllers.Users.addNewUser()
+POST        /users/add                            controllers.Users.addNewUser()
 
 # Update a user's email address
-POST        /users/updateEmail              controllers.Users.updateEmail()
+POST        /users/updateEmail                    controllers.Users.updateEmail()
 
 # Update a user's password
-POST        /users/updatePassword           controllers.Users.updatePassword()
+POST        /users/updatePassword                 controllers.Users.updatePassword()
 
 # Remove a user
-POST        /users/delete                   controllers.Users.deleteUser()
+POST        /users/delete                         controllers.Users.deleteUser()
 
 # Add a todo item
-POST        /todo/addTodoItem               controllers.Todo.addTodoItem()
+POST        /todo/addTodoItem                     controllers.Todo.addTodoItem()
 
 # Delete a todo item
-POST        /todo/deleteTodoItem            controllers.Todo.deleteTodoItem()
+POST        /todo/deleteTodoItem                  controllers.Todo.deleteTodoItem()
 
 # Complete a todo item
-POST        /todo/completeTodoItem          controllers.Todo.completeTodoItem()
+POST        /todo/completeTodoItem                controllers.Todo.completeTodoItem()
 
 # Get the todo items for a user
-GET         /todo/getTodoItems              controllers.Todo.getTodoItems()
+GET         /todo/getTodoItems                    controllers.Todo.getTodoItems()
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                   controllers.Assets.at(path="/public", file)
+GET         /assets/*file                         controllers.Assets.at(path="/public", file)
 
 # A root-level link to the favicon
-GET         /favicon.ico                    controllers.Default.redirect(to = "/assets/images/favicon.ico")
+GET         /favicon.ico                          controllers.Default.redirect(to = "/assets/images/favicon.ico")

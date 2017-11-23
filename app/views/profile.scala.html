@@ -1,0 +1,26 @@
+@(username: String, profileUsername: String)(implicit messages: Messages)
+
+@loggedInTemplate("Profile")(username) {
+    <link href="@routes.Assets.at("src/css/journal-react.css")" rel="stylesheet" type="text/css">
+
+    <script src="@routes.Assets.at("src/js/FormHandlers.js")"></script>
+
+        <!-- Moment JS -->
+    <script src="@routes.Assets.at("lib/js/moment.js")"></script>
+    <script src="@routes.Assets.at("lib/js/moment-timezone-10-20.js")"></script>
+
+    <script>
+
+            // TODO: Bad practice
+            var username = "@username";
+            var profileUsername = "@profileUsername";
+
+    </script>
+} {
+
+
+    <div id="ProfileApp"></div>
+
+    <script type="text/javascript" src="@routes.Assets.at("target/profile.js")"></script>
+
+}

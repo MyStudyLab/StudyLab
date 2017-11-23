@@ -88,7 +88,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
             val newUser = User(goodForm.username, goodForm.firstName, goodForm.lastName, goodForm.email, goodForm.password)
 
             // Insert the User object into the database
-            usersModel.addNewUser(newUser).map(
+            usersModel.add(newUser).map(
               resultInfo => Ok(resultInfo.toJson)
             )
 
@@ -112,7 +112,7 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
       DeactivateProfileForm.form.bindFromRequest()(request).fold(
         _ => invalidFormResponse,
         goodForm => {
-          usersModel.deleteUser(username, goodForm.password).map(result => if (result.success) Redirect(routes.Application.home()).withNewSession else InternalServerError(result.toJson))
+          usersModel.delete(username, goodForm.password).map(result => if (result.success) Redirect(routes.Application.home()).withNewSession else InternalServerError(result.toJson))
         }
       )
 
@@ -170,20 +170,6 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
 
     usersModel.socialProfiles(username).map(
       optData => optData.fold(Ok(ResultInfo.failWithMessage("failed to retrieve profiles").toJson))(data => Ok(Json.toJson(data)))
-    )
-  }
-
-
-  /**
-    * Get the about message for the given user
-    *
-    * @param username The username for which to retrieve data
-    * @return
-    */
-  def aboutMessage(username: String): Action[AnyContent] = Action.async { implicit request =>
-
-    usersModel.aboutMessage(username).map(
-      optData => optData.fold(Ok(ResultInfo.failWithMessage("failed to retrieve about message").toJson))(data => Ok(Json.toJson(data)))
     )
   }
 

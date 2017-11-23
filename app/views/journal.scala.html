@@ -1,6 +1,6 @@
 @(username: String)(implicit messages: Messages)
 
-@loggedInTemplate("Journal") {
+@loggedInTemplate("Journal")(username) {
     <link href="@routes.Assets.at("src/css/journal.css")" rel="stylesheet" type="text/css">
 } {
 
@@ -198,7 +198,7 @@
 
                 $.ajax({
                     type: "get",
-                    url: "@controllers.routes.JournalEntries.getJournalEntries()",
+                    url: "@controllers.routes.JournalEntries.getAllEntries()",
                     dataType: "json",
                     success: pageSetup
                 });

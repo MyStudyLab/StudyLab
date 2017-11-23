@@ -34,7 +34,7 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
   extends Controller with MongoController with ReactiveMongoComponents {
 
   // Reference to the Journal Entry model
-  protected val journalEntries = new models.JournalEntries(reactiveMongoApi)
+  protected val journalModel = new models.JournalEntries(reactiveMongoApi)
 
   /**
     * Invoke the model layer to record a new journal entry.
@@ -79,7 +79,7 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
 
             val entry = JournalEntryWithID(username, cleanedEntry, System.currentTimeMillis(), position, public = false, sentimentScore, inferredSubjects)
 
-            journalEntries.addJournalEntryWithId(entry).map(resultInfo => Ok(resultInfo.toJson))
+            journalModel.addJournalEntryWithId(entry).map(resultInfo => Ok(resultInfo.toJson))
           })
 
         }
@@ -102,7 +102,7 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
         goodForm => {
           BSONObjectID.parse(goodForm.id).toOption.fold(
             Future(Ok(ResultInfo.failWithMessage("Invalid journal entry id").toJson))
-          )(oid => journalEntries.delete(username, oid).map(result => Ok(result.toJson)))
+          )(oid => journalModel.delete(username, oid).map(result => Ok(result.toJson)))
         }
       )
     })
@@ -121,7 +121,7 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
         goodForm => {
           BSONObjectID.parse(goodForm.id).toOption.fold(
             Future(Ok(ResultInfo.failWithMessage("Invalid journal entry id").toJson))
-          )(oid => journalEntries.setPublicity(username, oid, goodForm.public).map(result => Ok(result.toJson)))
+          )(oid => journalModel.setPublicity(username, oid, goodForm.public).map(result => Ok(result.toJson)))
         }
       )
     })
@@ -134,10 +134,10 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
     *
     * @return
     */
-  def getJournalEntries = Action.async { implicit request =>
+  def getAllEntries = Action.async { implicit request =>
 
     withUsername(username =>
-      journalEntries.journalEntriesForUsername(username).map(resInfo => Ok(resInfo.toJson))
+      journalModel.getAllEntries(username).map(resInfo => Ok(resInfo.toJson))
     )
   }
 
@@ -147,11 +147,9 @@ class JournalEntries @Inject()(val reactiveMongoApi: ReactiveMongoApi, val ws: W
     *
     * @return
     */
-  def getPublicJournalEntries = Action.async { implicit request =>
+  def getPublicEntries(username: String) = Action.async { implicit request =>
 
-    request.getQueryString("username").fold(
-      Future(ResultInfo.failure("Invalid query string", List[JsObject]()))
-    )(username => journalEntries.publicEntries(username)).map(res => Ok(res.toJson))
+    journalModel.getPublicEntries(username).map(res => Ok(res.toJson))
   }
 
 }

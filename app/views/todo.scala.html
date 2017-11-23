@@ -1,74 +1,74 @@
 @(username: String)(implicit messages: Messages)
 
-@loggedInTemplate("Todo") {
-    <link href="@routes.Assets.at("src/css/todo.css")" rel="stylesheet" type="text/css">
-} {
+    @loggedInTemplate("Todo")(username) {
+        <link href="@routes.Assets.at("src/css/todo.css")" rel="stylesheet" type="text/css">
+    } {
 
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-8 col-sm-offset-2">
-                <div class="raised-element padded-plot text-justify partialBorder centerTextContent">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-8 col-sm-offset-2">
+                    <div class="raised-element padded-plot text-justify partialBorder centerTextContent">
 
-                    <form id="todo-entry-form" class="">
-                        <div class="form-group">
-                            <label class="sr-only" for="change-password-input">Password</label>
-                            <input type="text" name="text" class="form-control" id="todo-item-input" placeholder="I need to..." autocomplete="off" required>
-                        </div>
+                        <form id="todo-entry-form" class="">
+                            <div class="form-group">
+                                <label class="sr-only" for="change-password-input">Password</label>
+                                <input type="text" name="text" class="form-control" id="todo-item-input" placeholder="I need to..." autocomplete="off" required>
+                            </div>
 
-                        <button type="submit" id="todo-entry-input-button" class="transparentButton"><i class="fa fa-pencil fa-2x"></i></button>
-                    </form>
+                            <button type="submit" id="todo-entry-input-button" class="transparentButton"><i class="fa fa-pencil fa-2x"></i></button>
+                        </form>
+                    </div>
+
+                    <div id="todo-item-list"></div>
                 </div>
-
-                <div id="todo-item-list"></div>
             </div>
         </div>
-    </div>
 
-        <!-- Moment JS -->
-    <script src="@routes.Assets.at("lib/js/moment.js")"></script>
-    <script src="@routes.Assets.at("lib/js/moment-timezone-10-20.js")"></script>
+            <!-- Moment JS -->
+        <script src="@routes.Assets.at("lib/js/moment.js")"></script>
+        <script src="@routes.Assets.at("lib/js/moment-timezone-10-20.js")"></script>
 
-        <!-- Custom JS -->
-    <script src="@routes.Assets.at("src/js/TodoItemList.js")"></script>
-    <script src="@routes.Assets.at("src/js/FormHandlers.js")"></script>
+            <!-- Custom JS -->
+        <script src="@routes.Assets.at("src/js/TodoItemList.js")"></script>
+        <script src="@routes.Assets.at("src/js/FormHandlers.js")"></script>
 
-    <script>
+        <script>
 
-            'use strict';
+                'use strict';
 
-            // Set up handlers and initialize page
-            $(function () {
+                // Set up handlers and initialize page
+                $(function () {
 
-                submitWithGeo("#todo-entry-form",
-                        "@routes.Todo.addTodoItem()",
-                        (responseData, formData, formElem) => {
+                    submitWithGeo("#todo-entry-form",
+                            "@routes.Todo.addTodoItem()",
+                            (responseData, formData, formElem) => {
 
-                            // Reset the form upon confirmed submission
-                            document.getElementById('todo-entry-form').reset()
+                                // Reset the form upon confirmed submission
+                                document.getElementById('todo-entry-form').reset()
+                            }
+                    );
+
+                    $.ajax({
+                        type: "get",
+                        url: "@controllers.routes.Todo.getTodoItems()",
+                        dataType: "json",
+                        success: function (responseData, textResponse, jqXHR) {
+
+                            console.log(responseData);
+
+                            if (responseData['success'] === true) {
+
+                                let todoList = new JournalEntryList("todo-item-list", responseData['payload']);
+
+                                todoList.sort();
+                                todoList.display();
+                            } else {
+                                console.log("There was an problem loading your journal entries")
+                            }
                         }
-                );
-
-                $.ajax({
-                    type: "get",
-                    url: "@controllers.routes.Todo.getTodoItems()",
-                    dataType: "json",
-                    success: function (responseData, textResponse, jqXHR) {
-
-                        console.log(responseData);
-
-                        if (responseData['success'] === true) {
-
-                            let todoList = new JournalEntryList("todo-item-list", responseData['payload']);
-
-                            todoList.sort();
-                            todoList.display();
-                        } else {
-                            console.log("There was an problem loading your journal entries")
-                        }
-                    }
+                    });
                 });
-            });
 
-    </script>
+        </script>
 
-}
+    }

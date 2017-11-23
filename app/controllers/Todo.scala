@@ -2,15 +2,10 @@ package controllers
 
 // Standard Library
 import javax.inject.Inject
-
-import akka.actor.Status.Success
-import constructs.{CumulativeGoal, Point, TodoItem}
-import reactivemongo.bson.BSONObjectID
-
 import scala.concurrent.Future
 
 // Project
-import constructs.ResultInfo
+import constructs.{Point, TodoItem, ResultInfo}
 import forms._
 
 // Play Framework
@@ -18,6 +13,7 @@ import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 // Reactive Mongo
+import reactivemongo.bson.BSONObjectID
 import play.modules.reactivemongo.{MongoController, ReactiveMongoApi, ReactiveMongoComponents}
 
 

@@ -16,7 +16,7 @@ import reactivemongo.play.json._
 
 // Project
 import constructs.{ResultInfo, User}
-import constructs.responses.{ProfilesOnly, AboutMessage, Credentials}
+import constructs.responses.{ProfilesOnly, Credentials}
 import helpers.Selectors.{emailSelector, usernameSelector}
 
 
@@ -37,7 +37,7 @@ class Users(protected val api: ReactiveMongoApi) {
     * @param user The user to add
     * @return
     */
-  def addNewUser(user: User): Future[ResultInfo[String]] = {
+  def add(user: User): Future[ResultInfo[String]] = {
 
     usersCollection.flatMap(_.insert(user)).map(result =>
       ResultInfo(result.ok, "used to be result.message")
@@ -64,7 +64,7 @@ class Users(protected val api: ReactiveMongoApi) {
     * @param username The username of the user to be removed
     * @return
     */
-  def deleteUser(username: String, password: String): Future[ResultInfo[String]] = {
+  def delete(username: String, password: String): Future[ResultInfo[String]] = {
 
     checkCredentials(username, password).flatMap(validated => {
 
@@ -78,18 +78,6 @@ class Users(protected val api: ReactiveMongoApi) {
         Future(ResultInfo.badUsernameOrPass)
       }
     })
-  }
-
-
-  /**
-    * Get the about message for the user.
-    *
-    * @param username The username for which to retrieve the data.
-    * @return
-    */
-  def aboutMessage(username: String): Future[Option[AboutMessage]] = {
-
-    usersCollection.flatMap(_.find(usernameSelector(username), AboutMessage.projector).one[AboutMessage])
   }
 
 

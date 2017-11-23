@@ -1,4 +1,6 @@
-@loggedInTemplate("JournalReact") {
+@(username: String)
+
+@loggedInTemplate("JournalReact")(username) {
 
     <link href="@routes.Assets.at("src/css/journal-react.css")" rel="stylesheet" type="text/css">
 
