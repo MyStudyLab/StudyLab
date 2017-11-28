@@ -72,6 +72,7 @@ class JournalApp extends React.Component {
                 <JournalEntryList
                     className="JournalEntryList"
                     items={this.state.items}
+                    publicDisplay={false}
                     filter={this.state.searchText}
                     display={!this.state.writingMode}
                     handleDelete={this.deleteItem}
@@ -91,23 +92,25 @@ class JournalApp extends React.Component {
         $.ajax({
             type: "get",
             url: "/json/journal",
-            dataType: "json",
-            success: (responseData) => {
+            dataType: "json"
+        }).fail(() => {
 
-                // TESTING - DEV
-                console.log(responseData);
+            console.log("Error loading journal entries")
 
-                // Sort the items by timestamp, newest first
-                let items = responseData.payload;
-                items.sort((a, b) => Math.sign(b.timestamp - a.timestamp));
+        }).done((responseData) => {
 
-                this.setState({
-                    items: items
-                })
+            // TESTING - DEV
+            console.log(responseData);
 
-            }
+            // Sort the items by timestamp, newest first
+            let items = responseData.payload;
+            items.sort((a, b) => Math.sign(b.timestamp - a.timestamp));
+
+            this.setState({
+                items: items
+            })
+
         });
-
     }
 
 

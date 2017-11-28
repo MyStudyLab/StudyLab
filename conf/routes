@@ -29,6 +29,12 @@ GET         /contact                              controllers.Application.contac
 # The Help page for Study Lab
 GET         /help                                 controllers.Application.help()
 
+# User profiles
+GET         /profile/:username                    controllers.Application.profile(username)
+
+# Get basic user info
+GET         /json/user/:username                  controllers.Users.getInfo(username)
+
 # Get sessions as JSON for the username
 GET         /json/sessions/:username              controllers.Sessions.sessionsForUsername(username: String)
 

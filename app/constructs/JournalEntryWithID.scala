@@ -18,13 +18,14 @@ case class JournalEntryWithID(_id: BSONObjectID, username: String, text: String,
 
 object JournalEntryWithID {
 
+  import reactivemongo.bson.Macros
+
   // Helper to generate the object ID
-  def apply(username: String, text: String, timestamp: Long, pos: Point, public: Boolean, sentiment: Double, inferredSubjects: List[String]): JournalEntryWithID = new JournalEntryWithID(BSONObjectID.generate(), username, text, timestamp, pos, public, sentiment, inferredSubjects)
+  def apply(username: String, text: String, timestamp: Long, pos: Point, public: Boolean, sentiment: Double, inferredSubjects: List[String]): JournalEntryWithID =
+    new JournalEntryWithID(BSONObjectID.generate(), username, text, timestamp, pos, public, sentiment, inferredSubjects)
 
   // Implicitly convert to JSON
   implicit val writes = Json.writes[JournalEntryWithID]
-
-  import reactivemongo.bson.Macros
 
   // Implicitly convert to/from BSON
   implicit val handler = Macros.handler[JournalEntryWithID]

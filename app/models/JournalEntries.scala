@@ -33,21 +33,6 @@ class JournalEntries(protected val mongoApi: ReactiveMongoApi) {
   protected def jsonCollection: Future[JSONCollection] = mongoApi.database.map(_.collection[JSONCollection]("journal_entries"))
 
   /**
-    * Add a journal entry to the database
-    *
-    * @param entry The journal entry to be added
-    * @return
-    */
-  def add(entry: JournalEntry): Future[ResultInfo[JsValue]] = {
-
-    bsonCollection.flatMap(_.insert(entry).map(result =>
-      if (result.ok) ResultInfo.success("Journal entry recorded", Json.toJson(entry))
-      else ResultInfo.failure("entry not recorded", Json.obj()))
-    )
-  }
-
-
-  /**
     *
     * @param entry
     * @return

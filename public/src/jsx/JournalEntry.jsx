@@ -45,7 +45,7 @@ export default class JournalEntry extends React.Component {
 
                     {
                         // Only display the 'share' button when an entry is public
-                        (this.props.item.public) && (
+                        (this.props.item.public && !this.props.publicDisplay) && (
                             <button className="transparentButton entryControlItem" onClick={this.handleShare}>
                                 <i className="fa fa-share"/>
                             </button>
@@ -58,7 +58,7 @@ export default class JournalEntry extends React.Component {
                 </div>
 
                 {
-                    (this.props.selected) && (
+                    (this.props.selected && !this.props.publicDisplay) && (
                         <div className="entrySubControl">
 
                             <button

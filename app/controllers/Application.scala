@@ -91,6 +91,16 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     withUsername(username => Ok(views.html.journalReact(username)))
   }
 
+  /**
+    * The public profile for the given username
+    *
+    * @param username
+    * @return
+    */
+  def profile(username: String) = Action { implicit request =>
+
+    Ok(views.html.profile("", username))
+  }
 
   /**
     * The Settings Page

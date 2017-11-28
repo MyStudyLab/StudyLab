@@ -1,0 +1,23 @@
+#UserProfile {
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: auto;
+    width: 80%;
+
+}
+
+#UserProfileInfo {
+
+    width: 20%;
+
+}
+
+#UserInfoUsername {
+    font-size: x-large;
+}
+
+#UserProfileEntries {
+    width: 75%;
+}

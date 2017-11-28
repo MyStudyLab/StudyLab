@@ -9,7 +9,8 @@ scalaVersion := "2.11.8"
 libraryDependencies ++= Seq(ws, jdbc, cache, specs2 % Test)
 
 libraryDependencies ++= Seq(
-  "org.reactivemongo" %% "play2-reactivemongo" % "0.12.2"
+  "org.reactivemongo" %% "play2-reactivemongo" % "0.12.2",
+  "mysql" % "mysql-connector-java" % "5.1.41"
 )
 
 unmanagedResourceDirectories in Test <+= baseDirectory(_ / "target/web/public/test")

@@ -51,6 +51,7 @@ export default class JournalEntryList extends React.Component {
                                 <JournalEntry
                                     key={item._id.$oid}
                                     item={item}
+                                    publicDisplay={this.props.publicDisplay}
                                     selected={this.state.selected === item._id.$oid}
                                     highlightText={filterText}
                                     handleClick={() => this.selectHandler(item._id.$oid)}

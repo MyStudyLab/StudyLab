@@ -5,10 +5,13 @@ const SRC_DIR = path.resolve(__dirname, 'public/src');
 const OUT_DIR = path.resolve(__dirname, 'public/target');
 
 module.exports = {
-    entry: path.join(SRC_DIR, "jsx", "JournalApp.jsx"),
+    entry: {
+        "journal": path.join(SRC_DIR, "jsx", "JournalApp.jsx"),
+        "profile": path.join(SRC_DIR, "jsx", "ProfileApp.jsx")
+    },
     output: {
         path: OUT_DIR,
-        filename: "JournalBundle.js"
+        filename: "[name].js"
     },
     plugins: [new uglify()],
     module: {

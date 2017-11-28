@@ -9,6 +9,7 @@ import play.api.libs.json._
   * @param success   Indicates whether the operation succeeded
   * @param message   A message regarding the success/failure of the operation
   * @param timestamp When the response was created by the server
+  * @param payload   The response payload from the server
   */
 case class ResultInfo[T](success: Boolean, message: String, timestamp: Long, payload: T)(implicit payloadWrites: Writes[T]) {
 
@@ -22,7 +23,7 @@ case class ResultInfo[T](success: Boolean, message: String, timestamp: Long, pay
   /**
     * Create a ResultInfo with an updated payload
     *
-    * @param transform
+    * @param transform The transform to apply to the payload
     * @tparam U The updated payload type
     * @return
     */

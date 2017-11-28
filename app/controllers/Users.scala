@@ -119,6 +119,17 @@ class Users @Inject()(val reactiveMongoApi: ReactiveMongoApi, val messagesApi: M
     })
   }
 
+  /**
+    *
+    *
+    * @param username
+    * @return
+    */
+  def getInfo(username: String) = Action.async(implicit request =>
+
+    usersModel.getUserInfo(username).map(resInfo => Ok(resInfo.toJson))
+
+  )
 
   /**
     * Update a user's email address

@@ -1,7 +1,9 @@
 package models
 
 // Standard Library
+import play.api.libs.json.{JsValue, Json}
 import reactivemongo.bson.BSONDocument
+import reactivemongo.play.json.collection.JSONCollection
 
 import scala.concurrent.Future
 
@@ -30,6 +32,7 @@ class Users(protected val api: ReactiveMongoApi) {
   // The users collection
   protected def usersCollection: Future[BSONCollection] = api.database.map(_.collection[BSONCollection]("users"))
 
+  protected def usersJSON: Future[JSONCollection] = api.database.map(_.collection[JSONCollection]("users"))
 
   /**
     * Add a new user to the database
@@ -80,6 +83,29 @@ class Users(protected val api: ReactiveMongoApi) {
     })
   }
 
+  /**
+    * Get info for the given username
+    *
+    * @param username The username for which to retrieve data
+    * @return
+    */
+  def getUserInfo(username: String): Future[ResultInfo[JsValue]] = {
+
+    val s = Json.obj(
+      "username" -> username
+    )
+
+    val p = Json.obj(
+      "password" -> 0
+    )
+
+    usersJSON.flatMap(_.find(s, p).one[JsValue].map(optUser => {
+      optUser.fold(
+        ResultInfo.failure[JsValue]("failed to get user info", Json.obj())
+      )(user => ResultInfo.success("retrieved user info", user))
+    }))
+
+  }
 
   /**
     * Get the social profiles for the user.
@@ -126,10 +152,12 @@ class Users(protected val api: ReactiveMongoApi) {
     */
   def checkCredentials(username: String, given: String): Future[Boolean] = {
 
-    usersCollection.flatMap(_.find(usernameSelector(username), Credentials.projector).one[Credentials]).map(optCredentials =>
-
-      optCredentials.fold(false)(credentials => credentials.password == given)
+    val s = BSONDocument(
+      "username" -> username,
+      "password" -> given
     )
+
+    usersCollection.flatMap(_.count(Some(s), limit = 1).map(_ == 1))
   }
 
   /**
