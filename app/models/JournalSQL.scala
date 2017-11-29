@@ -3,24 +3,47 @@ package models
 import play.api.db.Database
 import anorm._
 import anorm.SqlParser._
+import constructs.ResultInfo
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 class JournalSQL(val db: Database) {
 
 
-  def add(userID: Int, text: String): Future[Boolean] = {
+  def add(username: String, text: String, pos: (Double, Double)): Future[ResultInfo[String]] = {
 
     Future(
       db.withConnection(implicit conn => {
 
         SQL(
           """
-           INSERT INTO journal(user_id, text)
-           VALUES ({user_id}, {text})
+             INSERT INTO journal(user_id, pos, text)
+             VALUES ((SELECT id FROM user WHERE username = {username}), point({lat}, {lon}), {text})
+          """
+        )
+          .on("username" -> username, "text" -> text, "lat" -> pos._1, "lon" -> pos._2)
+          .execute()
+      })
+    ).map(success =>
+      if (success) ResultInfo.success("Added journal entry", "")
+      else ResultInfo.failure("Failed to add journal entry", ""))
+  }
+
+
+  def add(username: String, text: String): Future[Boolean] = {
+
+    Future(
+      db.withConnection(implicit conn => {
+
+        SQL(
+          """
+             SET @user_id = (SELECT id FROM user WHERE username = {username});
+
+             INSERT INTO journal(user_id, pos, text)
+             VALUES (@user_id, {text})
         """
-        ).on("user_id" -> userID, "text" -> text)
+        ).on("username" -> username, "text" -> text)
 
         ???
       })
@@ -28,18 +51,19 @@ class JournalSQL(val db: Database) {
   }
 
 
-  
-  def delete(username: String): Future[Boolean] = {
+  def delete(journalID: Int, username: String): Future[Boolean] = {
 
     Future(
       db.withConnection(implicit conn => {
 
         SQL(
           """
-           DELETE FROM journal
-           WHERE id = (SELECT id FROM user WHERE username = {username})
+             SET @user_id = (SELECT id FROM user WHERE username = {username});
+
+             DELETE FROM journal
+             WHERE id = {id} AND user_id = @user_id
         """
-        ).on("username" -> username)
+        ).on("username" -> username, "id" -> journalID)
 
 
         ???
